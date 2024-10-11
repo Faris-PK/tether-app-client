@@ -7,5 +7,6 @@ export const authRoutes = {
     googleRegister:'/auth/google',
     googleLogin:'/auth/google',
     userProfile: '/user/profile',
+    uploadImage: '/user/upload-image',
 
 } 

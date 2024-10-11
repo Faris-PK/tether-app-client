@@ -62,4 +62,13 @@ export const api = {
     return response.data;
   },
 
+  uploadImage: async (formData: FormData) => {
+    const response = await API.post(authRoutes.uploadImage, formData, {
+      withCredentials: true,
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+    return response.data;
+  },
+  
+
 };

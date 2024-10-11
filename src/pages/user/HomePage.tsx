@@ -43,7 +43,6 @@ const HomePage: React.FC = () => {
           >
             <StoryArea />
             <PostCreation />
-            +
             <PostList />
           </div>
           <ContactList />

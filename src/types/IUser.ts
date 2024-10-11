@@ -1,4 +1,5 @@
  export default interface IUser extends Document {
+  _id: any;
   username: string;
   email: string;
   password: string;
@@ -10,6 +11,7 @@
   cover_photo?: string;
   premium_status: boolean;
   dob:string;
+  loaction:string;
   premium_expiration?: Date;
   followers: string[];
   following: string[];
