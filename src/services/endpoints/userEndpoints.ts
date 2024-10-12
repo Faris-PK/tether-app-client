@@ -8,5 +8,6 @@ export const authRoutes = {
     googleLogin:'/auth/google',
     userProfile: '/user/profile',
     uploadImage: '/user/upload-image',
+    updateProfile:'/user/remove-profile-picture'
 
 } 

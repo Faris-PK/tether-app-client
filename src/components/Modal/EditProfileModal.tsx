@@ -89,7 +89,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose, us
               name="username"
               value={formData.username || ''}
               onChange={handleInputChange}
-              className="w-full p-2 rounded bg-[#D9D9D9] bg-opacity-18 text-white"
+              className="w-full p-2 rounded bg-gray-600 bg-opacity-18 text-white"
               required
             />
           </div>
@@ -101,7 +101,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose, us
               name="dob"
               value={formData.dob ? moment(formData.dob).format('YYYY-MM-DD') : ''}
               onChange={handleInputChange}
-              className="w-full p-2 rounded bg-[#D9D9D9] bg-opacity-18 text-white"
+              className="w-full p-2 rounded  bg-gray-600 bg-opacity-18 text-white"
             />
           </div>
           <div className="mb-4">
@@ -112,7 +112,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose, us
               name="mobile"
               value={formData.mobile || ''}
               onChange={handleInputChange}
-              className="w-full p-2 rounded bg-[#D9D9D9] bg-opacity-18 text-white"
+              className="w-full p-2 rounded  bg-gray-600 bg-opacity-18 text-white"
             />
           </div>
           <div className="mb-4">
@@ -122,7 +122,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose, us
               name="bio"
               value={formData.bio || ''}
               onChange={handleInputChange}
-              className="w-full p-2 rounded bg-[#D9D9D9] bg-opacity-18 text-white"
+              className="w-full p-2 rounded  bg-gray-600 bg-opacity-18 text-white"
               rows={3}
             />
           </div>
@@ -134,7 +134,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose, us
                 name="location"
                 value={formData.location ? JSON.stringify(formData.location) : ''}
                 onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value ? JSON.parse(e.target.value) : null }))}
-                className="w-full p-2 rounded bg-[#D9D9D9] bg-opacity-18 text-white"
+                className="w-full p-2 rounded  bg-gray-600 bg-opacity-18 text-white"
             />
             </div>
           <div className="mb-4">
@@ -145,7 +145,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose, us
               name="social_links"
               value={formData.social_links?.[0] || ''}
               onChange={(e) => setFormData(prev => ({ ...prev, social_links: [e.target.value] }))}
-              className="w-full p-2 rounded bg-[#D9D9D9] bg-opacity-18 text-white"
+              className="w-full p-2 rounded  bg-gray-600 bg-opacity-18 text-white"
             />
           </div>
           <button

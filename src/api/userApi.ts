@@ -69,6 +69,11 @@ export const api = {
     });
     return response.data;
   },
+
+  removeProfilePicture: async (type: 'profile' | 'cover') => {
+    const response = await API.post(authRoutes.updateProfile, { type });
+    return response.data;
+  },
   
 
 };
