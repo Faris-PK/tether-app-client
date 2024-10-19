@@ -66,7 +66,7 @@ const LeftSidebar: React.FC = () => {
             ].map(({ icon: Icon, text, onClick }, index) => (
               <li key={index} className="w-5/6">
                 <button 
-                  className="border border-[#908888] rounded-lg w-full flex items-center justify-center space-x-2 p-2 hover:bg-white hover:bg-opacity-30 active:bg-white active:bg-opacity-60 transition duration-300"
+                  className="border border-[#908888] rounded-full w-full flex items-center justify-center space-x-2 p-2 hover:bg-white hover:bg-opacity-30 active:bg-white active:bg-opacity-60 transition duration-300"
                   onClick={onClick}
                 >
                   <Icon size={20} />

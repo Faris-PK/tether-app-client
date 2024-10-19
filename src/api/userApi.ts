@@ -20,10 +20,11 @@ export const api = {
     return response.data;
   },
 
-  resendOtp: async (email: string, otp: string) => {
-    const response = await API.post(authRoutes.ResendOtp, { email, otp });
+  resendOtp: async (email: string) => {
+    const response = await API.post(authRoutes.ResendOtp, { email });
     return response.data;
   },
+
 
   login: async (email: string, password: string) => {
     const response = await API.post(authRoutes.SignIn, { email, password }, { withCredentials: true });

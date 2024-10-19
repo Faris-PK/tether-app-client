@@ -1,7 +1,8 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import IUser from '@/types/IUser';
 
 interface UserState {
-  user: any | null;
+  user: IUser | null;
   isAuthenticated: boolean;
   profile: any | null;
 }
@@ -25,11 +26,18 @@ const userSlice = createSlice({
       state.isAuthenticated = false;
       state.profile = null;
     },
-    setProfile: (state, action: PayloadAction<any>) => {
-      state.profile = action.payload;
+    addPostToUser: (state, action: PayloadAction<string>) => {
+      if (state.user) {
+        state.user.posts.push(action.payload);
+      }
+    },
+    removePostFromUser: (state, action: PayloadAction<string>) => {
+      if (state.user) {
+        state.user.posts = state.user.posts.filter(postId => postId !== action.payload);
+      }
     },
   },
 });
 
-export const { setUser, clearUser, setProfile } = userSlice.actions;
+export const { setUser, clearUser, addPostToUser, removePostFromUser } = userSlice.actions;
 export default userSlice.reducer;

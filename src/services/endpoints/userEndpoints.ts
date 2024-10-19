@@ -11,3 +11,12 @@ export const authRoutes = {
     updateProfile:'/user/remove-profile-picture'
 
 } 
+
+
+
+export const postRoutes = {
+    createPost: 'posts/create',
+    getAllPosts: 'posts',
+    updatePost: 'posts/update',
+    deletePost: 'posts/delete',
+  };

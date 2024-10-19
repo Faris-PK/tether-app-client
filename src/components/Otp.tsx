@@ -4,11 +4,12 @@ import { api } from '../api/userApi';
 
 const OTP: React.FC = () => {
   const location = useLocation();
-  const { email } = location.state || { email: "" }; 
+  const { email } = location.state || { email: "" };
   const [otp, setOtp] = useState<string[]>(['', '', '', '', '', '']);
   const [errors, setErrors] = useState<string>('');
   const [success, setSuccess] = useState<string>('');
   const [timeLeft, setTimeLeft] = useState<number>(60);
+  const [isResending, setIsResending] = useState<boolean>(false);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const navigate = useNavigate();
 
@@ -48,28 +49,33 @@ const OTP: React.FC = () => {
       setErrors('');
       navigate('/signin');
     } catch (error: any) {
-      setErrors(error.response?.data.message );
-      console.log('Error from frontend : ', error.response?.data.message );
-      
+      setErrors(error.response?.data.message);
+      console.log('Error from frontend : ', error.response?.data.message);
+    }
+  };
+
+  const handleResendOTP = async () => {
+    setIsResending(true);
+    try {
+      await api.resendOtp(email);
+      setTimeLeft(60);
+      setSuccess('New OTP sent successfully!');
+      setErrors('');
+    } catch (error: any) {
+      setErrors(error.response?.data.message || 'Failed to resend OTP');
+    } finally {
+      setIsResending(false);
     }
   };
 
   return (
-   <>
-      
+    <>
       <div className="w-full md:w-1/2 bg-white flex flex-col justify-center items-center p-4">
         <div className="w-full max-w-md p-6">
           <h2 className="text-3xl font-bold mb-2">Enter OTP</h2>
           <p className="font-bold text-gray-500 mb-2">We have sent an OTP to {email}</p>
 
-          {/* {success && <p className="text-green-500 mb-4">{success}</p>}
-          {errors.length > 0 && (
-            <ul className="text-red-500 mb-4">
-              {errors.map((error, index) => (
-                <li key={index}>{error}</li>
-              ))}
-            </ul>
-          )} */}
+          {success && <p className="text-green-500 mb-4">{success}</p>}
 
           <form onSubmit={handleSubmit}>
             <div className="flex space-x-2 mb-4">
@@ -87,7 +93,7 @@ const OTP: React.FC = () => {
               ))}
             </div>
             {errors && 
-            <p className="text-red-500">{errors}</p>
+              <p className="text-red-500">{errors}</p>
             }
             <button
               type="submit"
@@ -98,19 +104,24 @@ const OTP: React.FC = () => {
           </form>
 
           <div className="flex justify-between mt-4">
-            
-           {timeLeft==0 ? <p className="text-red-500">OTP Expired </p> :
-           <p className="text-yellow-500">OTP will expire in {formatTime(timeLeft)}</p>
-           }
-            {timeLeft === 0 && (
-              <button className="text-[#1D9BF0] hover:underline" onClick={() => {}}>
-                Resend OTP
+            {timeLeft === 0 ? (
+              <p className="text-red-500">OTP Expired</p>
+            ) : (
+              <p className="text-yellow-500">OTP will expire in {formatTime(timeLeft)}</p>
+            )}
+            {(timeLeft === 0 || timeLeft === 60) && (
+              <button 
+                className="text-[#1D9BF0] hover:underline" 
+                onClick={handleResendOTP}
+                disabled={isResending}
+              >
+                {isResending ? 'Resending...' : 'Resend OTP'}
               </button>
             )}
           </div>
         </div>
       </div>
-      </>
+    </>
   );
 };
 

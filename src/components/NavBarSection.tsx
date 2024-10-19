@@ -39,8 +39,8 @@ const NavBarSection: React.FC = () => {
 
   return (
     <>
-      <nav className="hide-scrollbar overflow-auto ">
-        <ul className="space-y-5  bg-[#010F18] p-4 rounded-lg font-medium flex flex-col items-center">
+      <nav className="hide-scrollbar overflow-auto shadow-[4px_4px_10px_rgba(0,0,0,0.5)]">
+        <ul className="space-y-5  bg-[#010F18] p-4 rounded-lg font-medium flex flex-col items-center ">
           {[
             {  icon: House, text: 'Home', onClick: handleHomeClick },
             { icon: Users, text: 'Friends' },

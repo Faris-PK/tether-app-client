@@ -15,6 +15,8 @@
   premium_expiration?: Date;
   followers: string[];
   following: string[];
+  posts: string[];
   social_links?: string[];
   blocked_users: string[];
+  createdAt:string
   }

@@ -17,9 +17,9 @@ const TopBar: React.FC = () => {
   };
 
   return (
-    <div className="flex items-center justify-between p-3 ">
+    <div className="flex items-center justify-between p-3">
       <div className="flex-grow mr-4 rounded-md">
-        <div className="bg-[#010F18] p-2 rounded-md flex justify-center ">
+        <div className="bg-[#010F18] p-2 rounded-xl flex justify-center shadow-[4px_4px_10px_rgba(0,0,0,0.5)]">
           <input 
             type="text" 
             placeholder="Search..." 
@@ -28,17 +28,17 @@ const TopBar: React.FC = () => {
         </div>
       </div>
 
-      <div className="bg-[#010F18] p-2 rounded-md flex justify-around items-center w-1/5">
+      <div className="bg-[#010F18] p-2 rounded-xl flex justify-around items-center w-1/5 h-12">
         <div className="text-white cursor-pointer relative">
-          <Bell className='h-8 w-auto' />
-          <span className="absolute bottom-4 left-4 bg-[#D40A0A] rounded-full h-5 w-5" />
+          <Bell className=' w-auto' />
+          <span className="absolute bottom-4 left-4 bg-[#D40A0A] rounded-full h-3 w-3" />
         </div>
         <div className="text-white cursor-pointer relative">
-          <MessageCircleMore className='h-8 w-auto' />
-          <span className="absolute bottom-4 left-4 bg-[#D40A0A] rounded-full h-5 w-5" />
+          <MessageCircleMore className=' w-auto' />
+          <span className="absolute bottom-4 left-4 bg-[#D40A0A] rounded-full h-3 w-3" />
         </div>
         <div className="text-white cursor-pointer relative" onClick={navigateToProfile}>
-          <CircleUserRound className='h-8 w-auto' />
+          <CircleUserRound className=' w-auto' />
         </div>
       </div>
     </div>

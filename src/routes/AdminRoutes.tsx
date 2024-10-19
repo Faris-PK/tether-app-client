@@ -1,6 +1,6 @@
 import React from 'react';
 import { Route, Routes, Navigate } from 'react-router-dom';
-import { AdminRoute, PublicRoute } from '../components/authRoute';
+import { AdminPublicRoute, AdminRoute, PublicRoute } from '../components/authRoute';
 import AdminLayout from '../layouts/AdminLayout';
 import AdminLoginPage from '../pages/admin/AdminLoginPage';
 import Dashboard from '../pages/admin/AdminDashboard';
@@ -14,7 +14,7 @@ const AdminRoutes: React.FC = () => {
   return (
     <Routes>
       {/* Public Route for Admin Login */}
-      <Route path="login" element={<PublicRoute element={<AdminLoginPage />} />} />
+      <Route path="login" element={<AdminPublicRoute element={<AdminLoginPage />} />} />
 
       {/* Protected Admin Routes (with AdminLayout) */}
       <Route path="/" element={<AdminRoute element={<AdminLayout />} />}>

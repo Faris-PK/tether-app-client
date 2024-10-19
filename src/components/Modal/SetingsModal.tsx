@@ -41,13 +41,13 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, anchorElement, onLogout 
   const rect = anchorElement.getBoundingClientRect();
   const modalStyle = {
     position: 'absolute' as 'absolute',
-    top: rect.bottom + window.scrollY,
-    left: rect.left,
+    top: rect.top + window.scrollY - 250,
+    left: rect.right + window.scrollY - 0,
     width: `${rect.width}px`,
   };
 
   return (
-    <div ref={modalRef} style={modalStyle} className="bg-[#010F18] rounded-lg border border-[#908888] p-4 z-10">
+    <div ref={modalRef} style={modalStyle} className="bg-[rgba(1,15,24,0.8)] rounded-lg border border-[#908888] p-4 z-10">
       <h2 className="text-xl font-bold text-white text-center mb-4">Settings</h2>
       <ul className="space-y-2">
         <li>
