@@ -333,7 +333,7 @@ const Profile: React.FC = () => {
             <Mail size={16} className="mr-2 text-blue-400" />
             <span>{user?.email}</span>
           </div>
-          
+
           <div className="flex items-center text-gray-300">
             <Cake size={16} className="mr-2 text-pink-400" />
             <span>{formattedDob}</span>

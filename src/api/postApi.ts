@@ -16,13 +16,6 @@ export const PostApi = {
     return response.data;
   },
 
-  updatePost: async (postId: string,  postData: Partial<PostData>) => {
-    const response = await API.put(`${postRoutes.updatePost}/${postId}`, postData, {
-      withCredentials: true,
-    });
-    return response.data;
-  },
-
   deletePost: async (postId: string) => {
     const response = await API.delete(`${postRoutes.deletePost}/${postId}`, {
       withCredentials: true,

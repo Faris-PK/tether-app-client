@@ -32,7 +32,9 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({
   });
   const [error, setError] = useState<string | null>(null);
   const user = useSelector((state: RootState) => state.user.user);
-  const dispatch = useDispatch()
+  const dispatch = useDispatch(
+    
+  )
 
   if (!isOpen) return null;
 

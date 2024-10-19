@@ -17,6 +17,5 @@ export const authRoutes = {
 export const postRoutes = {
     createPost: 'posts/create',
     getAllPosts: 'posts',
-    updatePost: 'posts/update',
     deletePost: 'posts/delete',
   };
