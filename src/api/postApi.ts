@@ -22,4 +22,10 @@ export const PostApi = {
     });
     return response.data;
   },
+  updatePost: async (postId: string, updateData: { caption?: string; location?: string }) => {
+    const response = await API.put(`${postRoutes.updatePost}/${postId}`, updateData, {
+      withCredentials: true,
+    });
+    return response.data;
+  },
 };

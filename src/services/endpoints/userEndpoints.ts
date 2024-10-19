@@ -18,4 +18,5 @@ export const postRoutes = {
     createPost: 'posts/create',
     getAllPosts: 'posts',
     deletePost: 'posts/delete',
+    updatePost: 'posts/update',
   };
