@@ -9,19 +9,25 @@ import PostList from "../../components/PostList";
 import ContactList from "../../components/ContactList";
 import { PostApi } from "@/api/postApi";
 import { clearUser } from '../../redux/slices/userSlice';
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "@/redux/store/store";
 
 const HomePage: React.FC = () => {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const currentUserId = useSelector((state: RootState) => state.user.user?._id);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  console.log('currentUserId: ',currentUserId);
+  
 
   const fetchPosts = useCallback(async () => {
     try {
       setLoading(true);
       const response = await PostApi.getAllPosts();
+      console.log('Response: ',response);
+      
       setPosts(response);
       setLoading(false);
     } catch (err: any) {
@@ -78,7 +84,7 @@ const HomePage: React.FC = () => {
           >
             <StoryArea />
             <PostCreation onPostCreated={fetchPosts}/>
-            <PostList posts={posts} />
+            <PostList posts={posts} currentUserId={currentUserId} />
           </div>
           <ContactList />
         </div>

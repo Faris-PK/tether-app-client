@@ -77,7 +77,7 @@ const PostCreation: React.FC<PostCreationProps> = ({onPostCreated }) => {
       <div className="bg-[#010F18] p-4 rounded-xl mb-4 shadow-[4px_4px_10px_rgba(0,0,0,0.5)]">
         <div className="flex items-start">
         <img
-            src={user.profile_picture}
+            src={user?.profile_picture}
             alt="Your Profile"
             className="w-12 h-12 rounded-full mr-4"
           />

@@ -19,4 +19,5 @@ export const postRoutes = {
     getAllPosts: 'posts',
     deletePost: 'posts/delete',
     updatePost: 'posts/update',
+    likePost: 'posts/like',
   };

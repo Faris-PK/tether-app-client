@@ -5,6 +5,12 @@ import PostData from '@/types/IPost';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '@/redux/store/store';
 import { addPostToUser } from '@/redux/slices/userSlice';
+import mbxGeocoding from '@mapbox/mapbox-sdk/services/geocoding'; // Import Mapbox Geocoding API
+const googleClientId = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
+const geocodingClient = mbxGeocoding({
+  accessToken: googleClientId, 
+});
+
 
 interface CreatePostModalProps {
   isOpen: boolean;
@@ -32,9 +38,10 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({
   });
   const [error, setError] = useState<string | null>(null);
   const user = useSelector((state: RootState) => state.user.user);
-  const dispatch = useDispatch(
-    
-  )
+  const [locationQuery, setLocationQuery] = useState(''); // For location input
+  const [locationSuggestions, setLocationSuggestions] = useState<any[]>([]); // For location suggestions
+
+  const dispatch = useDispatch()
 
   if (!isOpen) return null;
 
@@ -57,8 +64,34 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({
   };
 
   const handleLocationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setPostContent(prevContent => ({ ...prevContent, location: e.target.value }));
+    const { value } = e.target;
+    setLocationQuery(value);
+  
+    if (value.length > 2) {
+      geocodingClient
+        .forwardGeocode({
+          query: value,
+          autocomplete: true,
+          limit: 5,
+        })
+        .send()
+        .then(response => {
+          setLocationSuggestions(response.body.features); // Set suggestions
+        })
+        .catch(error => console.error('Geocoding error:', error));
+    }
   };
+
+  const handleLocationSelect = (place: any) => {
+    setPostContent(prevContent => ({
+      ...prevContent,
+      location: place.place_name, // Set selected location
+    }));
+    setLocationQuery(place.place_name); // Set input field to selected location
+    setLocationSuggestions([]); // Clear suggestions
+  };
+  
+  
 
   const handleSubmit = async () => {
     if (!postContent.content.trim() && !postContent.file) {
@@ -133,18 +166,32 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({
             value={postContent.content}
             onChange={handleContentChange}
           />
-
-          <div className="flex items-center mt-4">
-            <MapPin size={20} className="mr-2 text-gray-400" />
+          <div className="mt-4">
+            <label className="block text-gray-300 mb-1" htmlFor="location">Location</label>
             <input
               type="text"
-              className="bg-transparent text-white placeholder-gray-500 outline-none border-b border-gray-600 w-full"
-              placeholder="Add location"
-              value={postContent.location}
+              id="location"
+              name="location"
+              value={locationQuery}
               onChange={handleLocationChange}
+              className="bg-transparent text-white placeholder-gray-500 outline-none border-b border-gray-600 w-full"
             />
+            
+            {/* Render location suggestions */}
+            {locationSuggestions.length > 0 && (
+              <ul className="bg-gray-700 rounded mt-2">
+                {locationSuggestions.map(place => (
+                  <li
+                    key={place.id}
+                    className="p-2 cursor-pointer hover:bg-gray-500 text-white"
+                    onClick={() => handleLocationSelect(place)}
+                  >
+                    {place.place_name}
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
-
           <div className="mt-4">
             <label className="flex flex-col items-center justify-center border-2 border-dashed border-gray-600 rounded-lg p-4 cursor-pointer">
               <Plus size={24} className="text-gray-400 mb-2" />

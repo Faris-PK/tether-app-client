@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { AppDispatch, RootState } from '../redux/store/store';
-import { UserPen, Mail, Cake, MapPin, Calendar, Link as LinkIcon, FileText, ShoppingBag, Image as ImageIcon, Paperclip, UserPlus, MoreVertical, Heart, MessageCircle, Share2, Camera, Edit, Trash2 } from 'lucide-react';
+import { UserPen, Mail, Cake, MapPin, Calendar, Link as LinkIcon, FileText, ShoppingBag, Image as ImageIcon, Paperclip, UserPlus, MoreVertical, Heart, MessageCircle, Share2, Camera, Edit, Trash2, Plus } from 'lucide-react';
 import moment from 'moment';
 import { formatDistanceToNow } from 'date-fns';
 import EditProfileModal from './Modal/EditProfileModal';
@@ -17,7 +17,12 @@ import FormControl from '@mui/material/FormControl';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import Modal from 'react-modal';
 import EditPostModal from './Modal/EditPostModal';
-
+import CreatePostModal from './Modal/PostCreationModal';
+import AudienceSelectionModal from './Modal/AudienceSelectionModal';
+import Fab from '@mui/material/Fab';
+import FavoriteIcon from '@mui/icons-material/Favorite';
+import CommentIcon from '@mui/icons-material/Comment';
+import ShareIcon from '@mui/icons-material/Share';
 
 interface Post {
   _id: string;
@@ -31,7 +36,7 @@ interface Post {
     username: string;
     profile_picture: string;
   };
-  likes?: number;
+  likes: string[];
   comments?: number;
 }
 Modal.setAppElement('#root');
@@ -46,6 +51,9 @@ const Profile: React.FC = () => {
   const [success, setSuccess] = useState<string>('');
   const [isProfileModalOpen, setIsProfileModalOpen] = useState<boolean>(false);
   const [isCoverModalOpen, setIsCoverModalOpen] = useState<boolean>(false);
+  const [isPostModalOpen, setIsPostModalOpen] = useState(false);
+  const [isAudienceModalOpen, setIsAudienceModalOpen] = useState(false);
+  const [selectedAudience, setSelectedAudience] = useState('public');
   const [editingPost, setEditingPost] = useState<Post | null>(null);
   const [activeTab, setActiveTab] = useState<'posts' | 'marketplace'>('posts');
   const [posts, setPosts] = useState<Post[]>([]);
@@ -70,6 +78,33 @@ const Profile: React.FC = () => {
   const closeModal = () => {
     setIsModalOpen(false);
   };
+
+  const handleOpenPostModal = () => {
+    setIsPostModalOpen(true);
+  };
+
+  const handleClosePostModal = () => {
+    setIsPostModalOpen(false);
+  };
+
+  const handleOpenAudienceModal = () => {
+    setIsAudienceModalOpen(true);
+  };
+
+  const handleCloseAudienceModal = () => {
+    setIsAudienceModalOpen(false);
+  };
+
+  const handleAudienceSelect = (audience: string) => {
+    setSelectedAudience(audience);
+    setIsAudienceModalOpen(false);
+  };
+
+  const handlePostCreated = () => {
+    fetchPosts();
+    setSuccess('Post created successfully!');
+  };
+
 
   const handleUpload = async (type: 'profile' | 'cover', file: File) => {
     const formData = new FormData();
@@ -251,10 +286,21 @@ const Profile: React.FC = () => {
     post: Post;
     onEdit: (post: Post) => void;
     onDelete: (postId: string) => void;
+    currentUserId: string;
   }
   
-  const PostCard: React.FC<PostCardProps> = ({ post, onEdit, onDelete }) => {
+  const PostCard: React.FC<PostCardProps> = ({ post, onEdit, onDelete , currentUserId}) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [localPost, setLocalPost] = useState(post);
+
+  const handleLike = async () => {
+    try {
+      const updatedPost = await PostApi.likePost(post._id);
+      setLocalPost(prevPost => ({ ...prevPost, likes: updatedPost.likes }));
+    } catch (error) {
+      console.error('Error liking/unliking post:', error);
+    }
+  };
   
     return (
       <div key={post._id} className="bg-[#010F18] p-4 rounded-xl mb-4">
@@ -285,35 +331,37 @@ const Profile: React.FC = () => {
         </div>
   
         <p className="text-white mb-4">{post.caption}</p>
-        {post.postType !== 'note' && (
-          <img 
-            src={post.mediaUrl} 
-            alt="Post content" 
-            className="w-full max-h-[400px] object-cover rounded-md mb-4"
-          />
-        )}
-        <div className="flex justify-between text-gray-400 mb-4">
-          <div className="flex items-center">
-            <span>{post.likes || 0} likes</span>
-          </div>
-          <span>{post.comments || 0} comments</span>
+      {post.postType !== 'note' && (
+        <img 
+          src={post.mediaUrl} 
+          alt="Post content" 
+          className="w-full max-h-[400px] object-cover rounded-md mb-4"
+        />
+      )}
+      <div className="flex justify-between text-gray-400 mb-4">
+        <div className="flex items-center">
+          <span>{localPost.likes?.length || 0} likes</span>
         </div>
+        <span>{post.comments || 0} comments</span>
+      </div>
   
-        <div className="flex justify-between border-t border-gray-700 pt-4">
-          {[
-            { icon: Heart, text: 'Like' },
-            { icon: MessageCircle, text: 'Comment' },
-            { icon: Share2, text: 'Share' },
-          ].map(({ icon: Icon, text }, index) => (
-            <button
-              key={index}
-              className="flex items-center text-white hover:bg-gray-700 rounded p-2 transition-colors duration-200"
-            >
-              <Icon size={20} className="mr-2" />
-              {text}
-            </button>
-          ))}
-        </div>
+      <div className="flex justify-between border-t border-gray-700 pt-4">
+        <Fab
+          aria-label="like"
+          size="small"
+          color={localPost.likes?.includes(currentUserId) ? "error" : "default"}
+          onClick={handleLike}
+          sx={{ transform: 'scale(0.7)', }}
+        >
+          <FavoriteIcon />
+        </Fab>
+        <Fab aria-label="comment" size="small" sx={{ transform: 'scale(0.7)' }}>
+          <CommentIcon />
+        </Fab>
+        <Fab aria-label="share" size="small" sx={{ transform: 'scale(0.7)' }}>
+          <ShareIcon />
+        </Fab>
+      </div>
   
         <OptionsModal
           postId={post._id}
@@ -371,13 +419,22 @@ const Profile: React.FC = () => {
               <span>{user?.following.length} following</span>
             </div>
           </div>
-          <button 
-            onClick={openModal}
-            className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md text-sm flex items-center"
-          >
-            <UserPlus size={16} className="mr-2" />
-            Edit Profile
-          </button>
+          <div className="flex space-x-2">
+            <button 
+              onClick={handleOpenPostModal}
+              className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md text-sm flex items-center"
+            >
+              <Plus size={16} className="mr-2" />
+              Create Post
+            </button>
+            <button 
+              onClick={openModal}
+              className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-md text-sm flex items-center"
+            >
+              <UserPen size={16} className="mr-2" />
+              Edit Profile
+            </button>
+          </div>
         </div>
         
         <p className="text-gray-300 my-6">{user?.bio}</p>
@@ -487,15 +544,15 @@ const Profile: React.FC = () => {
                   </div>
                   {filteredPosts.length > 0 ? (
                     <div className="space-y-4 hide-scrollbar overflow-auto">
-                      {filteredPosts.map((post) => (
-                        <PostCard
+                     {filteredPosts.map((post) => (
+                      <PostCard
                         key={post._id}
                         post={post}
                         onEdit={handleEditPost}
                         onDelete={handleDeletePost}
+                        currentUserId={user?._id || ''}
                       />
-                        
-                      ))}
+                    ))}
                     </div>
                   ) : (
                     <div className="flex flex-col items-center justify-center h-96 bg-[#010F18] p-6 rounded-md">
@@ -533,6 +590,19 @@ const Profile: React.FC = () => {
           onSave={handleSaveEdit}
         />
       )}
+      <CreatePostModal
+        isOpen={isPostModalOpen}
+        onClose={handleClosePostModal}
+        modalType={null}
+        onOpenAudienceModal={handleOpenAudienceModal}
+        onPost={handlePostCreated}
+        selectedAudience={selectedAudience}
+      />
+      <AudienceSelectionModal
+        isOpen={isAudienceModalOpen}
+        onClose={handleCloseAudienceModal}
+        onSelect={handleAudienceSelect}
+      />
     </div>
   );
 };

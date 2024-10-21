@@ -28,4 +28,10 @@ export const PostApi = {
     });
     return response.data;
   },
+  likePost: async (postId: string) => {
+    const response = await API.post(`${postRoutes.likePost}/${postId}`, {}, {
+      withCredentials: true,
+    });
+    return response.data;
+  },
 };

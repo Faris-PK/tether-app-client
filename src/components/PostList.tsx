@@ -1,6 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { MapPin, MoreVertical, Heart, MessageCircle, Share2, Camera } from 'lucide-react';
+import { MapPin, MoreVertical, MessageCircle, Share2, Camera } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import Fab from '@mui/material/Fab';
+import FavoriteIcon from '@mui/icons-material/Favorite';
+import CommentIcon from '@mui/icons-material/Comment';
+import ShareIcon from '@mui/icons-material/Share';
+import { PostApi } from '../api/postApi';
 
 interface Post {
   _id: string;
@@ -12,26 +17,41 @@ interface Post {
   createdAt: string;
   caption: string;
   mediaUrl: string;
-  likes?: number;
+  likes: string[];  // Array of user IDs who liked the post
   comments?: number;
   postType: string;
 }
 
 interface PostListProps {
   posts: Post[];
+  currentUserId: string;  // Add this to know if the current user has liked a post
 }
 
-const PostList: React.FC<PostListProps> = ({ posts }) => {
+const PostList: React.FC<PostListProps> = ({ posts, currentUserId }) => {
+  const [localPosts, setLocalPosts] = useState<Post[]>(posts);
   const [openModalId, setOpenModalId] = useState<string | null>(null);
   const modalRef = useRef<HTMLDivElement>(null);
 
-  const sortedPosts = [...posts].sort(
+  const sortedPosts = [...localPosts].sort(
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
   );
 
   const handleOptionClick = (action: string, postId: string) => {
     console.log(`Action: ${action}, Post ID: ${postId}`);
     setOpenModalId(null);
+  };
+
+  const handleLike = async (postId: string) => {
+    try {
+      const updatedPost = await PostApi.likePost(postId);
+      setLocalPosts(prevPosts => 
+        prevPosts.map(post => 
+          post._id === postId ? { ...post, likes: updatedPost.likes } : post
+        )
+      );
+    } catch (error) {
+      console.error('Error liking/unliking post:', error);
+    }
   };
 
   useEffect(() => {
@@ -61,12 +81,12 @@ const PostList: React.FC<PostListProps> = ({ posts }) => {
           { text: 'About this Account', action: 'about_account' },
         ].map(({ text, action, color }) => (
           <button
-          key={action}
-          className={`w-full text-center font-bold px-4 py-3 hover:bg-[#1B2730] ${color || 'text-white'} transition duration-300 ease-in-out`}
-          onClick={() => handleOptionClick(action, postId)}
-        >
-          {text}
-        </button>
+            key={action}
+            className={`w-full text-center font-bold px-4 py-3 hover:bg-[#1B2730] ${color || 'text-white'} transition duration-300 ease-in-out`}
+            onClick={() => handleOptionClick(action, postId)}
+          >
+            {text}
+          </button>
         ))}
       </div>
     </div>
@@ -113,23 +133,27 @@ const PostList: React.FC<PostListProps> = ({ posts }) => {
             )}
             <div className="flex justify-between text-gray-400 mb-4">
               <div className="flex items-center">
-                {/* <div className="bg-[#FF0000] rounded-full p-1 mr-2">
-                  <Heart size={16} className="text-white" />
-                </div> */}
-                <span>{post.likes || 0} likes</span>
+                <span>{post.likes.length} likes</span>
               </div>
               <span>{post.comments || 0} comments</span>
             </div>
 
             <div className="flex justify-between border-t border-gray-700 pt-4">
-              {[{ icon: Heart, text: 'Like' }, { icon: MessageCircle, text: 'Comment' }, { icon: Share2, text: 'Share' }].map(
-                ({ icon: Icon, text }, index) => (
-                  <button key={index} className="flex items-center text-white hover:bg-gray-700 rounded p-2 transition-colors duration-200">
-                    <Icon size={20} className="mr-2" />
-                    {text}
-                  </button>
-                )
-              )}
+              <Fab
+                aria-label="like"
+                size="small"
+                color={post.likes.includes(currentUserId) ? "error" : "default"}
+                onClick={() => handleLike(post._id)}
+                sx={{ transform: 'scale(0.7)', }}
+              >
+                <FavoriteIcon />
+              </Fab>
+              <Fab aria-label="comment" size="small" sx={{ transform: 'scale(0.7)' }}>
+                <CommentIcon />
+              </Fab>
+              <Fab aria-label="share" size="small" sx={{ transform: 'scale(0.7)' }}>
+                <ShareIcon />
+              </Fab>
             </div>
 
             <OptionsModal postId={post._id} />
