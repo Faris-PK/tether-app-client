@@ -28,7 +28,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose, us
   const [errors, setErrors] = useState<string[]>([]);
   const [success, setSuccess] = useState<string>('');
 
-  const [locationQuery, setLocationQuery] = useState(user?.location.toString()); // For location input query
+  const [locationQuery, setLocationQuery] = useState(user?.location?.toString()); // For location input query
   const [locationSuggestions, setLocationSuggestions] = useState<any[]>([]); // For location suggestions
 
   useEffect(() => {

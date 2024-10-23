@@ -75,6 +75,16 @@ export const api = {
     const response = await API.post(authRoutes.updateProfile, { type });
     return response.data;
   },
+
+  follow: async (userId: string) => {
+    const response = await API.post(`${authRoutes.userProfile}/follow/${userId}`, {}, { withCredentials: true });
+    return response.data;
+  },
+
+  unfollow: async (userId: string) => {
+    const response = await API.post(`${authRoutes.userProfile}/unfollow/${userId}`, {}, { withCredentials: true });
+    return response.data;
+  },
   
 
 };

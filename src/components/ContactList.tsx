@@ -12,7 +12,7 @@ const ContactList: React.FC = () => {
   ];
 
   return (
-    <div className="w-1/5 bg-[#010F18] rounded-xl p-4  ">
+    <div className="w-1/5 bg-[#010F18] rounded-xl p-4  shadow-[4px_4px_10px_rgba(0,0,0,0.5)]">
       <h2 className="text-white text-xl font-medium mb-4 ">Online</h2>
       
       <div className="relative mb-4">

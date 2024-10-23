@@ -34,16 +34,23 @@ const NavBarSection: React.FC = () => {
     }
   };
   const handleHomeClick = () => {
+    console.log('handleHomeClick');
     navigate('/home');  
+  };
+
+  const handleFriendsClick = () => {
+    console.log('handleFriendsClick');
+    
+    navigate('/user/friends');  
   };
 
   return (
     <>
       <nav className="hide-scrollbar overflow-auto shadow-[4px_4px_10px_rgba(0,0,0,0.5)]">
-        <ul className="space-y-5  bg-[#010F18] p-4 rounded-lg font-medium flex flex-col items-center ">
+        <ul className="space-y-5  bg-[#010F18] p-4 rounded-lg font-thin flex flex-col items-center ">
           {[
             {  icon: House, text: 'Home', onClick: handleHomeClick },
-            { icon: Users, text: 'Friends' },
+            { icon: Users, text: 'My Network', onClick: handleFriendsClick },
             { icon: BookMarked, text: 'Saved' },
             { icon: Youtube, text: 'Videos' },
             { icon: Settings, text: 'Settings', onClick: handleSettingsClick },
@@ -51,7 +58,7 @@ const NavBarSection: React.FC = () => {
           ].map(({ icon: Icon, text, onClick }, index) => (
             <li key={index} className="w-5/6">
               <button 
-                className="border border-[#908888] rounded-lg w-full flex items-center justify-center space-x-2 p-2 hover:bg-white hover:bg-opacity-30 active:bg-white active:bg-opacity-60 transition duration-300"
+                className="border border-[#908888] rounded-full w-full flex items-center justify-center space-x-2 p-2 hover:bg-white hover:bg-opacity-30 active:bg-white active:bg-opacity-60 transition duration-300"
                 onClick={onClick}
               >
                 <Icon size={20} />

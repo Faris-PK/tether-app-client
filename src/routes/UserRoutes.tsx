@@ -6,6 +6,7 @@ import OtpPage from '../pages/user/OtpPage';
 import SignInPage from '../pages/user/SignInPage';
 import HomePage from '../pages/user/HomePage';
 import ProfilePage from '../pages/user/ProfilePage';
+import FriendsPage from '@/pages/user/ConnectionPage';
 
 
 const UserRoutes: React.FC = () => {
@@ -19,6 +20,7 @@ const UserRoutes: React.FC = () => {
       {/* Private Routes */}
       <Route path="home" element={<PrivateRoute element={<HomePage />} />} />
       <Route path="profile" element={<PrivateRoute element={<ProfilePage />} />} />
+      <Route path="friends" element={<PrivateRoute element={<FriendsPage />} />} />
       
 
       {/* Fallback to Sign-in if no route matches */}

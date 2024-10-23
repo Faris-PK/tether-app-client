@@ -17,7 +17,19 @@ export const authRoutes = {
 export const postRoutes = {
     createPost: 'posts/create',
     getAllPosts: 'posts',
+    getUserPots: 'posts/profile',
     deletePost: 'posts/delete',
     updatePost: 'posts/update',
     likePost: 'posts/like',
+  };
+
+
+
+  export const networkRoutes = {
+    getFollowRequests: 'user/follow-requests',
+    getPeopleSuggestions: 'user/suggestions',
+    followUser: 'user/follow',
+    unfollowUser: 'user/unfollow',
+    removeFollowRequest: 'user/remove-request',
+    removeSuggestion: 'user/remove-suggestion',
   };

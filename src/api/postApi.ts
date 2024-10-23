@@ -15,6 +15,10 @@ export const PostApi = {
     const response = await API.get(postRoutes.getAllPosts, { withCredentials: true });
     return response.data;
   },
+  getProfilePosts: async () => {
+    const response = await API.get(postRoutes.getUserPots, { withCredentials: true });
+    return response.data;
+  },
 
   deletePost: async (postId: string) => {
     const response = await API.delete(`${postRoutes.deletePost}/${postId}`, {

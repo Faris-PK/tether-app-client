@@ -23,6 +23,8 @@ import Fab from '@mui/material/Fab';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import CommentIcon from '@mui/icons-material/Comment';
 import ShareIcon from '@mui/icons-material/Share';
+import FollowersModal from './Modal/FollowersModal';
+
 
 interface Post {
   _id: string;
@@ -61,7 +63,10 @@ const Profile: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [postType, setPostType] = useState<string>('all');
   const [openModalId, setOpenModalId] = useState<string | null>(null);
+  const [showFollowersModal, setShowFollowersModal] = useState(false);
+  const [showFollowingModal, setShowFollowingModal] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
+  
 
 
   const navigate = useNavigate();
@@ -190,7 +195,7 @@ const Profile: React.FC = () => {
   const fetchPosts = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await PostApi.getAllPosts();
+      const response = await PostApi.getProfilePosts();
       //console.log('Response From Backend: ', response);
       setPosts(response);
       setLoading(false);
@@ -411,14 +416,29 @@ const Profile: React.FC = () => {
     <div className="bg-gradient-to-br from-gray-900 to-gray-800 text-white shadow-xl mt-3 rounded-lg overflow-hidden">
       <div className="p-6">
         <div className="flex justify-between items-start">
-          <div>
-            <h2 className="text-3xl font-bold">{user?.username}</h2>
-            <div className="flex space-x-4 mt-2 text-gray-300 text-sm">
-              <span>{user?.posts.length || 0} posts</span>
-              <span>{user?.followers.length} followers</span>
-              <span>{user?.following.length} following</span>
-            </div>
+        <div>
+          <h2 className="text-3xl font-bold">{user?.username}</h2>
+          <div className="flex space-x-5 mt-2 text-gray-300 text-sm">
+            <span className="flex flex-col items-center">
+              <span className="text-sm font-medium text-white">{user?.posts.length || 0}</span>
+              <span>posts</span>
+            </span>
+            <span 
+              className="flex flex-col items-center cursor-pointer hover:text-blue-400 transition-colors duration-200"
+              onClick={() => setShowFollowersModal(true)}
+            >
+              <span className="text-sm font-medium text-white">{user?.followers.length}</span>
+              <span>followers</span>
+            </span>
+            <span 
+              className="flex flex-col items-center cursor-pointer hover:text-blue-400 transition-colors duration-200"
+              onClick={() => setShowFollowingModal(true)}
+            >
+              <span className="text-sm font-medium text-white">{user?.following.length}</span>
+              <span>following</span>
+            </span>
           </div>
+        </div>
           <div className="flex space-x-2">
             <button 
               onClick={handleOpenPostModal}
@@ -451,7 +471,7 @@ const Profile: React.FC = () => {
           </div>
           <div className="flex items-center text-gray-300">
             <MapPin size={16} className="mr-2 text-green-400" />
-            <span>{user?.location.toString() || 'Not specified'}</span>
+            <span>{user?.location?.toString() || 'Not specified'}</span>
           </div>
           <div className="flex items-center text-gray-300">
             <Calendar size={16} className="mr-2 text-purple-400" />
@@ -603,6 +623,19 @@ const Profile: React.FC = () => {
         onClose={handleCloseAudienceModal}
         onSelect={handleAudienceSelect}
       />
+
+<FollowersModal
+      isOpen={showFollowersModal}
+      onClose={() => setShowFollowersModal(false)}
+      title="Followers"
+    />
+
+    {/* Modal for Following */}
+    <FollowersModal
+      isOpen={showFollowingModal}
+      onClose={() => setShowFollowingModal(false)}
+      title="Following"
+    />
     </div>
   );
 };
