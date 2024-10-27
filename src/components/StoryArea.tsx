@@ -31,7 +31,7 @@ const StoryArea: React.FC = () => {
       >
         <div className="flex flex-col items-center flex-shrink-0">
           <div className="relative">
-            <img src={user.profile_picture} alt="Your Story" className="w-12 h-12 sm:w-14 sm:h-14 rounded-full" />
+            <img src={user?.profile_picture} alt="Your Story" className="w-12 h-12 sm:w-14 sm:h-14 rounded-full" />
             <PlusCircle className="absolute bottom-0 right-0 text-blue-500 bg-white rounded-full w-4 h-4 sm:w-5 sm:h-5" />
           </div>
           <span className="text-white text-xs mt-1 truncate w-14 sm:w-16 text-center">Your Story</span>

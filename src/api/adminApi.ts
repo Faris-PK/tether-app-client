@@ -27,4 +27,33 @@ export const adminApi = {
     const response = await API.get(adminRoutes.getUsers, { withCredentials: true });
     return response.data;
   },
+  getPosts: async () => {
+    const response = await API.get(adminRoutes.getPosts, { withCredentials: true });
+    return response.data;
+  },
+  blockPost: async (postId: string) => {
+    const response = await API.post(`${adminRoutes.blockPost}/${postId}`, {}, { withCredentials: true });
+    return response.data;
+  },
+
+  unblockPost: async (postId: string) => {
+    const response = await API.post(`${adminRoutes.unblockPost}/${postId}`, {}, { withCredentials: true });
+    return response.data;
+  },
+  getAllReports: async (filter: string = 'all') => {
+    const response = await API.get(`${adminRoutes.reports}?filter=${filter}`, {
+      withCredentials: true
+    });
+    return response.data;
+  },
+
+  updateReportStatus: async (reportId: string, status: string) => {
+    const response = await API.put(`${adminRoutes.updateReportStatus}/${reportId}`, 
+      { status },
+      { withCredentials: true }
+    );
+    return response.data;
+  },
+
+
 };

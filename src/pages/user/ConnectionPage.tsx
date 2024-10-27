@@ -6,9 +6,10 @@ import TopBar from '../../components/TopBar';
 import { connectionApi } from '../../api/networkApi';
 
 interface FriendRequest {
-  _id: string;
+  _id: string;  // notification ID
   content: string;
   sender: {
+    _id: string;  // sender's user ID
     username: string;
     profile_picture: string;
   };
@@ -46,6 +47,7 @@ const ConnectionPage: React.FC = () => {
         _id: request._id,
         content: request.content,
         sender: {
+          _id: request.sender._id,  // Include sender's ID
           username: request.sender.username,
           profile_picture: request.sender.profile_picture
         },
@@ -73,10 +75,10 @@ const ConnectionPage: React.FC = () => {
     fetchData();
   }, [fetchData]);
 
-  const removeFriendRequest = async (id: string) => {
+  const removeFriendRequest = async (notificationId: string) => {
     try {
-      await connectionApi.removeFollowRequest(id);
-      setFriendRequests(prevRequests => prevRequests.filter((friend) => friend._id !== id));
+      await connectionApi.removeFollowRequest(notificationId);
+      setFriendRequests(prevRequests => prevRequests.filter((friend) => friend._id !== notificationId));
     } catch (err) {
       setError('Error removing friend request');
     }
@@ -91,12 +93,23 @@ const ConnectionPage: React.FC = () => {
     }
   };
 
-  const handleFollowAction = async (id: string, type: 'request' | 'suggestion', currentStatus: boolean) => {
+  const handleFollowAction = async (
+    id: string, 
+    type: 'request' | 'suggestion', 
+    currentStatus: boolean,
+    senderId?: string  // Add optional senderId parameter
+  ) => {
     try {
+      const targetUserId = type === 'request' ? senderId : id;  // Use senderId for requests, regular id for suggestions
+      
+      if (!targetUserId) {
+        throw new Error('User ID not found');
+      }
+
       if (currentStatus) {
-        await connectionApi.unfollowUser(id);
+        await connectionApi.unfollowUser(targetUserId);
       } else {
-        await connectionApi.followUser(id);
+        await connectionApi.followUser(targetUserId);
       }
 
       if (type === 'request') {
@@ -123,6 +136,7 @@ const ConnectionPage: React.FC = () => {
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>{error}</p>;
+
 
   return (
     <div className="bg-[#1B2730] flex flex-col md:flex-row h-screen overflow-hidden">
@@ -158,45 +172,45 @@ const ConnectionPage: React.FC = () => {
                   )}
                 </Box>
                 <Grid container spacing={2}>
-                  {(showAllRequests ? friendRequests : friendRequests.slice(0, maxDisplayedRequests)).map((friend) => (
-                    <Grid item xs={12} sm={6} lg={4} key={friend._id}>
-                      <Card sx={{ bgcolor: '#1B2730', height: '100%' }}>
-                        <CardContent sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-                          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                            <Avatar src={friend.sender.profile_picture} alt={friend.sender.username} sx={{ width: 48, height: 48, mr: 2 }} />
-                            <Box>
-                              <Typography variant="body1" color="white">
-                                {friend.sender.username}
-                              </Typography>
-                              <Typography variant="body2" color="gray" sx={{ fontSize: '0.75rem' }}>
-                                {friend.content}
-                              </Typography>
-                            </Box>
-                          </Box>
-                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 'auto' }}>
-                            <Button
-                              variant="contained"
-                              size="small"
-                              onClick={() => handleFollowAction(friend._id, 'request', friend.isFollowing)}
-                              sx={{
-                                bgcolor: friend.isFollowing ? '#1B2730' : '#3B82F6',
-                                color: friend.isFollowing ? '#3B82F6' : 'white',
-                                '&:hover': {
-                                  bgcolor: friend.isFollowing ? '#2C3E50' : '#2563EB',
-                                },
-                                fontSize: '0.75rem',
-                              }}
-                            >
-                              {friend.isFollowing ? 'Unfollow' : 'Follow Back'}
-                            </Button>
-                            <IconButton size="small" onClick={() => removeFriendRequest(friend._id)} sx={{ color: 'gray' }}>
-                              <X size={20} />
-                            </IconButton>
-                          </Box>
-                        </CardContent>
-                      </Card>
-                    </Grid>
-                  ))}
+                {(showAllRequests ? friendRequests : friendRequests.slice(0, maxDisplayedRequests)).map((friend) => (
+        <Grid item xs={12} sm={6} lg={4} key={friend._id}>
+          <Card sx={{ bgcolor: '#1B2730', height: '100%' }}>
+            <CardContent sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                <Avatar src={friend.sender.profile_picture} alt={friend.sender.username} sx={{ width: 48, height: 48, mr: 2 }} />
+                <Box>
+                  <Typography variant="body1" color="white">
+                    {friend.sender.username}
+                  </Typography>
+                  <Typography variant="body2" color="gray" sx={{ fontSize: '0.75rem' }}>
+                    {friend.content}
+                  </Typography>
+                </Box>
+              </Box>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 'auto' }}>
+                <Button
+                  variant="contained"
+                  size="small"
+                  onClick={() => handleFollowAction(friend._id, 'request', friend.isFollowing, friend.sender._id)}
+                  sx={{
+                    bgcolor: friend.isFollowing ? '#1B2730' : '#3B82F6',
+                    color: friend.isFollowing ? '#3B82F6' : 'white',
+                    '&:hover': {
+                      bgcolor: friend.isFollowing ? '#2C3E50' : '#2563EB',
+                    },
+                    fontSize: '0.75rem',
+                  }}
+                >
+                  {friend.isFollowing ? 'Unfollow' : 'Follow Back'}
+                </Button>
+                <IconButton size="small" onClick={() => removeFriendRequest(friend._id)} sx={{ color: 'gray' }}>
+                  <X size={20} />
+                </IconButton>
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+      ))}
                 </Grid>
               </CardContent>
             </Card>

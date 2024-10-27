@@ -40,6 +40,7 @@ interface Post {
   };
   likes: string[];
   comments?: number;
+  isBlocked:boolean;
 }
 Modal.setAppElement('#root');
 
@@ -306,6 +307,16 @@ const Profile: React.FC = () => {
       console.error('Error liking/unliking post:', error);
     }
   };
+  if (post.isBlocked) {
+    return (
+      <div className="flex flex-col items-center justify-center h-32 bg-[#010F18] p-6 rounded-md mb-4">
+        <div className="flex items-center justify-center mb-2">
+          <FileText size={24} className="text-gray-400 mr-2" />
+          <p className="text-gray-400">This post is not available.</p>
+        </div>
+      </div>
+    );
+  }
   
     return (
       <div key={post._id} className="bg-[#010F18] p-4 rounded-xl mb-4">

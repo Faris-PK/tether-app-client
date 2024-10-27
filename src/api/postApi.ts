@@ -38,4 +38,11 @@ export const PostApi = {
     });
     return response.data;
   },
+  reportPost: async (postId: string, reason: string) => {
+    const response = await API.post(`${postRoutes.reportPost}/${postId}`, 
+      { reason },
+      { withCredentials: true }
+    );
+    return response.data;
+  },
 };

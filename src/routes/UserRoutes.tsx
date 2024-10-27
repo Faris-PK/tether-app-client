@@ -7,25 +7,26 @@ import SignInPage from '../pages/user/SignInPage';
 import HomePage from '../pages/user/HomePage';
 import ProfilePage from '../pages/user/ProfilePage';
 import FriendsPage from '@/pages/user/ConnectionPage';
-
+import { ThemeProvider } from '../contexts/ThemeContext';
 
 const UserRoutes: React.FC = () => {
   return (
-    <Routes>
-      {/* Public Routes */}
-      <Route path="register" element={<PublicRoute element={<RegisterPage />} />} />
-      <Route path="signin" element={<PublicRoute element={<SignInPage />} />} />
-      <Route path="otp" element={<PublicRoute element={<OtpPage />} />} />
+    <ThemeProvider>
+      <Routes>
+        {/* Public Routes */}
+        <Route path="register" element={<PublicRoute element={<RegisterPage />} />} />
+        <Route path="signin" element={<PublicRoute element={<SignInPage />} />} />
+        <Route path="otp" element={<PublicRoute element={<OtpPage />} />} />
 
-      {/* Private Routes */}
-      <Route path="home" element={<PrivateRoute element={<HomePage />} />} />
-      <Route path="profile" element={<PrivateRoute element={<ProfilePage />} />} />
-      <Route path="friends" element={<PrivateRoute element={<FriendsPage />} />} />
-      
+        {/* Private Routes */}
+        <Route path="home" element={<PrivateRoute element={<HomePage />} />} />
+        <Route path="profile" element={<PrivateRoute element={<ProfilePage />} />} />
+        <Route path="friends" element={<PrivateRoute element={<FriendsPage />} />} />
 
-      {/* Fallback to Sign-in if no route matches */}
-      <Route path="*" element={<Navigate to="signin" />} />
-    </Routes>
+        {/* Fallback to Sign-in if no route matches */}
+        <Route path="*" element={<Navigate to="signin" />} />
+      </Routes>
+    </ThemeProvider>
   );
 };
 
