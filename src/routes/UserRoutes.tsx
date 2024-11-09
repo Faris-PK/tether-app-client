@@ -8,6 +8,10 @@ import HomePage from '../pages/user/HomePage';
 import ProfilePage from '../pages/user/ProfilePage';
 import FriendsPage from '@/pages/user/ConnectionPage';
 import { ThemeProvider } from '../contexts/ThemeContext';
+import UserProfile from '../pages/user/UserProfilePage';
+import Marketplace from '@/pages/user/MarketPlacePage';
+import PaymentSuccessPage from '@/pages/user/PaymentSuccessPage';
+
 
 const UserRoutes: React.FC = () => {
   return (
@@ -22,6 +26,12 @@ const UserRoutes: React.FC = () => {
         <Route path="home" element={<PrivateRoute element={<HomePage />} />} />
         <Route path="profile" element={<PrivateRoute element={<ProfilePage />} />} />
         <Route path="friends" element={<PrivateRoute element={<FriendsPage />} />} />
+        <Route path="UserProfile" element={<PrivateRoute element={<UserProfile/>} />} />
+        <Route path="MarketPlace" element={<PrivateRoute element={<Marketplace/>} />} />
+        <Route path="paymentsuccess" element={<PaymentSuccessPage />} />
+        {/* <Route path="payment/cancel" element={<Navigate to="/user/home" />} /> */}
+
+
 
         {/* Fallback to Sign-in if no route matches */}
         <Route path="*" element={<Navigate to="signin" />} />

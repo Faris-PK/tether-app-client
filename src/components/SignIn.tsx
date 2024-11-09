@@ -20,7 +20,7 @@ const SignIn: React.FC = () => {
     e.preventDefault();
     try {
       const response = await api.login(email, password);
-      console.log(response);
+      //console.log(response);
 
       dispatch(setUser(response.user));
       setSuccess('Login successful!');
@@ -64,8 +64,8 @@ const SignIn: React.FC = () => {
               Sign Up
             </Link>
           </div>
-          <h2 className="text-3xl font-bold mb-2">Welcome back</h2>
-          <h2 className="text-3xl font-bold mb-16">to Tether</h2>
+          <h2 className="text-3xl font-bold mb-2 text-black">Welcome back</h2>
+          <h2 className="text-3xl font-bold mb-16 text-black">to Tether</h2>
           <p className="font-bold text-gray-500 mb-2">Sign In to your account</p>
 
           {success && <p className="text-green-500 mb-4">{success}</p>}

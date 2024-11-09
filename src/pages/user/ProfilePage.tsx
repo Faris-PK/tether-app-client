@@ -1,35 +1,82 @@
-import React from 'react';
-
+import React, { useCallback, useEffect, useState } from 'react';
+import { useTheme } from '../../contexts/ThemeContext';
 import NavBarSection from '../../components/NavBarSection';
 import TopBar from '../../components/TopBar';
 import Profile from '../../components/Profile';
+import Title from '@/components/home/Title';
+import SearchBar from '@/components/home/SearchBar';
+import ProfileCard from '@/components/home/ProfileCard';
+import SideNav from '@/components/home/SettingsNav';
+import StoryArea from '@/components/home/StoryArea';
+import PostList from '@/components/home/PostList';
+import SuggestedProfiles from '@/components/home/SuggestedProfiles';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '@/redux/store/store';
+import { useNavigate } from 'react-router-dom';
+import { PostApi } from '@/api/postApi';
+import { clearUser } from '@/redux/slices/userSlice';
+import HeaderNav from '@/components/home/HeaderNav';
 
 const ProfilePage: React.FC = () => {
-  
+  const { isDarkMode } = useTheme();
+
+
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const currentUserId = useSelector((state: RootState) => state.user.user?._id);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const fetchPosts = useCallback(async () => {
+    try {
+      setLoading(true);
+      const response = await PostApi.getAllPosts();
+     // console.log('Response: ',response);
+      
+      setPosts(response);
+      setLoading(false);
+    } catch (err: any) {
+     // console.log('Error from backend: ', err.response?.data?.message);
+      
+      if (err.response?.status === 403 && err.response?.data?.message === 'User is blocked') {
+        dispatch(clearUser());
+      navigate('/signin');
+      } else {
+        setError('Error fetching posts');
+      }
+      setLoading(false);
+    }
+  }, [navigate]);
+
+  useEffect(() => {
+    fetchPosts();
+  }, [fetchPosts]);
 
   return (
-   <div className="bg-[#1B2730] flex h-screen overflow-hidden">
-      <div className="w-1/5 p-3 flex flex-col overflow-y-auto">
-      <div className="bg-[#010F18] p-2 rounded-md mb-4 shadow-[4px_4px_10px_rgba(0,0,0,0.5)]">
-        <h1 className="text-2xl font-bold text-center bg-gradient-to-r from-blue-200 via-blue-500 to-black bg-clip-text text-transparent">Tether.</h1>
+    <div className={`mx-auto p-4 ${isDarkMode ? 'bg-gray-900' : 'bg-[#d8d4cd]'} h-screen flex flex-col transition-colors duration-200`}>
+    <header className="flex justify-between items-center mb-4">
+      <Title/>
+      <SearchBar/>
+      <HeaderNav onPostCreated={fetchPosts} />
+    </header>
+
+    <div className="flex space-x-4 flex-1 overflow-hidden">
+      <div className="w-1/6 space-y-4">
+        {/* <ProfileCard/> */}
+        <SideNav/>
       </div>
-       
-        {/* Render NavBarSection */}
-        <aside className="w-full text-white mt-24">
-          <NavBarSection />
-        </aside>
+      <div className="w-2/3 space-y-4 overflow-y-auto pr-4 scrollbar-hide">
+        {/* <StoryArea /> */}
+        {/* <PostList posts={posts} currentUserId={currentUserId} /> */}
+        <Profile/>
       </div>
-      
-      <div className="flex-grow flex flex-col ">
-        <TopBar />
-        <div className=" flex p-3 overflow-hidden h-full">
-          <div className="flex-grow mr-5  ">
-            <Profile/>      
-          </div>    
-        </div>
+
+      <div className="w-1/6">
+        <SuggestedProfiles/>
       </div>
     </div>
-
+  </div>
   );
 };
 

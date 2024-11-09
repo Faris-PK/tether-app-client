@@ -10,3 +10,4 @@ export const adminRoutes = {
     reports: 'admin/reports',
     updateReportStatus: 'admin/reports/status',
   };
+

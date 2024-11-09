@@ -1,5 +1,5 @@
 import API from '../services/axios';
-import { authRoutes } from '../services/endpoints/userEndpoints';
+import { authRoutes, networkRoutes } from '../services/endpoints/userEndpoints';
 import IUser from '../types/IUser';
 
 interface RegisterData {
@@ -76,13 +76,15 @@ export const api = {
     return response.data;
   },
 
-  follow: async (userId: string) => {
-    const response = await API.post(`${authRoutes.userProfile}/follow/${userId}`, {}, { withCredentials: true });
+
+
+  getFollowers: async () => {
+    const response = await API.get(networkRoutes.getFollowers, { withCredentials: true });
     return response.data;
   },
 
-  unfollow: async (userId: string) => {
-    const response = await API.post(`${authRoutes.userProfile}/unfollow/${userId}`, {}, { withCredentials: true });
+  getFollowing: async () => {
+    const response = await API.get(networkRoutes.getFollowing, { withCredentials: true });
     return response.data;
   },
   

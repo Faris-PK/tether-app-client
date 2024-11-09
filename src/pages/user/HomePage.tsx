@@ -1,26 +1,28 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from 'react';
+import HeaderNav from '../../components/home/HeaderNav';
+import PostList from '../../components/home/PostList';
+import ProfileCard from '../../components/home/ProfileCard';
+import SearchBar from '../../components/home/SearchBar';
+import StoryArea from '../../components/home/StoryArea';
+import SuggestedProfiles from '../../components/home/SuggestedProfiles';
+import Title from '../../components/home/Title';
+import SideNav from '../../components/home/SettingsNav';
+import { useTheme } from '../../contexts/ThemeContext';
 import { useNavigate } from "react-router-dom";
-import ProfileSection from "../../components/ProfileSection";
-import NavBarSection from "../../components/NavBarSection";
-import TopBar from "../../components/TopBar";
-import StoryArea from "../../components/StoryArea";
-import PostCreation from "../../components/PostCreation";
-import PostList from "../../components/PostList";
-import ContactList from "../../components/ContactList";
 import { PostApi } from "@/api/postApi";
 import { clearUser } from '../../redux/slices/userSlice';
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/redux/store/store";
 
-const HomePage: React.FC = () => {
+const HomePage:React.FC = () => {
+  const { isDarkMode } = useTheme();
+
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const currentUserId = useSelector((state: RootState) => state.user.user?._id);
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  console.log('currentUserId: ',currentUserId);
-  
 
   const fetchPosts = useCallback(async () => {
     try {
@@ -37,7 +39,7 @@ const HomePage: React.FC = () => {
         dispatch(clearUser());
       navigate('/signin');
       } else {
-        setError('Error fetching posts');
+        setError('Error fetching posts....');
       }
       setLoading(false);
     }
@@ -49,44 +51,27 @@ const HomePage: React.FC = () => {
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>{error}</p>;
+
   return (
-    <div className="bg-[#1B2730] flex h-screen overflow-hidden">
-      <div
-        className="w-1/5 p-3 flex flex-col overflow-y-auto"
-        style={{
-          scrollbarWidth: "none", // Firefox
-          msOverflowStyle: "none", // Internet Explorer and Edge
-          overflow: "-moz-scrollbars-none", // Older versions of Firefox
-        }}
-      >
-        <div className="bg-[#010F18] p-2 rounded-xl mb-4 shadow-[4px_4px_10px_rgba(0,0,0,0.5)]">
-          <h1 className="text-2xl font-bold text-center bg-gradient-to-r from-blue-200 via-blue-600 to-black bg-clip-text text-transparent transition-all duration-300 ease-in-out hover:scale-105 hover:drop-shadow-lg cursor-pointer">
-            Tether.
-          </h1>
+    <div className={`mx-auto p-4 ${isDarkMode ? 'bg-gray-900' : 'bg-[#d8d4cd]'} h-screen flex flex-col transition-colors duration-200`}>
+      <header className="flex justify-between items-center mb-4">
+        <Title/>
+        <SearchBar/>
+        <HeaderNav onPostCreated={fetchPosts} />
+      </header>
+
+      <div className="flex space-x-4 flex-1 overflow-hidden">
+        <div className="w-1/6 space-y-4">
+          <ProfileCard/>
+          <SideNav/>
+        </div>
+        <div className="w-2/3 space-y-4 overflow-y-auto pr-4 scrollbar-hide pt-2">
+          <StoryArea />
+          <PostList posts={posts} currentUserId={currentUserId}  fetchPosts={fetchPosts}/>
         </div>
 
-        <ProfileSection />
-        <aside className="w-full text-white mt-4 rounded-md">
-          <NavBarSection />
-        </aside>
-      </div>
-
-      <div className="flex-grow flex flex-col">
-        <TopBar />
-        <div className="flex p-3 overflow-hidden h-screen ">
-          <div
-            className="my_class flex-grow mr-4 overflow-y-auto  rounded-md"
-            style={{
-              scrollbarWidth: "none", // Firefox
-              msOverflowStyle: "none", // Internet Explorer and Edge
-              overflow: "-moz-scrollbars-none", // Older versions of Firefox
-            }}
-          >
-            <StoryArea />
-            <PostCreation onPostCreated={fetchPosts}/>
-            <PostList posts={posts} currentUserId={currentUserId} />
-          </div>
-          <ContactList />
+        <div className="w-1/6">
+          <SuggestedProfiles/>
         </div>
       </div>
     </div>
@@ -94,5 +79,3 @@ const HomePage: React.FC = () => {
 };
 
 export default HomePage;
-
-

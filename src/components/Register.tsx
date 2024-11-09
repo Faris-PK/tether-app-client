@@ -81,7 +81,7 @@ const Register: React.FC = () => {
               Sign In
             </Link>
           </div>
-          <h2 className="text-3xl font-bold mb-2">Discover what's trending</h2>
+          <h2 className="text-3xl font-bold mb-2 text-black">Discover what's trending</h2>
           <p className="font-bold text-gray-500 mb-2">Sign Up to Tether</p>
 
           {success && <p className="text-green-500 mb-4">{success}</p>}

@@ -3,6 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { AppDispatch, RootState } from '../redux/store/store';
 import { UserPen, Mail, Cake, MapPin, Calendar, Link as LinkIcon, FileText, ShoppingBag, Image as ImageIcon, Paperclip, UserPlus, MoreVertical, Heart, MessageCircle, Share2, Camera, Edit, Trash2, Plus } from 'lucide-react';
 import moment from 'moment';
+import { useTheme } from '../contexts/ThemeContext';
 import { formatDistanceToNow } from 'date-fns';
 import EditProfileModal from './Modal/EditProfileModal';
 import { api } from '../api/userApi';
@@ -17,36 +18,36 @@ import FormControl from '@mui/material/FormControl';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import Modal from 'react-modal';
 import EditPostModal from './Modal/EditPostModal';
-import CreatePostModal from './Modal/PostCreationModal';
-import AudienceSelectionModal from './Modal/AudienceSelectionModal';
 import Fab from '@mui/material/Fab';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import CommentIcon from '@mui/icons-material/Comment';
 import ShareIcon from '@mui/icons-material/Share';
 import FollowersModal from './Modal/FollowersModal';
+import CommentModal from './Modal/CommentModal';
+import PremiumBadge from './PremiumBadge';
 
 
 interface Post {
   _id: string;
-  caption: string;
-  createdAt: string;
-  location?: string;
-  mediaUrl: string;
-  postType: string;
   userId: {
-    _id: string;
     username: string;
     profile_picture: string;
   };
+  location: string;
+  createdAt: string;
+  caption: string;
+  mediaUrl: string;
   likes: string[];
   comments?: number;
-  isBlocked:boolean;
+  postType: string;
+  isBlocked: boolean;
 }
+
 Modal.setAppElement('#root');
 
 const Profile: React.FC = () => {
-  const user = useSelector((state: RootState) => state.user.user);
-  //console.log('Userrrrr:', user);
+  const { isDarkMode } = useTheme();
+  const user = useSelector((state: RootState) => state.user?.user);
   
   const dispatch = useDispatch<AppDispatch>();
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
@@ -66,9 +67,10 @@ const Profile: React.FC = () => {
   const [openModalId, setOpenModalId] = useState<string | null>(null);
   const [showFollowersModal, setShowFollowersModal] = useState(false);
   const [showFollowingModal, setShowFollowingModal] = useState(false);
+  const [commentModalPost, setCommentModalPost] = useState<Post | null>(null);
   const modalRef = useRef<HTMLDivElement>(null);
+  const currentUserId  = useSelector((state: RootState) => state.user.user?._id);
   
-
 
   const navigate = useNavigate();
 
@@ -309,17 +311,17 @@ const Profile: React.FC = () => {
   };
   if (post.isBlocked) {
     return (
-      <div className="flex flex-col items-center justify-center h-32 bg-[#010F18] p-6 rounded-md mb-4">
+      <div className={`flex flex-col items-center justify-center h-32 ${isDarkMode ? 'bg-[#010F18]' : 'bg-gray-100'} p-6 rounded-md mb-4`}>
         <div className="flex items-center justify-center mb-2">
-          <FileText size={24} className="text-gray-400 mr-2" />
-          <p className="text-gray-400">This post is not available.</p>
+          <FileText size={24} className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'} mr-2`} />
+          <p className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>This post is not available.</p>
         </div>
       </div>
     );
   }
   
     return (
-      <div key={post._id} className="bg-[#010F18] p-4 rounded-xl mb-4">
+     <div className={`${isDarkMode ? 'bg-gray-700' : 'bg-gray-100'} p-4 rounded-xl mb-4 shadow-md transition-colors duration-200`}>
         <div className="flex justify-between items-start mb-4">
           <div className="flex items-center">
             <img
@@ -328,57 +330,65 @@ const Profile: React.FC = () => {
               className="w-10 h-10 rounded-full mr-3"
             />
             <div>
-              <h3 className="text-white font-semibold">{post.userId.username}</h3>
+              <h3 className={`${isDarkMode ? 'text-white' : 'text-gray-900'} font-semibold`}>
+                {post.userId.username}
+              </h3>
               <div className="flex items-center text-gray-400 text-sm">
                 {post.location && <MapPin size={14} className="mr-1" />}
                 <span>{post.location}</span>
               </div>
-              <span className="text-gray-400 text-xs">
+              <span className={`${isDarkMode ? 'text-gray-400' : 'text-gray-500'} text-xs`}>
                 {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true }).replace('about ', '')}
               </span>
             </div>
           </div>
           <button 
-            className="text-white hover:bg-gray-700 rounded-full p-1 transition-colors duration-200"
+            className={`${isDarkMode ? 'text-white hover:bg-gray-700' : 'text-gray-600 hover:bg-gray-100'} rounded-full p-1 transition-colors duration-200`}
             onClick={() => setIsModalOpen(true)}
           >
             <MoreVertical size={20} />
           </button>
         </div>
-  
-        <p className="text-white mb-4">{post.caption}</p>
-      {post.postType !== 'note' && (
-        <img 
-          src={post.mediaUrl} 
-          alt="Post content" 
-          className="w-full max-h-[400px] object-cover rounded-md mb-4"
-        />
-      )}
-      <div className="flex justify-between text-gray-400 mb-4">
-        <div className="flex items-center">
-          <span>{localPost.likes?.length || 0} likes</span>
+
+        <p className={`${isDarkMode ? 'text-white' : 'text-gray-800'} mb-4`}>{post.caption}</p>
+        
+        {post.postType !== 'note' && (
+          <img 
+            src={post.mediaUrl} 
+            alt="Post content" 
+            className="w-full max-h-[400px] object-cover rounded-md mb-4"
+          />
+        )}
+        
+        <div className="flex justify-between text-gray-400 mb-4">
+          <div className="flex items-center">
+            <span>{localPost.likes?.length || 0} likes</span>
+          </div>
+          <span>{post.comments || 0} comments</span>
         </div>
-        <span>{post.comments || 0} comments</span>
-      </div>
-  
-      <div className="flex justify-between border-t border-gray-700 pt-4">
-        <Fab
-          aria-label="like"
-          size="small"
-          color={localPost.likes?.includes(currentUserId) ? "error" : "default"}
-          onClick={handleLike}
-          sx={{ transform: 'scale(0.7)', }}
-        >
-          <FavoriteIcon />
-        </Fab>
-        <Fab aria-label="comment" size="small" sx={{ transform: 'scale(0.7)' }}>
-          <CommentIcon />
-        </Fab>
-        <Fab aria-label="share" size="small" sx={{ transform: 'scale(0.7)' }}>
-          <ShareIcon />
-        </Fab>
-      </div>
-  
+
+        <div className={`flex justify-between ${isDarkMode ? 'border-gray-700' : 'border-gray-200'} border-t pt-4`}>
+          <Fab
+            aria-label="like"
+            size="small"
+            color={localPost.likes?.includes(currentUserId) ? "error" : "default"}
+            onClick={handleLike}
+            sx={{ transform: 'scale(0.7)' }}
+          >
+            <FavoriteIcon />
+          </Fab>
+          <Fab 
+           aria-label="comment" 
+           size="small" 
+           onClick={() => setCommentModalPost(post)}
+           sx={{ transform: 'scale(0.7)' }}>
+            <CommentIcon />
+          </Fab>
+          <Fab aria-label="share" size="small" sx={{ transform: 'scale(0.7)' }}>
+            <ShareIcon />
+          </Fab>
+        </div>
+
         <OptionsModal
           postId={post._id}
           isOpen={isModalOpen}
@@ -389,22 +399,21 @@ const Profile: React.FC = () => {
       </div>
     );
   };
-  
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>{error}</p>;
 
 
   return (
-    <div className="bg-[#010F18] flex w-4/5 max-h-full mb-64 rounded-md shadow-[4px_4px_10px_rgba(0,0,0,0.5)]">
-      <div className="flex-grow flex flex-col overflow-hidden">
-        <div className="flex-grow overflow-y-auto p-4 rounded-md" style={{
-          scrollbarWidth: "none",
-          msOverflowStyle: "none",
-          overflow: "-moz-scrollbars-none",
-        }}>
+    <div className={` flex w-4/5 max-h-full mb-64 rounded-md shadow-md transition-colors duration-200 border-2aa`}>
+    <div className="flex-grow flex flex-col overflow-hidden">
+      <div className="flex-grow overflow-y-auto p-4 rounded-md" style={{
+        scrollbarWidth: "none",
+        msOverflowStyle: "none",
+        overflow: "-moz-scrollbars-none",
+      }}>
           <div className="relative mb-20">
-            <img src={user?.cover_photo || '/default-cover.jpg'} alt="Cover" className="w-full h-64 object-cover rounded-sm border-2 border-[#b2b4b4]" />
+            <img src={user?.cover_photo || '/default-cover.jpg'} alt="Cover" className="w-full  object-cover rounded-lg border-2 " />
             <div className="absolute top-2 right-2">
               <ProfilePictureModal
                 onUpload={(file) => handleUpload('cover', file)}
@@ -413,8 +422,8 @@ const Profile: React.FC = () => {
                 onClose={() => setIsCoverModalOpen(false)}
               />
             </div>
-            <img src={user?.profile_picture || '/default-avatar.jpg'} alt="Profile" className="absolute left-8 -bottom-16 w-48 h-48 rounded-full border-2 border-[#b2b4b4]" />
-            <div className="absolute left-48 bottom-0">
+            <img src={user?.profile_picture || '/default-avatar.jpg'} alt="Profile" className="absolute left-8 -bottom-16 w-32 h-32 rounded-full border-2 border-[#b2b4b4]" />
+            <div className="absolute left-32  ">
               <ProfilePictureModal
                 onUpload={(file) => handleUpload('profile', file)}
                 onRemove={() => handleRemove('profile')}
@@ -424,104 +433,110 @@ const Profile: React.FC = () => {
             </div>
           </div>
           
-    <div className="bg-gradient-to-br from-gray-900 to-gray-800 text-white shadow-xl mt-3 rounded-lg overflow-hidden">
-      <div className="p-6">
-        <div className="flex justify-between items-start">
-        <div>
-          <h2 className="text-3xl font-bold">{user?.username}</h2>
-          <div className="flex space-x-5 mt-2 text-gray-300 text-sm">
-            <span className="flex flex-col items-center">
-              <span className="text-sm font-medium text-white">{user?.posts.length || 0}</span>
-              <span>posts</span>
-            </span>
-            <span 
-              className="flex flex-col items-center cursor-pointer hover:text-blue-400 transition-colors duration-200"
-              onClick={() => setShowFollowersModal(true)}
-            >
-              <span className="text-sm font-medium text-white">{user?.followers.length}</span>
-              <span>followers</span>
-            </span>
-            <span 
-              className="flex flex-col items-center cursor-pointer hover:text-blue-400 transition-colors duration-200"
-              onClick={() => setShowFollowingModal(true)}
-            >
-              <span className="text-sm font-medium text-white">{user?.following.length}</span>
-              <span>following</span>
-            </span>
-          </div>
-        </div>
-          <div className="flex space-x-2">
-            <button 
-              onClick={handleOpenPostModal}
-              className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md text-sm flex items-center"
-            >
-              <Plus size={16} className="mr-2" />
-              Create Post
-            </button>
-            <button 
-              onClick={openModal}
-              className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-md text-sm flex items-center"
-            >
-              <UserPen size={16} className="mr-2" />
-              Edit Profile
-            </button>
-          </div>
-        </div>
-        
-        <p className="text-gray-300 my-6">{user?.bio}</p>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-          <div className="flex items-center text-gray-300">
-            <Mail size={16} className="mr-2 text-blue-400" />
-            <span>{user?.email}</span>
-          </div>
+          <div className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'} shadow-xl mt-3 rounded-lg overflow-hidden transition-colors duration-200`}>
+            <div className="p-6">
+              <div className="flex justify-between items-start">
+                <div>
+                  <h2 className={`text-3xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                    {user?.username}
+                  </h2>
+                  
+                  {/* Premium Badge positioned directly under username */}
+                  {user?.premium_status && (
+                    <div className="mt-1">
+                      <PremiumBadge />
+                    </div>
+                  )}
 
-          <div className="flex items-center text-gray-300">
-            <Cake size={16} className="mr-2 text-pink-400" />
-            <span>{formattedDob}</span>
-          </div>
-          <div className="flex items-center text-gray-300">
-            <MapPin size={16} className="mr-2 text-green-400" />
-            <span>{user?.location?.toString() || 'Not specified'}</span>
-          </div>
-          <div className="flex items-center text-gray-300">
-            <Calendar size={16} className="mr-2 text-purple-400" />
-            <span>Joined {formattedJoinDate}</span>
-          </div>
-        </div>
-        
-        {user?.social_links && user?.social_links.length > 0 && (
-          <div className="mt-6">
-            <h3 className="text-lg font-semibold mb-2">Social Links</h3>
-            <ul className="space-y-2">
-              {user?.social_links.map((link :string, index : number) => (
-                <li key={index} className="flex items-center">
-                  <LinkIcon size={14} className="mr-2 text-blue-400" />
-                  <a href={link} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">
-                    {link}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-        
-        {user?.premium_status && (
-          <div className="mt-6">
-            <span className="inline-block bg-yellow-500 text-black text-xs font-semibold px-2 py-1 rounded">
-              Premium User
-              {user.premium_expiration && (
-                <span className="ml-2">
-                  Expires on {new Date(user.premium_expiration).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
-                </span>
+                  <div className={`flex space-x-5 mt-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'} text-sm`}>
+                    {/* Stats section */}
+                    <span className="flex flex-col items-center">
+                      <span className={`text-sm font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                        {user?.posts.length || 0}
+                      </span>
+                      <span>posts</span>
+                    </span>
+                    {/* Followers and Following buttons */}
+                    <span 
+                      className={`flex flex-col items-center cursor-pointer hover:text-blue-400 transition-colors duration-200`}
+                      onClick={() => setShowFollowersModal(true)}
+                    >
+                      <span className={`text-sm font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                        {user?.followers.length}
+                      </span>
+                      <span>followers</span>
+                    </span>
+                    <span 
+                      className={`flex flex-col items-center cursor-pointer hover:text-blue-400 transition-colors duration-200`}
+                      onClick={() => setShowFollowingModal(true)}
+                    >
+                      <span className={`text-sm font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                        {user?.following.length}
+                      </span>
+                      <span>following</span>
+                    </span>
+                  </div>
+                </div>
+                
+                {/* Edit Profile Button */}
+                <button 
+                  onClick={openModal}
+                  className={`px-4 py-2 ${isDarkMode ? 'bg-gray-600 hover:bg-gray-700' : 'bg-gray-200 hover:bg-gray-300'} text-${isDarkMode ? 'white' : 'gray-800'} rounded-md text-sm flex items-center transition-colors duration-200`}
+                >
+                  <UserPen size={16} className="mr-2" />
+                  Edit Profile
+                </button>
+              </div>
+
+              {/* Bio */}
+              <p className={`${isDarkMode ? 'text-gray-300' : 'text-gray-600'} my-6`}>{user?.bio}</p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                <div className={`flex items-center ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                  <Mail size={16} className="mr-2 text-blue-400" />
+                  <span>{user?.email}</span>
+                </div>
+                <div className={`flex items-center ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                  <Cake size={16} className="mr-2 text-pink-400" />
+                  <span>{formattedDob}</span>
+                </div>
+                <div className={`flex items-center ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                  <MapPin size={16} className="mr-2 text-green-400" />
+                  <span>{user?.location?.toString() || 'Not specified'}</span>
+                </div>
+                <div className={`flex items-center ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                  <Calendar size={16} className="mr-2 text-purple-400" />
+                  <span>Joined {formattedJoinDate}</span>
+                </div>
+              </div>
+              
+              {user?.social_links && user?.social_links.length > 0 && (
+                <div className="mt-6">
+                  <h3 className={`text-lg font-semibold mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                    Social Links
+                  </h3>
+                  <ul className="space-y-2">
+                    {user?.social_links.map((link: string, index: number) => (
+                      <li key={index} className="flex items-center">
+                        <LinkIcon size={14} className="mr-2 text-blue-400" />
+                        <a 
+                          href={link} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="text-blue-400 hover:underline"
+                        >
+                          {link}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               )}
-            </span>
+            </div>
           </div>
-        )}
-      </div>
-    </div>
 
-          <div className="w-full mt-6 bg-gray-900 rounded-xl overflow-hidden shadow-xl">
+
+          <div className={`w-full mt-6 rounded-xl overflow-hidden shadow-xl ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
             <div className="flex justify-center border-b border-gray-700">
               <button
                 className={`flex items-center justify-center py-3 px-6 font-medium text-sm focus:outline-none transition-colors duration-200 ${
@@ -586,13 +601,24 @@ const Profile: React.FC = () => {
                     ))}
                     </div>
                   ) : (
-                    <div className="flex flex-col items-center justify-center h-96 bg-[#010F18] p-6 rounded-md">
-                      <div className="flex items-center justify-center w-24 h-24 rounded-full bg-[#1F2937] mb-4">
-                        <Camera size={32} className="text-gray-400" />
-                      </div>
-                      <h2 className="text-white text-xl font-semibold mb-2">No Posts Available</h2>
-                      <p className="text-gray-400">There are no posts to display right now. Start sharing your moments!</p>
+                    <div className={`flex flex-col items-center justify-center h-96 p-6 rounded-md ${
+                      isDarkMode ? 'bg-gray-800' : 'bg-gray-100'
+                    }`}
+                  >
+                    <div className={`flex items-center justify-center w-24 h-24 rounded-full mb-4 ${
+                        isDarkMode ? 'bg-gray-700' : 'bg-gray-300'
+                      }`}
+                    >
+                      <Camera size={32} className={isDarkMode ? 'text-gray-500' : 'text-gray-500'} />
                     </div>
+                    <h2 className={`${isDarkMode ? 'text-gray-200' : 'text-gray-800'} text-xl font-semibold mb-2`}>
+                      No Posts Available
+                    </h2>
+                    <p className={isDarkMode ? 'text-gray-400' : 'text-gray-500'}>
+                      There are no posts to display right now. Start sharing your moments!
+                    </p>
+                  </div>
+                  
                   )}
                 </div>
               )}
@@ -621,32 +647,31 @@ const Profile: React.FC = () => {
           onSave={handleSaveEdit}
         />
       )}
-      <CreatePostModal
-        isOpen={isPostModalOpen}
-        onClose={handleClosePostModal}
-        modalType={null}
-        onOpenAudienceModal={handleOpenAudienceModal}
-        onPost={handlePostCreated}
-        selectedAudience={selectedAudience}
-      />
-      <AudienceSelectionModal
-        isOpen={isAudienceModalOpen}
-        onClose={handleCloseAudienceModal}
-        onSelect={handleAudienceSelect}
+     
+
+     <FollowersModal
+        isOpen={showFollowersModal}
+        onClose={() => setShowFollowersModal(false)}
+        title="Followers"
+        currentUserId={currentUserId}
       />
 
-<FollowersModal
-      isOpen={showFollowersModal}
-      onClose={() => setShowFollowersModal(false)}
-      title="Followers"
-    />
+      <FollowersModal
+        isOpen={showFollowingModal}
+        onClose={() => setShowFollowingModal(false)}
+        title="Following"
+        currentUserId={currentUserId}
+      />
+      {commentModalPost && (
+  <CommentModal
+    isOpen={!!commentModalPost}
+    onClose={() => setCommentModalPost(null)}
+    post={commentModalPost}
+    isDarkMode={isDarkMode}
+    currentUserId={currentUserId}
+  />
+)}
 
-    {/* Modal for Following */}
-    <FollowersModal
-      isOpen={showFollowingModal}
-      onClose={() => setShowFollowingModal(false)}
-      title="Following"
-    />
     </div>
   );
 };

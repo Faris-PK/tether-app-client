@@ -101,6 +101,10 @@ const Reports: React.FC = () => {
   };
 
   const filteredReports = reports.filter(report => {
+    if (!report?.postId?.userId?.username || !report?.reportedBy?.username) {
+      return false; // Skip invalid reports
+    }
+
     const searchLower = searchTerm.toLowerCase();
     return (
       report.postId.userId.username.toLowerCase().includes(searchLower) ||
@@ -169,12 +173,12 @@ const Reports: React.FC = () => {
             <TableBody>
               {filteredReports.map((report) => (
                 <TableRow key={report._id}>
-                  <TableCell className="hidden md:table-cell">
+                  <TableCell className="hidden md:table-cell"> 
                     {formatDistanceToNow(new Date(report.createdAt), { addSuffix: true })}
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center space-x-2">
-                      {report.postId.mediaUrl && (
+                      {report.postId?.mediaUrl && (
                         <img
                           src={report.postId.mediaUrl}
                           alt="Post thumbnail"
@@ -182,14 +186,15 @@ const Reports: React.FC = () => {
                         />
                       )}
                       <div>
-                        <p className="font-medium">{report.postId.userId.username}</p>
+              
+                        <p className="font-medium">{report.postId?.userId?.username}</p>
                         <p className="text-sm text-gray-500 truncate w-48">
-                          {report.postId.caption}
+                          {report.postId?.caption}
                         </p>
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell className="hidden sm:table-cell">{report.reportedBy.username}</TableCell>
+                  <TableCell className="hidden sm:table-cell">{report.reportedBy?.username}</TableCell>
                   <TableCell className="hidden lg:table-cell">{report.reason}</TableCell>
                   <TableCell>{getStatusBadge(report.status)}</TableCell>
                   <TableCell>
@@ -219,10 +224,10 @@ const Reports: React.FC = () => {
                             </Select>
                           </DropdownMenuItem>
                           <DropdownMenuItem
-                            onClick={() => handleBlockPost(report.postId._id, report.postId.isBlocked)}
-                            className={report.postId.isBlocked ? 'text-green-600' : 'text-red-600'}
+                            onClick={() => report.postId && handleBlockPost(report.postId._id, report.postId.isBlocked)}
+                            className={report.postId?.isBlocked ? 'text-green-600' : 'text-red-600'}
                           >
-                            {report.postId.isBlocked ? 'Unblock Post' : 'Block Post'}
+                            {report.postId?.isBlocked ? 'Unblock Post' : 'Block Post'}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>

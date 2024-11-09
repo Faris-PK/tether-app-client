@@ -1,48 +1,77 @@
-import React from 'react';
-import { Bell, MessageCircleMore, CircleUserRound } from 'lucide-react';
+import React, { useState } from 'react';
+import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import { clearUser } from '../redux/slices/userSlice';
+import { 
+  House, 
+  Users, 
+  BookMarked, 
+  Youtube, 
+  Settings, 
+  Store
+} from 'lucide-react';
+import Modal from '../components/Modal/SetingsModal';
 import { api } from '../api/userApi';
-const TopBar: React.FC = () => {
-  const navigate = useNavigate();
 
-  const navigateToProfile = async () => {
+const NavBarSection: React.FC = () => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [anchorElement, setAnchorElement] = useState<HTMLElement | null>(null);
+
+  const handleSettingsClick = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorElement(event.currentTarget);
+    setIsModalOpen(true);
+  };
+
+  const handleLogout = async () => {
     try {
-      navigate('/user/profile');
-      const response = await api.getUserProfile();
-      console.log('Profile details from frontend', response);
-      
+      await api.logout();
+      dispatch(clearUser());
+      navigate('/signin');
     } catch (error) {
-      
+      console.error('Logout failed', error);
     }
+  };
+  const handleHomeClick = () => {
+    console.log('handleHomeClick');
+    navigate('/home');  
+  };
+
+  const handleFriendsClick = () => {
+    console.log('handleFriendsClick');
+    
+    navigate('/user/friends');  
   };
 
   return (
-    <div className="flex items-center justify-between p-3 ">
-      <div className="flex-grow mr-4 rounded-md ">
-        <div className="bg-[#010F18] p-2 rounded-xl flex justify-center shadow-[4px_4px_10px_rgba(0,0,0,0.5)]">
-          <input 
-            type="text" 
-            placeholder="Search..." 
-            className="w-2/4 bg-[#ffffff2e] text-white p-2 rounded-md h-8" 
-          />
-        </div>
-      </div>
+    <>
+      <nav className="hide-scrollbar overflow-auto shadow-[4px_4px_10px_rgba(0,0,0,0.5)]">
+        <ul className="space-y-5  bg-[#010F18] p-4 rounded-lg font-thin flex flex-col items-center ">
+          {[
+            {  icon: House, text: 'Home', onClick: handleHomeClick },
+            { icon: Users, text: 'My Network', onClick: handleFriendsClick },
+            { icon: BookMarked, text: 'Saved' },
+            { icon: Youtube, text: 'Videos' },
+            { icon: Settings, text: 'Settings', onClick: handleSettingsClick },
+            { icon: Store, text: 'Marketplace' },
+          ].map(({ icon: Icon, text, onClick }, index) => (
+            <li key={index} className="w-5/6">
+              <button 
+                className="border border-[#908888] rounded-full w-full flex items-center justify-center space-x-2 p-2 hover:bg-white hover:bg-opacity-30 active:bg-white active:bg-opacity-60 transition duration-300"
+                onClick={onClick}
+              >
+                <Icon size={20} />
+                <span>{text}</span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      </nav>
 
-      <div className="bg-[#010F18] p-2 rounded-xl flex justify-around items-center w-1/5 h-12 shadow-[4px_4px_10px_rgba(0,0,0,0.5)]">
-        <div className="text-white cursor-pointer relative transition-transform duration-300 ease-in-out hover:scale-110 hover:drop-shadow-lg">
-          <Bell className='w-auto' />
-          <span className="absolute bottom-4 left-4 bg-[#D40A0A] rounded-full h-3 w-3" />
-        </div>
-        <div className="text-white cursor-pointer relative transition-transform duration-300 ease-in-out hover:scale-110 hover:drop-shadow-lg">
-          <MessageCircleMore className='w-auto' />
-          <span className="absolute bottom-4 left-4 bg-[#D40A0A] rounded-full h-3 w-3" />
-        </div>
-        <div className="text-white cursor-pointer relative transition-transform duration-300 ease-in-out hover:scale-110 hover:drop-shadow-lg" onClick={navigateToProfile}>
-          <CircleUserRound className='w-auto' />
-        </div>
-      </div>
-    </div>
+      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} anchorElement={anchorElement} onLogout={handleLogout} />
+    </>
   );
 };
 
-export default TopBar;
+export default NavBarSection;

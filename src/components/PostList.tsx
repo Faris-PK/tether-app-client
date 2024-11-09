@@ -272,30 +272,30 @@ const PostList: React.FC<PostListProps> = ({ posts, currentUserId }) => {
               <OptionsModal postId={post._id} />
               {selectedPost && (
         <CommentModal
-          isOpen={commentModalOpen}
-          onClose={() => {
-            setCommentModalOpen(false);
-            setSelectedPost(null);
-          }}
-          post={{
-            ...selectedPost,
-            comments: [
-              // You can add sample comments here for testing
-              {
-                _id: '1',
-                userId: {
-                  username: 'user1',
-                  profile_picture: '/path-to-avatar.jpg'
-                },
-                content: 'This is a great post!',
-                createdAt: new Date().toISOString(),
-                likes: []
-              },
-              // Add more sample comments as needed
-            ]
-          }}
-          currentUserId={currentUserId}
-        />
+                  isOpen={commentModalOpen}
+                  onClose={() => {
+                    setCommentModalOpen(false);
+                    setSelectedPost(null);
+                  } }
+                  post={{
+                    ...selectedPost,
+                    comments: [
+                      // You can add sample comments here for testing
+                      {
+                        _id: '1',
+                        userId: {
+                          username: 'user1',
+                          profile_picture: '/path-to-avatar.jpg',
+                          _id: ''
+                        },
+                        content: 'This is a great post!',
+                        createdAt: new Date().toISOString(),
+                        likes: []
+                      },
+                      // Add more sample comments as needed
+                    ]
+                  }}
+                  currentUserId={currentUserId} isDarkMode={false}        />
             )}
             </div>
           ) : (

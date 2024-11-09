@@ -22,6 +22,12 @@ export const postRoutes = {
     updatePost: 'posts/update',
     likePost: 'posts/like',
     reportPost: 'posts/report',
+    getComments: 'posts/comments',
+    addComment: 'posts/comments/add',
+    editComment: 'posts/comments/edit',
+    deleteComment: 'posts/comments/delete',
+    addReplyToComment: 'posts/comments/reply',
+    
   };
 
 
@@ -29,8 +35,36 @@ export const postRoutes = {
   export const networkRoutes = {
     getFollowRequests: 'user/follow-requests',
     getPeopleSuggestions: 'user/suggestions',
+    getFollowers: '/user/followers',
+    getFollowing: '/user/following',
     followUser: 'user/follow',
     unfollowUser: 'user/unfollow',
     removeFollowRequest: 'user/remove-request',
     removeSuggestion: 'user/remove-suggestion',
   };
+
+
+  export const storyRoutes = {
+    createStory: 'stories/create',
+    getAllStories: 'stories',
+    getUserStories: 'stories/user',
+    deleteStory: 'stories/delete',
+    viewStory: 'stories/view'
+  };
+
+
+  export const marketplaceRoutes = {
+    createProduct: 'market/create',
+    getAllProducts: '/market/',
+    getUserProducts: '/market/user/products',
+    getProductById: '/market/products',
+    updateProduct: '/market/products/update',
+    deleteProduct: 'market/products/delete',
+    searchProducts: 'market/search',
+    getCategoriesProducts: 'market/category',
+  };
+
+  export const paymentRoutes = {
+    createSubscription: '/user/create-subscription',
+    verifyPayment: '/user/success'
+  }; 

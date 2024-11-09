@@ -36,8 +36,34 @@ const userSlice = createSlice({
         state.user.posts = state.user.posts.filter(postId => postId !== action.payload);
       }
     },
+  
+    addFollowedUser: (state, action: PayloadAction<string>) => {
+      if (state.user && !state.user.following?.includes(action.payload)) {
+        state.user.following = [...(state.user.following || []), action.payload];
+      }
+    },
+    removeFollowedUser: (state, action: PayloadAction<string>) => {
+      if (state.user && state.user.following) {
+        state.user.following = state.user.following.filter(id => id !== action.payload);
+      }
+    },
+    updatePremiumStatus: (state, action: PayloadAction<boolean>) => {
+      if (state.user) {
+        state.user.premium_status = action.payload;
+      }
+    },
+
   },
 });
 
-export const { setUser, clearUser, addPostToUser, removePostFromUser } = userSlice.actions;
+export const { 
+  setUser, 
+  clearUser, 
+  addPostToUser, 
+  removePostFromUser,
+  addFollowedUser,
+  removeFollowedUser ,
+  updatePremiumStatus
+} = userSlice.actions;
+
 export default userSlice.reducer;
