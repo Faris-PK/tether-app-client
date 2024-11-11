@@ -6,7 +6,6 @@ import OtpPage from '../pages/user/OtpPage';
 import SignInPage from '../pages/user/SignInPage';
 import HomePage from '../pages/user/HomePage';
 import ProfilePage from '../pages/user/ProfilePage';
-import FriendsPage from '@/pages/user/ConnectionPage';
 import { ThemeProvider } from '../contexts/ThemeContext';
 import UserProfile from '../pages/user/UserProfilePage';
 import Marketplace from '@/pages/user/MarketPlacePage';
@@ -25,11 +24,10 @@ const UserRoutes: React.FC = () => {
         {/* Private Routes */}
         <Route path="home" element={<PrivateRoute element={<HomePage />} />} />
         <Route path="profile" element={<PrivateRoute element={<ProfilePage />} />} />
-        <Route path="friends" element={<PrivateRoute element={<FriendsPage />} />} />
         <Route path="UserProfile" element={<PrivateRoute element={<UserProfile/>} />} />
         <Route path="MarketPlace" element={<PrivateRoute element={<Marketplace/>} />} />
         <Route path="paymentsuccess" element={<PaymentSuccessPage />} />
-        {/* <Route path="payment/cancel" element={<Navigate to="/user/home" />} /> */}
+        <Route path="payment/cancel" element={<Navigate to="/user/home" />} />
 
 
 

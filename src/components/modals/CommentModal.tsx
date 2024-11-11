@@ -23,7 +23,7 @@ interface Post {
   caption: string;
   mediaUrl: string;
   likes: string[];
-  comments?: Comment[]; 
+  comments?: number; 
   postType: string;
   isBlocked: boolean;
 }
@@ -34,6 +34,7 @@ interface CommentModalProps {
   post: Post;
   isDarkMode: boolean;
   currentUserId: string;
+  fetchPosts: () => void;
 }
 
 const CommentModal: React.FC<CommentModalProps> = ({
@@ -41,7 +42,8 @@ const CommentModal: React.FC<CommentModalProps> = ({
   onClose,
   post,
   isDarkMode,
-  currentUserId
+  currentUserId,
+  fetchPosts
 }) => {
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState('');
@@ -128,6 +130,8 @@ const CommentModal: React.FC<CommentModalProps> = ({
       const response = await PostApi.addComment(post._id, newComment);
       setComments(prev => [...prev, response]);
       setNewComment('');
+      fetchComments();
+    //  fetchPosts();
     } catch (error) {
       console.error('Error adding comment:', error);
     }
@@ -153,6 +157,7 @@ const CommentModal: React.FC<CommentModalProps> = ({
       );
       setEditingCommentId(null);
       setEditContent('');
+     // fetchPosts();
     } catch (error) {
       console.error('Error updating comment:', error);
     }
@@ -162,6 +167,7 @@ const CommentModal: React.FC<CommentModalProps> = ({
     try {
       await PostApi.deleteComment(post._id, commentId);
       setComments(prev => prev.filter(comment => comment._id !== commentId));
+     // fetchPosts();
     } catch (error) {
       console.error('Error deleting comment:', error);
     }

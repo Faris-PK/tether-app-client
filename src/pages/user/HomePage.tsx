@@ -1,12 +1,12 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import HeaderNav from '../../components/home/HeaderNav';
+import HeaderNav from '../../components/common/HeaderNav';
 import PostList from '../../components/home/PostList';
-import ProfileCard from '../../components/home/ProfileCard';
-import SearchBar from '../../components/home/SearchBar';
+import ProfileCard from '../../components/common/ProfileCard';
+import SearchBar from '../../components/common/SearchBar';
 import StoryArea from '../../components/home/StoryArea';
-import SuggestedProfiles from '../../components/home/SuggestedProfiles';
-import Title from '../../components/home/Title';
-import SideNav from '../../components/home/SettingsNav';
+import SuggestedProfiles from '../../components/common/SuggestedProfiles';
+import Title from '../../components/common/Title';
+import SideNav from '../../components/common/SettingsNav';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useNavigate } from "react-router-dom";
 import { PostApi } from "@/api/postApi";

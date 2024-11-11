@@ -3,7 +3,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { Home, Bookmark, Settings, ShoppingBag } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import PremiumSubscriptionModal from '../Modal/PremiumSubscriptionModal';
+import PremiumSubscriptionModal from '../modals/PremiumSubscriptionModal';
 import { RootState } from '@/redux/store/store';
 
 const SideNav = () => {

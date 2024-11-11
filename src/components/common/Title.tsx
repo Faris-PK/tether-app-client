@@ -8,7 +8,7 @@ const Title = () => {
 
   return (
     <div 
-      onClick={() => navigate('/home')} // Navigate to /home on click
+      onClick={() => navigate('/home')} 
       className={`w-1/6 h-10 ${isDarkMode ? 'bg-gray-800' : 'bg-white'} flex items-center justify-center overflow-hidden rounded-xl shadow-lg transition-all duration-300 ease-in-out hover:shadow-xl hover:scale-105 cursor-pointer`}
     >
       <div className="flex items-center space-x-2 px-3 group">

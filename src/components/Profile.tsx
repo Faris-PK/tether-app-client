@@ -5,10 +5,10 @@ import { UserPen, Mail, Cake, MapPin, Calendar, Link as LinkIcon, FileText, Shop
 import moment from 'moment';
 import { useTheme } from '../contexts/ThemeContext';
 import { formatDistanceToNow } from 'date-fns';
-import EditProfileModal from './Modal/EditProfileModal';
+import EditProfileModal from './modals/EditProfileModal';
 import { api } from '../api/userApi';
 import { clearUser, removePostFromUser, setUser } from '../redux/slices/userSlice';
-import ProfilePictureModal from './Modal/ProfilePictureModal';
+import ProfilePictureModal from './modals/ProfilePictureModal';
 import { PostApi } from '@/api/postApi';
 import { useNavigate } from 'react-router-dom';
 import Box from '@mui/material/Box';
@@ -17,13 +17,13 @@ import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import Modal from 'react-modal';
-import EditPostModal from './Modal/EditPostModal';
+import EditPostModal from './modals/EditPostModal';
 import Fab from '@mui/material/Fab';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import CommentIcon from '@mui/icons-material/Comment';
 import ShareIcon from '@mui/icons-material/Share';
-import FollowersModal from './Modal/FollowersModal';
-import CommentModal from './Modal/CommentModal';
+import FollowersModal from './modals/FollowersModal';
+import CommentModal from './modals/CommentModal';
 import PremiumBadge from './PremiumBadge';
 
 
@@ -663,13 +663,13 @@ const Profile: React.FC = () => {
         currentUserId={currentUserId}
       />
       {commentModalPost && (
-  <CommentModal
-    isOpen={!!commentModalPost}
-    onClose={() => setCommentModalPost(null)}
-    post={commentModalPost}
-    isDarkMode={isDarkMode}
-    currentUserId={currentUserId}
-  />
+      <CommentModal
+        isOpen={!!commentModalPost}
+        onClose={() => setCommentModalPost(null)}
+        post={commentModalPost}
+        isDarkMode={isDarkMode}
+        currentUserId={currentUserId}
+      />
 )}
 
     </div>

@@ -22,9 +22,9 @@ import { useDispatch, useSelector } from 'react-redux';
 import { api } from '@/api/userApi';
 import { clearUser } from '@/redux/slices/userSlice';
 import { useNavigate } from 'react-router-dom';
-import CreatePostModal from '../Modal/PostCreationModal';
-import AudienceSelectionModal from '../Modal/AudienceSelectionModal';
-import LogoutConfirmation from '../Modal/LogoutConfirmation';
+import CreatePostModal from '../modals/PostCreationModal';
+import AudienceSelectionModal from '../modals/AudienceSelectionModal';
+import LogoutConfirmation from '../modals/LogoutConfirmation';
 
 interface HeaderNavProps {
   onPostCreated: () => void;

@@ -3,6 +3,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store/store';
 import { useNavigate } from 'react-router-dom';
+import PremiumBadge from '../PremiumBadge';
 
 const ProfileCard = () => {
   const { isDarkMode } = useTheme();
@@ -30,6 +31,7 @@ const ProfileCard = () => {
         </div>
 
         <div className="pt-10 px-4 text-center">
+    
           <h2 className={`text-lg font-semibold mb-2 ${isDarkMode ? 'text-white' : 'text-[#000]'}`}>{user?.username}</h2>
           <p className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-[#000]'}`}>{user?.bio}</p>
           <div className="flex justify-center space-x-8 text-sm">

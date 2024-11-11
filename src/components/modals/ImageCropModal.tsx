@@ -1,6 +1,16 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { X } from 'lucide-react';
+import { X, Crop, Image as ImageIcon, ZoomIn, RotateCcw } from 'lucide-react';
 import Cropper from 'react-easy-crop';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Slider } from "@/components/ui/slider";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 interface CropModalProps {
   image: string;
@@ -8,7 +18,6 @@ interface CropModalProps {
   onComplete: (processedImage: Blob, filterName: string) => void;
 }
 
-// Define available aspect ratios
 const aspectRatios = {
   'Free': undefined,
   '1:1 Square': 1,
@@ -32,6 +41,7 @@ const filters = {
   vintage: 'sepia(50%) contrast(120%) brightness(90%)',
   fade: 'opacity(80%) brightness(120%)',
 };
+
 
 const createImage = (url: string): Promise<HTMLImageElement> =>
   new Promise((resolve, reject) => {
@@ -101,7 +111,7 @@ const applyFilter = async (image: Blob, filterName: string): Promise<Blob> => {
 };
 
 const ImageCropModal: React.FC<CropModalProps> = ({ image, onClose, onComplete }) => {
-  const [step, setStep] = useState<'crop' | 'filter'>('crop');
+  const [activeTab, setActiveTab] = useState<'crop' | 'filter'>('crop');
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
@@ -135,7 +145,7 @@ const ImageCropModal: React.FC<CropModalProps> = ({ image, onClose, onComplete }
       if (croppedAreaPixels) {
         const cropped = await getCroppedImg(image, croppedAreaPixels);
         setCroppedImage(cropped);
-        setStep('filter');
+        setActiveTab('filter');
       }
     } catch (e) {
       console.error(e);
@@ -154,80 +164,88 @@ const ImageCropModal: React.FC<CropModalProps> = ({ image, onClose, onComplete }
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black bg-opacity-75 flex items-center justify-center">
-      <div className="bg-white dark:bg-gray-800 w-full max-w-2xl rounded-lg shadow-lg">
-        <div className="flex justify-between items-center p-4 border-b border-gray-200 dark:border-gray-700">
-          <h2 className="text-xl font-semibold dark:text-white">
-            {step === 'crop' ? 'Crop Image' : 'Apply Filter'}
-          </h2>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
-            <X size={24} />
-          </button>
+    <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <Card className="max-h-3xl max-w-3xl bg-white dark:bg-gray-900 shadow-2xl">
+      <CardHeader className="border-b border-gray-200 dark:border-gray-800">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-2xl font-bold">Edit Image</CardTitle>
+          <Button variant="ghost" size="icon" onClick={onClose}>
+            <X className="h-5 w-5" />
+          </Button>
         </div>
+        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'crop' | 'filter')}>
+          <TabsList className="grid w-60 grid-cols-2">
+            <TabsTrigger value="crop" className="flex items-center gap-2">
+              <Crop className="h-4 w-4" />
+              Crop
+            </TabsTrigger>
+            <TabsTrigger value="filter" className="flex items-center gap-2">
+              <ImageIcon className="h-4 w-4" />
+              Filter
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+      </CardHeader>
 
-        {step === 'crop' ? (
-          <>
-            <div className="relative h-96 w-full">
+      <CardContent className="p-6">
+        {activeTab === 'crop' ? (
+          <div className="space-y-6">
+            <div className="relative h-[400px] w-full rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800">
               <Cropper
                 image={image}
                 crop={crop}
                 zoom={zoom}
                 aspect={aspectRatios[selectedAspectRatio]}
-                onCropChange={onCropChange}
-                onZoomChange={onZoomChange}
+                onCropChange={setCrop}
+                onZoomChange={setZoom}
                 onCropComplete={onCropComplete}
+                classes={{
+                  containerClassName: "rounded-lg"
+                }}
               />
             </div>
 
-            <div className="p-4 space-y-4">
-              <div className="grid grid-cols-4 gap-2 mb-4">
-                {Object.entries(aspectRatios).map(([name]) => (
-                  <button
-                    key={name}
-                    onClick={() => setSelectedAspectRatio(name as keyof typeof aspectRatios)}
-                    className={`p-2 text-sm rounded-lg ${
-                      selectedAspectRatio === name
-                        ? 'bg-blue-500 text-white'
-                        : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200'
-                    }`}
-                  >
-                    {name}
-                  </button>
-                ))}
+            <div className="space-y-4">
+              <div>
+                <h3 className="text-sm font-medium mb-2">Aspect Ratio</h3>
+                <div className="flex flex-wrap gap-2">
+                  {Object.entries(aspectRatios).map(([name]) => (
+                    <Badge
+                      key={name}
+                      variant={selectedAspectRatio === name ? "default" : "secondary"}
+                      className="cursor-pointer"
+                      onClick={() => setSelectedAspectRatio(name as keyof typeof aspectRatios)}
+                    >
+                      {name}
+                    </Badge>
+                  ))}
+                </div>
               </div>
 
-              <div className="flex items-center space-x-4">
-                <span className="text-sm dark:text-white">Zoom</span>
-                <input
-                  type="range"
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <ZoomIn className="h-4 w-4" />
+                  <h3 className="text-sm font-medium">Zoom</h3>
+                </div>
+                <Slider
+                  value={[zoom]}
                   min={1}
                   max={3}
                   step={0.1}
-                  value={zoom}
-                  onChange={(e) => setZoom(Number(e.target.value))}
+                  onValueChange={([value]) => setZoom(value)}
                   className="w-full"
                 />
               </div>
-
-              <div className="flex justify-end space-x-4">
-                <button
-                  onClick={onClose}
-                  className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleCropFinish}
-                  className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
-                >
-                  Next
-                </button>
-              </div>
             </div>
-          </>
+
+            <div className="flex justify-end gap-3">
+              <Button variant="outline" onClick={onClose}>Cancel</Button>
+              <Button onClick={handleCropFinish}>Next</Button>
+            </div>
+          </div>
         ) : (
-          <div className="p-4">
-            <div className="relative w-full h-64 mb-4">
+          <div className="space-y-6">
+            <div className="relative h-[400px] w-full rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800">
               {previewUrl && (
                 <img
                   src={previewUrl}
@@ -238,40 +256,38 @@ const ImageCropModal: React.FC<CropModalProps> = ({ image, onClose, onComplete }
               )}
             </div>
 
-            <div className="grid grid-cols-5 gap-4 mb-4">
-              {Object.entries(filters).map(([name]) => (
-                <button
-                  key={name}
-                  onClick={() => setSelectedFilter(name)}
-                  className={`p-2 text-sm rounded-lg ${
-                    selectedFilter === name
-                      ? 'bg-blue-500 text-white'
-                      : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200'
-                  }`}
-                >
-                  {name.charAt(0).toUpperCase() + name.slice(1)}
-                </button>
-              ))}
+            <div>
+              <h3 className="text-sm font-medium mb-2">Filters</h3>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
+                {Object.entries(filters).map(([name]) => (
+                  <Badge
+                    key={name}
+                    variant={selectedFilter === name ? "default" : "secondary"}
+                    className="cursor-pointer py-2 justify-center"
+                    onClick={() => setSelectedFilter(name)}
+                  >
+                    {name.charAt(0).toUpperCase() + name.slice(1)}
+                  </Badge>
+                ))}
+              </div>
             </div>
 
-            <div className="flex justify-end space-x-4">
-              <button
-                onClick={() => setStep('crop')}
-                className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white"
+            <div className="flex justify-end gap-3">
+              <Button 
+                variant="outline" 
+                onClick={() => setActiveTab('crop')}
+                className="flex items-center gap-2"
               >
+                <RotateCcw className="h-4 w-4" />
                 Back
-              </button>
-              <button
-                onClick={handleFilterComplete}
-                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
-              >
-                Apply
-              </button>
+              </Button>
+              <Button onClick={handleFilterComplete}>Apply</Button>
             </div>
           </div>
         )}
-      </div>
-    </div>
+      </CardContent>
+    </Card>
+  </div>
   );
 };
 

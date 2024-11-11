@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
-import Title from '@/components/home/Title';
+import Title from '@/components/common/Title';
 import Sidebar from '../../components/marketPlace/Sidebar';
 import { MapPin, Bell, MessageCircle, Sun, Moon, ChevronDown } from 'lucide-react';
-import LocationModal from '../../components/Modal/LocationModal';
+import LocationModal from '../../components/modals/LocationModal';
 import { MarketplaceProduct } from '@/types/IMarketplace';
 import { MarketplaceApi } from '@/api/marketplaceApi';
 import ProductGrid from '@/components/marketPlace/ProductGrid';

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Card } from "@/components/ui/card";
 import { MapPin } from 'lucide-react';
 import { MarketplaceProduct } from '../../types/IMarketplace';
-import ProductDetailModal from '../Modal/ProductDetailModal';
+import ProductDetailModal from '../modals/ProductDetailModal';
 import EmptyState from './EmptyState';
 
 interface ProductGridProps {

@@ -3,19 +3,19 @@ import { useTheme } from '../../contexts/ThemeContext';
 import NavBarSection from '../../components/NavBarSection';
 import TopBar from '../../components/TopBar';
 import Profile from '../../components/Profile';
-import Title from '@/components/home/Title';
-import SearchBar from '@/components/home/SearchBar';
-import ProfileCard from '@/components/home/ProfileCard';
-import SideNav from '@/components/home/SettingsNav';
+import Title from '@/components/common/Title';
+import SearchBar from '@/components/common/SearchBar';
+import ProfileCard from '@/components/common/ProfileCard';
+import SideNav from '@/components/common/SettingsNav';
 import StoryArea from '@/components/home/StoryArea';
 import PostList from '@/components/home/PostList';
-import SuggestedProfiles from '@/components/home/SuggestedProfiles';
+import SuggestedProfiles from '@/components/common/SuggestedProfiles';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '@/redux/store/store';
 import { useNavigate } from 'react-router-dom';
 import { PostApi } from '@/api/postApi';
 import { clearUser } from '@/redux/slices/userSlice';
-import HeaderNav from '@/components/home/HeaderNav';
+import HeaderNav from '@/components/common/HeaderNav';
 import UserProfile from '@/components/UserProfile';
 
 const UserProfilePage: React.FC = () => {

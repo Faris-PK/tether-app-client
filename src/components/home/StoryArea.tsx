@@ -3,8 +3,8 @@ import { PlusCircle } from 'lucide-react';
 import profile_picture from '../../assets/Myphoto.jpg';
 import { useTheme } from '../../contexts/ThemeContext';
 import { cn } from "@/lib/utils";
-import CreateStoryModal from '../Modal/CreateStoryModal';
-import StoryViewModal from '../Modal/StoryViewModal';
+import CreateStoryModal from '../modals/CreateStoryModal';
+import StoryViewModal from '../modals/StoryViewModal';
 
 const StoryArea = () => {
   const { isDarkMode } = useTheme();

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Search, Car, Home, ShoppingBag, Smartphone, Trophy, Gamepad, Sofa, MapPin } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
-import AddProductModal from '../Modal/AddProductModal';
+import AddProductModal from '../modals/AddProductModal';
 
 
 interface Category {
