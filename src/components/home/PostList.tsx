@@ -177,7 +177,7 @@ const PostList: React.FC<PostListProps> = ({ posts, currentUserId, fetchPosts })
               post={commentModalPost}
               isDarkMode={isDarkMode}
               currentUserId={currentUserId}
-              fetchPosts={fetchPosts}
+             
             />
           )}
           <ReportAlert

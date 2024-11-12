@@ -53,6 +53,7 @@ interface SinglePostProps {
       isDarkMode ? "bg-gray-800" : "bg-white"
     )}>
       <PostHeader
+       userId = {post.userId._id}
         username={post.userId.username}
         profilePicture={post.userId.profile_picture}
         location={post.location}

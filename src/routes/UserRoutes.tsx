@@ -24,7 +24,7 @@ const UserRoutes: React.FC = () => {
         {/* Private Routes */}
         <Route path="home" element={<PrivateRoute element={<HomePage />} />} />
         <Route path="profile" element={<PrivateRoute element={<ProfilePage />} />} />
-        <Route path="UserProfile" element={<PrivateRoute element={<UserProfile/>} />} />
+        <Route path="UserProfile/:userId" element={<PrivateRoute element={<UserProfile/>} />} />
         <Route path="MarketPlace" element={<PrivateRoute element={<Marketplace/>} />} />
         <Route path="paymentsuccess" element={<PaymentSuccessPage />} />
         <Route path="payment/cancel" element={<Navigate to="/user/home" />} />

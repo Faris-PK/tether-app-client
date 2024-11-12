@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { UserPlus, Mail, Cake, MapPin, Calendar, Link as LinkIcon, FileText, ShoppingBag, Camera } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import moment from 'moment';
@@ -12,7 +12,16 @@ import FavoriteIcon from '@mui/icons-material/Favorite';
 import CommentIcon from '@mui/icons-material/Comment';
 import ShareIcon from '@mui/icons-material/Share';
 import { useTheme } from '../contexts/ThemeContext';
-
+import { api } from '@/api/userApi';
+import { useNavigate, useParams } from 'react-router-dom';
+import { PostApi } from '@/api/postApi';
+import { clearUser } from '@/redux/slices/userSlice';
+import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch, RootState } from '@/redux/store/store';
+import Modal from 'react-modal';
+import FollowersModal from './modals/FollowersModal';
+import CommentModal from './modals/CommentModal';
+import PremiumBadge from './PremiumBadge';
 
 
 interface Post {
@@ -21,6 +30,7 @@ interface Post {
     username: string;
     profile_picture: string;
   };
+  commentCount:number
   location: string;
   createdAt: string;
   caption: string;
@@ -31,18 +41,120 @@ interface Post {
   isBlocked: boolean;
 }
 
+Modal.setAppElement('#root');
+
+
+interface UserProfile {
+  _id: string;
+  username: string;
+  email: string;
+  bio: string;
+  location: string;
+  profile_picture: string;
+  cover_photo: string;
+  followers: string[];
+  following: string[];
+  posts: string[];
+  createdAt: string;
+  premium_status: boolean;
+  isBlocked: boolean;
+  dob: string;
+  mobile: string;
+}
+
+
+
 const UserProfile: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'posts' | 'marketplace'>('posts');
   const [postType, setPostType] = useState<string>('all');
   const [showFollowersModal, setShowFollowersModal] = useState(false);
   const [showFollowingModal, setShowFollowingModal] = useState(false);
+  const [commentModalPost, setCommentModalPost] = useState<Post | null>(null);
+  const modalRef = useRef<HTMLDivElement>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const { isDarkMode } = useTheme();
+  const { userId } = useParams();
+  const navigate = useNavigate();
+  const dispatch = useDispatch<AppDispatch>();
+  const currentUserId = profile?._id;
+  const user = useSelector((state: RootState) => state.user?.user);
+
+ // console.log(profile?._id)
+
+
+
+  const fetchProfile = async () => {
+    try {
+      setLoading(true)
+      const response = await api.getUserProfile(userId!);
+     // console.log( 'response: ', response);
+      
+      setProfile(response);
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+    }finally {
+      setLoading(false);
+
+    }
+  };
+
+  const filteredPosts = posts.filter((post) => {
+    if (postType === 'all') return true;
+    return post.postType === postType;
+  });
+
+  const fetchPosts = useCallback(async () => {
+    try {
+      setLoading(true);
+      const response = await PostApi.getProfilePosts(userId!);
+      console.log('fetchPosts From Otehr: ', response);
+      setPosts(response);
+      setLoading(false);
+    } catch (err: any) {
+      console.log(err);
+      
+      if (err.response?.status === 403 && err.response?.data?.message === 'User is blocked') {
+        dispatch(clearUser());
+        navigate('/signin');
+      } else {
+        setError('Error fetching posts');
+      }
+      setLoading(false);
+    }
+  }, []);
+
+  const formattedJoinDate = profile?.createdAt ? moment(profile?.createdAt).format('MMMM D, YYYY') : 'Unknown';
+  const formattedDob = profile?.dob ? moment(profile?.dob).format('MMMM D, YYYY') : 'Unknown';
+ 
+
 
   const handlePostTypeChange = (event: SelectChangeEvent) => {
     setPostType(event.target.value as string);
   };
 
+  useEffect(() => {
+    fetchProfile();
+    fetchPosts();
+  }, [userId]);
+  
+
   const PostCard: React.FC<{ post: Post }> = ({ post }) => {
+    const [localPost, setLocalPost] = useState(post);
+
+    const handleLike = async () => {
+      try {
+        const updatedPost = await PostApi.likePost(post._id);
+        setLocalPost(prevPost => ({ ...prevPost, likes: updatedPost.likes }));
+        fetchPosts();
+      } catch (error) {
+        console.error('Error liking/unliking post:', error);
+      }
+    };
+
+
     if (post.isBlocked) {
       return (
         <div className={`flex flex-col items-center justify-center h-32 ${isDarkMode ? 'bg-[#010F18]' : 'bg-gray-100'} p-6 rounded-md mb-4`}>
@@ -54,12 +166,16 @@ const UserProfile: React.FC = () => {
       );
     }
 
+    if (!profile) {
+      return <div className="flex justify-center items-center h-screen">Loading...</div>;
+    }
+
     return (
       <div className={`${isDarkMode ? 'bg-gray-700' : 'bg-gray-100'} p-4 rounded-xl mb-4 shadow-md transition-colors duration-200 `}>
         <div className="flex justify-between items-start mb-4" >
           <div className="flex items-center" >
             <img
-              src={post.userId.profile_picture}
+              src={profile.profile_picture}
               alt={post.userId.username}
               className="w-10 h-10 rounded-full mr-3"
             />
@@ -92,13 +208,15 @@ const UserProfile: React.FC = () => {
           <div className="flex items-center">
             <span>{post.likes?.length || 0} likes</span>
           </div>
-          <span>{post.comments || 0} comments</span>
+          <span>{post.commentCount || 0} comments</span>
         </div>
 
         <div className={`flex justify-between ${isDarkMode ? 'border-gray-700' : 'border-gray-200'} border-t pt-4`}>
           <Fab
             aria-label="like"
             size="small"
+            color={localPost.likes?.includes(user?._id) ? "error" : "default"}
+            onClick={handleLike}
             sx={{ transform: 'scale(0.7)' }}
           >
             <FavoriteIcon />
@@ -106,6 +224,7 @@ const UserProfile: React.FC = () => {
           <Fab 
             aria-label="comment" 
             size="small" 
+            onClick={() => setCommentModalPost(post)}
             sx={{ transform: 'scale(0.7)' }}
           >
             <CommentIcon />
@@ -127,8 +246,8 @@ const UserProfile: React.FC = () => {
       <div className="flex-grow flex flex-col overflow-hidden">
         <div className="flex-grow overflow-y-auto p-4 rounded-md">
           <div className="relative mb-20">
-            <img src="/default-cover.jpg" alt="Cover" className="w-full h-28 object-cover rounded-lg border-2" />
-            <img src="/default-avatar.jpg" alt="Profile" className="absolute left-8 -bottom-16 w-32 h-32 rounded-full border-2 border-[#b2b4b4]" />
+            <img src={profile?.cover_photo} alt="Cover" className="w-full h-28 object-cover rounded-lg border-2" />
+            <img src={profile?.profile_picture} alt="Profile" className="absolute left-8 -bottom-16 w-32 h-32 rounded-full border-2 border-[#b2b4b4]" />
           </div>
           
           <div className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'} shadow-xl mt-3 rounded-lg overflow-hidden transition-colors duration-200`}>
@@ -136,12 +255,12 @@ const UserProfile: React.FC = () => {
               <div className="flex justify-between items-start">
                 <div>
                   <h2 className={`text-3xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                    Username
+                    {profile?.username}
                   </h2>
                   <div className={`flex space-x-5 mt-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'} text-sm`}>
                     <span className="flex flex-col items-center">
                       <span className={`text-sm font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                        0
+                        {profile?.posts.length}
                       </span>
                       <span>posts</span>
                     </span>
@@ -150,7 +269,7 @@ const UserProfile: React.FC = () => {
                       onClick={() => setShowFollowersModal(true)}
                     >
                       <span className={`text-sm font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                        0
+                        {profile?.followers.length}
                       </span>
                       <span>followers</span>
                     </span>
@@ -159,7 +278,7 @@ const UserProfile: React.FC = () => {
                       onClick={() => setShowFollowingModal(true)}
                     >
                       <span className={`text-sm font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                        0
+                       {profile?.following.length}
                       </span>
                       <span>following</span>
                     </span>
@@ -174,21 +293,21 @@ const UserProfile: React.FC = () => {
                 </button>
               </div>
 
-              <p className={`${isDarkMode ? 'text-gray-300' : 'text-gray-600'} my-6`}>Bio</p>
+              <p className={`${isDarkMode ? 'text-gray-300' : 'text-gray-600'} my-6`}>{profile?.bio}</p>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                 <div className={`flex items-center ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
                   <Mail size={16} className="mr-2 text-blue-400" />
-                  <span>email@example.com</span>
+                  <span>{profile?.email}</span>
                 </div>
                 <div className={`flex items-center ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
                   <MapPin size={16} className="mr-2 text-green-400" />
-                  <span>Location</span>
+                  <span>{profile?.location}</span>
                 </div>
                 <div className={`flex items-center ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
                   <Calendar size={16} className="mr-2 text-purple-400" />
-                  <span>Joined {moment().format('MMMM D, YYYY')}</span>
-                </div>
+                  <span>Joined {profile?.createdAt ? moment(profile.createdAt).format('MMMM D, YYYY') : 'Unknown date'}</span>
+                  </div>
               </div>
             </div>
           </div>
@@ -236,28 +355,45 @@ const UserProfile: React.FC = () => {
                           sx={{ color: 'white', '& .MuiOutlinedInput-notchedOutline': { borderColor: 'white' } }}
                         >
                           <MenuItem value="all">All</MenuItem>
-                          <MenuItem value="image">Image</MenuItem>
-                          <MenuItem value="note">Note</MenuItem>
+                          {[...new Set(posts.map((post) => post.postType))].map((type) => (
+                            <MenuItem key={type} value={type}>
+                              {type.charAt(0).toUpperCase() + type.slice(1)}
+                            </MenuItem>
+                          ))}
                         </Select>
                       </FormControl>
                     </Box>
                   </div>
                   
-                  <div className={`flex flex-col items-center justify-center h-96 p-6 rounded-md ${
-                    isDarkMode ? 'bg-gray-800' : 'bg-gray-100'
-                  }`}>
+                  {filteredPosts.length > 0 ? (
+                    <div className="space-y-4 hide-scrollbar overflow-auto">
+                     {filteredPosts.map((post) => (
+                      <PostCard
+                        key={post._id}
+                        post={post}
+                      />
+                    ))}
+                    </div>
+                  ) : (
+                    <div className={`flex flex-col items-center justify-center h-96 p-6 rounded-md ${
+                      isDarkMode ? 'bg-gray-800' : 'bg-gray-100'
+                    }`}
+                  >
                     <div className={`flex items-center justify-center w-24 h-24 rounded-full mb-4 ${
-                      isDarkMode ? 'bg-gray-700' : 'bg-gray-300'
-                    }`}>
+                        isDarkMode ? 'bg-gray-700' : 'bg-gray-300'
+                      }`}
+                    >
                       <Camera size={32} className={isDarkMode ? 'text-gray-500' : 'text-gray-500'} />
                     </div>
                     <h2 className={`${isDarkMode ? 'text-gray-200' : 'text-gray-800'} text-xl font-semibold mb-2`}>
                       No Posts Available
                     </h2>
                     <p className={isDarkMode ? 'text-gray-400' : 'text-gray-500'}>
-                      This user hasn't posted anything yet.
+                      There are no posts to display right now. Start sharing your moments!
                     </p>
                   </div>
+                  
+                  )}
                 </div>
               )}
 
@@ -271,6 +407,28 @@ const UserProfile: React.FC = () => {
           </div>
         </div>
       </div>
+            <FollowersModal
+        isOpen={showFollowersModal}
+        onClose={() => setShowFollowersModal(false)}
+        title="Followers"
+        currentUserId={profile?._id || ''}
+      />
+
+      <FollowersModal
+        isOpen={showFollowingModal}
+        onClose={() => setShowFollowingModal(false)}
+        title="Following"
+        currentUserId={profile?._id || ''}
+      />
+      {commentModalPost && (
+      <CommentModal
+        isOpen={!!commentModalPost}
+        onClose={() => setCommentModalPost(null)}
+        post={commentModalPost}
+        isDarkMode={isDarkMode}
+        currentUserId={user?._id || ''}
+      />
+)}
     </div>
   );
 };

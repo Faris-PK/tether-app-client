@@ -51,10 +51,9 @@ export const api = {
     const response = await API.post(authRoutes.logout, {}, { withCredentials: true });
     return response.data;
   },
-  getUserProfile: async () => {
-    const response = await API.get(authRoutes.userProfile, { withCredentials: true });
-    console.log(response);
-    
+  getUserProfile: async (userId:string) => {
+    const response = await API.get(`${authRoutes.userProfile}/${userId}`, { withCredentials: true });
+
     return response.data;
   },
 

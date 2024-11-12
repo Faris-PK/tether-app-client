@@ -32,7 +32,7 @@ interface HeaderNavProps {
 
 const HeaderNav: React.FC<HeaderNavProps> = ({ onPostCreated }) => {
   const { isDarkMode, toggleDarkMode } = useTheme();
-  const user = useSelector((state: RootState) => state.user.user);
+  const user = useSelector((state: RootState) => state.user?.user);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -79,8 +79,8 @@ const HeaderNav: React.FC<HeaderNavProps> = ({ onPostCreated }) => {
   const navigateToProfile = async () => {
     try {
       navigate('/user/profile');
-      const response = await api.getUserProfile();
-      console.log('Profile details from frontend', response);
+      //const response = await api.getUserProfile();
+    //  console.log('Profile details from frontend', response);
     } catch (error) {
       // Handle error
     }

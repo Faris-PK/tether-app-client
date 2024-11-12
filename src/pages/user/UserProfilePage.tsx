@@ -1,8 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
-import NavBarSection from '../../components/NavBarSection';
-import TopBar from '../../components/TopBar';
-import Profile from '../../components/Profile';
+
 import Title from '@/components/common/Title';
 import SearchBar from '@/components/common/SearchBar';
 import ProfileCard from '@/components/common/ProfileCard';
@@ -25,7 +23,7 @@ const UserProfilePage: React.FC = () => {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const currentUserId = useSelector((state: RootState) => state.user.user?._id);
+  const currentUserId = useSelector((state: RootState) => state.user?.user?._id);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -64,7 +62,7 @@ const UserProfilePage: React.FC = () => {
 
     <div className="flex space-x-4 flex-1 overflow-hidden">
       <div className="w-1/6 space-y-4">
-        {/* <ProfileCard/> */}
+        <ProfileCard/>
         <SideNav/>
       </div>
       <div className="w-2/3 space-y-4 overflow-y-auto pr-4 scrollbar-hide">

@@ -34,7 +34,7 @@ interface CommentModalProps {
   post: Post;
   isDarkMode: boolean;
   currentUserId: string;
-  fetchPosts: () => void;
+  
 }
 
 const CommentModal: React.FC<CommentModalProps> = ({
@@ -43,7 +43,7 @@ const CommentModal: React.FC<CommentModalProps> = ({
   post,
   isDarkMode,
   currentUserId,
-  fetchPosts
+  
 }) => {
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState('');

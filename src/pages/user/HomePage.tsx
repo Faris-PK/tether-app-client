@@ -28,7 +28,7 @@ const HomePage:React.FC = () => {
     try {
       setLoading(true);
       const response = await PostApi.getAllPosts();
-      console.log('Response: ',response);
+    //  console.log('Response: ',response);
       
       setPosts(response);
       setLoading(false);
