@@ -49,7 +49,13 @@ interface UserProfile {
   username: string;
   email: string;
   bio: string;
-  location: string;
+  userLocation: {
+    name: string;
+    coordinates: {
+      latitude: number;
+      longitude: number;
+    };
+  };
   profile_picture: string;
   cover_photo: string;
   followers: string[];
@@ -90,7 +96,7 @@ const UserProfile: React.FC = () => {
     try {
       setLoading(true)
       const response = await api.getUserProfile(userId!);
-     // console.log( 'response: ', response);
+      console.log( 'response: ', response);
       
       setProfile(response);
     } catch (error) {
@@ -303,7 +309,7 @@ const UserProfile: React.FC = () => {
                 </div>
                 <div className={`flex items-center ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
                   <MapPin size={16} className="mr-2 text-green-400" />
-                  <span>{profile?.location}</span>
+                  <span>{profile?.userLocation?.name}</span>
                 </div>
                 <div className={`flex items-center ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
                   <Calendar size={16} className="mr-2 text-purple-400" />

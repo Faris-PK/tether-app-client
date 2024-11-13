@@ -7,7 +7,7 @@ import moment from 'moment';
 import { api } from '../../api/userApi';
 import { setUser } from '../../redux/slices/userSlice';
 import IUser from '../../types/IUser';
-import mbxGeocoding from '@mapbox/mapbox-sdk/services/geocoding'; // Mapbox Geocoding API import
+import mbxGeocoding from '@mapbox/mapbox-sdk/services/geocoding';
 import { useTheme } from '../../contexts/ThemeContext';
 
 const googleClientId = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
@@ -30,7 +30,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose, us
   const [success, setSuccess] = useState<string>('');
   const { isDarkMode } = useTheme();
 
-  const [locationQuery, setLocationQuery] = useState(user?.location?.toString());
+  const [locationQuery, setLocationQuery] = useState(user?.userLocation?.name || '');
   const [locationSuggestions, setLocationSuggestions] = useState<any[]>([]);
 
   useEffect(() => {
@@ -41,9 +41,12 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose, us
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-
+  
     if (name === 'location') {
+      console.log(value,"value of location")
       setLocationQuery(value);
+      console.log(value,"value of location 2")
+
       if (value.length > 2) {
         geocodingClient
           .forwardGeocode({
@@ -58,17 +61,22 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose, us
           .catch((error) => console.error('Geocoding error:', error));
       }
     }
+  
 
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
   };
+  
 
   const handleLocationSelect = (place: any) => {
     setFormData((prev) => ({
       ...prev,
-      location: place.place_name,
+      userLocation: {
+        ...prev.userLocation,
+        name: place.place_name,
+        coordinates: {
+          latitude: place.geometry.coordinates[1],
+          longitude: place.geometry.coordinates[0]
+        }
+      },
     }));
     setLocationQuery(place.place_name);
     setLocationSuggestions([]);
@@ -82,6 +90,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose, us
     }
 
     try {
+      console.log(' Data before updating profiel : ', formData)
       const updatedUser = await api.updateUserProfile(formData);
       dispatch(setUser(updatedUser));
       setSuccess('Profile updated successfully!');
@@ -263,28 +272,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose, us
               </ul>
             )}
           </div>
-          <div className="mb-4">
-            <label
-              className={`block font-medium mb-1 ${
-                isDarkMode ? 'text-gray-300' : 'text-[#000]'
-              }`}
-              htmlFor="social_links"
-            >
-              Social Media Link
-            </label>
-            <input
-              type="url"
-              id="social_links"
-              name="social_links"
-              value={formData.social_links?.[0] || ''}
-              onChange={(e) => setFormData((prev) => ({ ...prev, social_links: [e.target.value] }))}
-              className={`w-full p-2 rounded bg-gray-600 bg-opacity-18 ${
-                isDarkMode
-                  ? 'text-white focus:outline-none focus:ring-1 focus:ring-[#1D9BF0] transition duration-200'
-                  : 'text-[#000] focus:outline-none focus:ring-1 focus:ring-[#1D9BF0] transition duration-200'
-              }`}
-            />
-          </div>
+          
           <button
             type="submit"
             className={`w-full py-3 font-semibold transition-all duration-300 ease-in-out ${
@@ -294,7 +282,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose, us
             }`}
           >
             Update Profile
-          </button>
+            </button>
         </form>
       </div>
     </Modal>

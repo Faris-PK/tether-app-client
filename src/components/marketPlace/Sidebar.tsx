@@ -91,7 +91,7 @@ interface SidebarProps {
         {/* Location */}
         <div className="flex items-center gap-2 text-blue-400 text-sm mb-4 cursor-pointer" onClick={() => onLocationClick?.()}>
         <MapPin className="w-5 h-5" />
-        <span>{user?.location.toString() ? user?.location.toString() : "Your location" }</span>
+        <span>{user?.userLocation?.name ? user?.userLocation?.name : "Your location" }</span>
         </div>
 
 

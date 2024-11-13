@@ -503,7 +503,7 @@ const Profile: React.FC = () => {
                 </div>
                 <div className={`flex items-center ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
                   <MapPin size={16} className="mr-2 text-green-400" />
-                  <span>{user?.location?.toString() || 'Not specified'}</span>
+                  <span>{user?.userLocation?.name || 'Not specified'}</span>
                 </div>
                 <div className={`flex items-center ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
                   <Calendar size={16} className="mr-2 text-purple-400" />

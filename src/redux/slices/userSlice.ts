@@ -52,6 +52,17 @@ const userSlice = createSlice({
         state.user.premium_status = action.payload;
       }
     },
+    updateUserLocation: (state, action: PayloadAction<{
+      name: string;
+      coordinates: {
+        latitude: number;
+        longitude: number;
+      };
+    }>) => {
+      if (state.user) {
+        state.user.userLocation = action.payload;
+      }
+    },
 
   },
 });
@@ -63,7 +74,8 @@ export const {
   removePostFromUser,
   addFollowedUser,
   removeFollowedUser ,
-  updatePremiumStatus
+  updatePremiumStatus ,
+  updateUserLocation
 } = userSlice.actions;
 
 export default userSlice.reducer;

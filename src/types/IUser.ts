@@ -11,7 +11,13 @@ export default interface IUser extends Document {
   cover_photo?: string;
   premium_status: boolean;
   dob:string;
-  userLocation:string;
+  userLocation: {
+    name: string;
+    coordinates: {
+      latitude: number;
+      longitude: number;
+    };
+  };
   premium_expiration?: Date;
   followers: string[];
   following: string[];
