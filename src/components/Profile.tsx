@@ -198,6 +198,7 @@ const Profile: React.FC = () => {
   const fetchPosts = useCallback(async () => {
     try {
       setLoading(true);
+     /// console.log('UserID from Profile: ', user?._id);
       const response = await PostApi.getProfilePosts(user?._id);
       //console.log('Response From Backend: ', response);
       setPosts(response);

@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { MapPin, Plus, Minus } from 'lucide-react';
+import { RootState } from '@/redux/store/store';
+import { useSelector } from 'react-redux';
 
 interface LocationModalProps {
   isOpen: boolean;
@@ -14,6 +16,8 @@ interface LocationModalProps {
 const LocationModal: React.FC<LocationModalProps> = ({ isOpen, onClose, isDarkMode }) => {
   const [location, setLocation] = useState<string>('');
   const [radius, setRadius] = useState<string>('80');
+  const user = useSelector((state: RootState) => state.user.user);
+
 
   const radiusOptions: string[] = ['20', '40', '60', '80', '100'];
 
@@ -39,7 +43,7 @@ const LocationModal: React.FC<LocationModalProps> = ({ isOpen, onClose, isDarkMo
                     : 'bg-white border-gray-200'
                 }`}
                 placeholder="Location"
-                value={location}
+                value={user?.location.toString() ? user?.location.toString() :""}
                 onChange={(e) => setLocation(e.target.value)}
               />
             </div>

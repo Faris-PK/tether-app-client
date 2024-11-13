@@ -109,8 +109,9 @@ const UserProfile: React.FC = () => {
   const fetchPosts = useCallback(async () => {
     try {
       setLoading(true);
+      //console.log('UserID from UserProfile: ', userId);
       const response = await PostApi.getProfilePosts(userId!);
-      console.log('fetchPosts From Otehr: ', response);
+      // console.log('fetchPosts From Otehr: ', response);
       setPosts(response);
       setLoading(false);
     } catch (err: any) {

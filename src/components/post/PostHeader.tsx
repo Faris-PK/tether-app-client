@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { useNavigate } from 'react-router-dom'; 
+import { useSelector } from 'react-redux';
+import { RootState } from '@/redux/store/store';
 
 interface PostHeaderProps {
   userId:string;
@@ -26,9 +28,17 @@ const PostHeader: React.FC<PostHeaderProps> = ({
   onOptionsClick
 }) => {
   const navigate = useNavigate(); 
+  const user = useSelector((state: RootState) => state.user.user);
 
   const handleNavigateToProfile = () => {
-    navigate(`/user/userProfile/${userId}`); 
+    console.log(userId)
+    if(userId === user?._id){
+      navigate('/user/profile');
+    }else{
+      navigate(`/user/userProfile/${userId}`);
+    }
+     
+
   };
 
   return (
@@ -50,7 +60,7 @@ const PostHeader: React.FC<PostHeaderProps> = ({
             {username}
           </h3>
           {location && (
-            <div className="flex items-center text-gray-600 text-md">
+            <div className="flex items-center text-gray-700 text-md">
               <MapPin size={14} className="mr-1" />
               <span>{location}</span>
             </div>

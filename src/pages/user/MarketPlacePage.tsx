@@ -92,7 +92,7 @@ const MarketPlacePage: React.FC<MarketPlacePageProps> = () => {
   const navigateToProfile = async () => {
     try {
       navigate('/user/profile');
-      const response = await api.getUserProfile();
+      const response = await api.getUserProfile(user?._id);
       console.log('Profile details from frontend', response);
     } catch (error) {
       // Handle error
@@ -110,7 +110,7 @@ const MarketPlacePage: React.FC<MarketPlacePageProps> = () => {
             onClick={() => setIsLocationModalOpen(true)}
           >
             <MapPin className="w-5 h-5 text-blue-400" />
-            <span className="text-blue-400 text-sm font-medium">Your location</span>
+            <span className="text-blue-400 text-sm font-medium">{user?.location.toString() ? user?.location.toString() : "Your location" }</span>
           </div>
 
           {/* Dark Mode Toggle */}

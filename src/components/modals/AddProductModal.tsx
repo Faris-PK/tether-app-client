@@ -1,5 +1,5 @@
 import React, { useState, ChangeEvent, FormEvent } from 'react';
-import { X } from 'lucide-react';
+import { X, MapPin } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -7,6 +7,13 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { MarketplaceApi } from '../../api/marketplaceApi';
+import mbxGeocoding from '@mapbox/mapbox-sdk/services/geocoding';
+
+// Initialize Mapbox client
+const mapboxToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
+const geocodingClient = mbxGeocoding({
+  accessToken: mapboxToken,
+});
 
 interface Category {
   icon: React.ReactNode;
@@ -44,15 +51,54 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
+  const [locationQuery, setLocationQuery] = useState('');
+  const [locationSuggestions, setLocationSuggestions] = useState<any[]>([]);
 
   const handleInputChange = (
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ): void => {
     const { name, value } = e.target;
+    if (name !== 'location') { // Handle non-location inputs normally
+      setFormData(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
+  };
+
+  const handleLocationChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const { value } = e.target;
+    setLocationQuery(value);
+    
+    if (value.length > 2) {
+      geocodingClient
+        .forwardGeocode({
+          query: value,
+          autocomplete: true,
+          limit: 5,
+        })
+        .send()
+        .then(response => {
+          setLocationSuggestions(response.body.features);
+        })
+        .catch(error => {
+          console.error('Geocoding error:', error);
+          setLocationSuggestions([]);
+        });
+    } else {
+      setLocationSuggestions([]);
+    }
+  };
+
+  const handleLocationSelect = (place: any) => {
+    console.log(place);
+    
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      location: place.place_name,
     }));
+    setLocationQuery(place.place_name);
+    setLocationSuggestions([]);
   };
 
   const handleCategoryChange = (value: string): void => {
@@ -162,14 +208,31 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
 
           <div>
             <Label htmlFor="location">Location</Label>
-            <Input
-              id="location"
-              name="location"
-              value={formData.location}
-              onChange={handleInputChange}
-              className={isDarkMode ? 'bg-gray-700 text-white' : ''}
-              required
-            />
+            <div className="relative">
+              <Input
+                id="location"
+                name="location"
+                value={locationQuery}
+                onChange={handleLocationChange}
+                className={`${isDarkMode ? 'bg-gray-700 text-white' : ''} pr-8`}
+                required
+              />
+              <MapPin className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+            </div>
+            
+            {locationSuggestions.length > 0 && (
+              <div className={`absolute z-10 w-full mt-1 bg-${isDarkMode ? 'gray-700' : 'white'} border border-${isDarkMode ? 'gray-600' : 'gray-300'} rounded-md shadow-lg max-h-48 overflow-y-auto`}>
+                {locationSuggestions.map((place) => (
+                  <div
+                    key={place.id}
+                    className={`p-2 text-sm cursor-pointer hover:bg-${isDarkMode ? 'gray-600' : 'gray-100'} text-${isDarkMode ? 'white' : 'black'}`}
+                    onClick={() => handleLocationSelect(place)}
+                  >
+                    {place.place_name}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           <div>

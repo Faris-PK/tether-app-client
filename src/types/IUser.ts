@@ -20,3 +20,6 @@ export default interface IUser extends Document {
   blocked_users: string[];
   createdAt:string
   }
+
+
+  

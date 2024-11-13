@@ -77,13 +77,13 @@ export const api = {
 
 
 
-  getFollowers: async () => {
-    const response = await API.get(networkRoutes.getFollowers, { withCredentials: true });
+  getFollowers: async (userId:string) => {
+    const response = await API.get(`${networkRoutes.getFollowers}/${userId}`, { withCredentials: true });
     return response.data;
   },
 
-  getFollowing: async () => {
-    const response = await API.get(networkRoutes.getFollowing, { withCredentials: true });
+  getFollowing: async (userId:string) => {
+    const response = await API.get(`${networkRoutes.getFollowing}/${userId}`, { withCredentials: true });
     return response.data;
   },
   

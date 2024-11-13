@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Plus, MapPin } from 'lucide-react';
+import { X, Plus, MapPin, Trash2 } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { PostApi } from '@/api/postApi';
 import { useSelector } from 'react-redux';
@@ -72,6 +72,18 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({
         }));
       }
       setErrors([]);
+    }
+  };
+
+  const handleRemoveFile = () => {
+    setPostContent(prevContent => ({
+      ...prevContent,
+      file: null,
+      postType: 'note'
+    }));
+    if (selectedImageUrl) {
+      URL.revokeObjectURL(selectedImageUrl);
+      setSelectedImageUrl('');
     }
   };
 
@@ -199,129 +211,128 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 bg-black bg-opacity-50 w-screen h-screen flex items-center justify-center">
-      <div className={`bg-${isDarkMode ? 'gray-800' : 'white'} w-full max-w-md rounded-lg shadow-lg`}>
-        <div className="flex justify-between items-center p-4 border-b border-gray-300">
-          <h2 className={`text-xl font-semibold text-${isDarkMode ? 'white' : 'black'}`}>Create Post</h2>
+      <div className={`bg-${isDarkMode ? 'gray-800' : 'white'} w-full max-w-4xl rounded-lg shadow-lg`}>
+        <div className="flex justify-between items-center p-3 border-b border-gray-300">
+          <h2 className={`text-lg font-semibold text-${isDarkMode ? 'white' : 'black'}`}>Create Post</h2>
           <button onClick={onClose} className={`text-${isDarkMode ? 'gray-400' : 'gray-600'} hover:text-white`}>
-            <X size={24} />
+            <X size={20} />
           </button>
         </div>
 
-        <div className="flex items-center p-4">
-          <img
-            src={user?.profile_picture || '/placeholder-avatar.png'}
-            alt={user?.username}
-            className="w-8 h-8 rounded-full mr-2"
-          />
-          <h2 className={`text-xl font-semibold text-${isDarkMode ? 'white' : 'black'}`}>{user?.username}</h2>
-        </div>
-
-        <div className="p-4">
-          <button
-            onClick={onOpenAudienceModal}
-            className={`bg-transparent text-${isDarkMode ? 'gray-400' : 'gray-600'} text-sm hover:text-white mb-4`}
-          >
-            Select audience ({selectedAudience})
-          </button>
-
-          <textarea
-            className={`w-full bg-transparent text-${isDarkMode ? 'white' : 'black'} placeholder-${isDarkMode ? 'gray-500' : 'gray-400'} resize-none outline-none`}
-            rows={4}
-            placeholder="Share your thoughts here"
-            value={postContent.content}
-            onChange={handleContentChange}
-          />
-
-          {errors.length > 0 && (
-            <div className="text-red-500 mb-4">
-              {errors.map((error, index) => (
-                <p key={index}>{error}</p>
-              ))}
-            </div>
-          )}
-
-          <div className="mt-4">
-            <label className={`flex flex-col items-center justify-center border-2 border-dashed border-${isDarkMode ? 'gray-600' : 'gray-400'} rounded-lg p-4 cursor-pointer`}>
-              <Plus size={24} className={`text-${isDarkMode ? 'gray-400' : 'gray-500'} mb-2`} />
-              <p className={`text-${isDarkMode ? 'gray-400' : 'gray-500'}`}>Add photos or videos</p>
-              <input
-                type="file"
-                className="hidden"
-                accept="image/*,video/*"
-                onChange={handleFileChange}
-              />
-            </label>
-            {postContent.file && (
-              <div className="mt-2">
-                <p className={`text-sm text-${isDarkMode ? 'gray-300' : 'gray-500'}`}>
-                  {postContent.file.name}
-                </p>
+        <div className="flex h-[400px]">
+          {/* Left side - File upload and preview */}
+          <div className="w-2/5 p-4 border-r border-gray-300">
+            {!postContent.file ? (
+              <label className={`h-full flex flex-col items-center justify-center border-2 border-dashed border-${isDarkMode ? 'gray-600' : 'gray-400'} rounded-lg cursor-pointer`}>
+                <Plus size={24} className={`text-${isDarkMode ? 'gray-400' : 'gray-500'} mb-2`} />
+                <p className={`text-${isDarkMode ? 'gray-400' : 'gray-500'} text-sm`}>Add photos or videos</p>
+                <input
+                  type="file"
+                  className="hidden"
+                  accept="image/*,video/*"
+                  onChange={handleFileChange}
+                />
+              </label>
+            ) : (
+              <div className="relative h-full">
                 {postContent.postType === 'image' && (
                   <img
                     src={URL.createObjectURL(postContent.file)}
                     alt="Preview"
-                    className="mt-2 max-h-40 rounded-lg object-cover"
+                    className="w-full h-full object-contain rounded-lg"
                   />
                 )}
+                <button
+                  onClick={handleRemoveFile}
+                  className="absolute top-2 right-2 bg-red-500 p-1.5 rounded-full hover:bg-red-600 transition-colors"
+                >
+                  <Trash2 size={16} className="text-white" />
+                </button>
               </div>
             )}
           </div>
 
-          <div className="mt-4 flex justify-between items-center">
-            <div className="flex-1 mr-2 relative">
-              <label className={`block text-${isDarkMode ? 'gray-400' : 'gray-600'} mb-2`}>
-                Location (optional)
-              </label>
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="Add location"
-                  value={locationQuery}
-                  onChange={handleLocationChange}
-                  className={`w-full bg-transparent text-${isDarkMode ? 'gray-400' : 'gray-600'} border border-${isDarkMode ? 'gray-600' : 'gray-400'} rounded-md py-2 px-3 outline-none`}
-                />
-                <MapPin className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
-              </div>
-              
-              {locationSuggestions.length > 0 && (
-                <div className={`absolute z-10 w-full mt-1 bg-${isDarkMode ? 'gray-700' : 'white'} border border-${isDarkMode ? 'gray-600' : 'gray-300'} rounded-md shadow-lg`}>
-                  {locationSuggestions.map((place) => (
-                    <div
-                      key={place.id}
-                      className={`p-2 cursor-pointer hover:bg-${isDarkMode ? 'gray-600' : 'gray-100'} text-${isDarkMode ? 'white' : 'black'}`}
-                      onClick={() => handleLocationSelect(place)}
-                    >
-                      {place.place_name}
-                    </div>
-                  ))}
-                </div>
-              )}
+          {/* Right side - Post details */}
+          <div className="w-3/5 p-4 flex flex-col">
+            <div className="flex items-center mb-3">
+              <img
+                src={user?.profile_picture || '/placeholder-avatar.png'}
+                alt={user?.username}
+                className="w-7 h-7 rounded-full mr-2"
+              />
+              <h2 className={`text-sm font-semibold text-${isDarkMode ? 'white' : 'black'}`}>{user?.username}</h2>
             </div>
 
-            <div className="w-1/2">
-              <label className={`block text-${isDarkMode ? 'gray-400' : 'gray-600'} mb-2`}>
-                Post Type
-              </label>
+            <div className="mb-3">
+              <button
+                onClick={onOpenAudienceModal}
+                className={`text-xs bg-transparent text-${isDarkMode ? 'gray-400' : 'gray-600'} hover:text-white`}
+              >
+                Select audience ({selectedAudience})
+              </button>
+            </div>
+
+            <textarea
+              className={`flex-1 w-full bg-transparent text-${isDarkMode ? 'white' : 'black'} placeholder-${isDarkMode ? 'gray-500' : 'gray-400'} resize-none outline-none text-sm mb-3`}
+              placeholder="Share your thoughts here"
+              value={postContent.content}
+              onChange={handleContentChange}
+            />
+
+            {errors.length > 0 && (
+              <div className="text-red-500 text-xs mb-3">
+                {errors.map((error, index) => (
+                  <p key={index}>{error}</p>
+                ))}
+              </div>
+            )}
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="Add location"
+                    value={locationQuery}
+                    onChange={handleLocationChange}
+                    className={`w-full bg-transparent text-${isDarkMode ? 'gray-400' : 'gray-600'} border border-${isDarkMode ? 'gray-600' : 'gray-400'} rounded-md py-1.5 px-2 text-sm outline-none`}
+                  />
+                  <MapPin className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400" size={14} />
+                </div>
+                
+                {locationSuggestions.length > 0 && (
+                  <div className={`absolute z-10 w-64 mt-1 bg-${isDarkMode ? 'gray-700' : 'white'} border border-${isDarkMode ? 'gray-600' : 'gray-300'} rounded-md shadow-lg`}>
+                    {locationSuggestions.map((place) => (
+                      <div
+                        key={place.id}
+                        className={`p-2 text-xs cursor-pointer hover:bg-${isDarkMode ? 'gray-600' : 'gray-100'} text-${isDarkMode ? 'white' : 'black'}`}
+                        onClick={() => handleLocationSelect(place)}
+                      >
+                        {place.place_name}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
               <select
                 value={postContent.postType}
                 onChange={handlePostTypeChange}
-                className={`w-full bg-transparent text-${isDarkMode ? 'gray-400' : 'gray-600'} border border-${isDarkMode ? 'gray-600' : 'gray-400'} rounded-md py-2 px-3 outline-none`}
+                className={`w-full bg-transparent text-${isDarkMode ? 'gray-400' : 'gray-600'} border border-${isDarkMode ? 'gray-600' : 'gray-400'} rounded-md py-1.5 px-2 text-sm outline-none`}
               >
                 <option value="note">Note</option>
                 <option value="image">Image</option>
                 <option value="video">Video</option>
               </select>
             </div>
-          </div>
-        </div>
 
-        <div className={`p-4 border-t border-${isDarkMode ? 'gray-600' : 'gray-300'}`}>
-          <button
-            className={`w-full bg-[#0095F6] text-white rounded-lg py-2 font-semibold`}
-            onClick={handleSubmit}
-          >
-            Post
-          </button>
+            <button
+              className="w-full bg-[#0095F6] text-white rounded-lg py-1.5 font-semibold text-sm mt-4"
+              onClick={handleSubmit}
+            >
+              Post
+            </button>
+          </div>
         </div>
       </div>
     </div>

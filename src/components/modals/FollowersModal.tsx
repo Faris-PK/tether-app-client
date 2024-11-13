@@ -36,7 +36,7 @@ const FollowersModal: React.FC<FollowersModalProps> = ({ isOpen, onClose, title,
       try {
         setLoading(true);
         setError(null);
-        const response = await (title === 'Followers' ? api.getFollowers() : api.getFollowing());
+        const response = await (title === 'Followers' ? api.getFollowers(currentUserId) : api.getFollowing(currentUserId));
         console.log('response : ', response.data);
 
         const usersWithFollowStatus = response.data.map((user: any) => ({

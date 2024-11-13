@@ -42,7 +42,6 @@ const filters = {
   fade: 'opacity(80%) brightness(120%)',
 };
 
-
 const createImage = (url: string): Promise<HTMLImageElement> =>
   new Promise((resolve, reject) => {
     const image = new Image();
@@ -165,129 +164,130 @@ const ImageCropModal: React.FC<CropModalProps> = ({ image, onClose, onComplete }
 
   return (
     <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-    <Card className="max-h-3xl max-w-3xl bg-white dark:bg-gray-900 shadow-2xl">
-      <CardHeader className="border-b border-gray-200 dark:border-gray-800">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-2xl font-bold">Edit Image</CardTitle>
-          <Button variant="ghost" size="icon" onClick={onClose}>
-            <X className="h-5 w-5" />
-          </Button>
-        </div>
-        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'crop' | 'filter')}>
-          <TabsList className="grid w-60 grid-cols-2">
-            <TabsTrigger value="crop" className="flex items-center gap-2">
-              <Crop className="h-4 w-4" />
-              Crop
-            </TabsTrigger>
-            <TabsTrigger value="filter" className="flex items-center gap-2">
-              <ImageIcon className="h-4 w-4" />
-              Filter
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
-      </CardHeader>
+      <Card className="w-[600px] bg-white dark:bg-gray-900 shadow-2xl">
+        <CardHeader className="border-b border-gray-200 dark:border-gray-800 p-3">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-lg">Edit Image</CardTitle>
+            <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8">
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+          <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'crop' | 'filter')}>
+            <TabsList className="grid w-48 grid-cols-2">
+              <TabsTrigger value="crop" className="text-sm">
+                <Crop className="h-3 w-3 mr-1" />
+                Crop
+              </TabsTrigger>
+              <TabsTrigger value="filter" className="text-sm">
+                <ImageIcon className="h-3 w-3 mr-1" />
+                Filter
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </CardHeader>
 
-      <CardContent className="p-6">
-        {activeTab === 'crop' ? (
-          <div className="space-y-6">
-            <div className="relative h-[400px] w-full rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800">
-              <Cropper
-                image={image}
-                crop={crop}
-                zoom={zoom}
-                aspect={aspectRatios[selectedAspectRatio]}
-                onCropChange={setCrop}
-                onZoomChange={setZoom}
-                onCropComplete={onCropComplete}
-                classes={{
-                  containerClassName: "rounded-lg"
-                }}
-              />
+        <CardContent className="p-3">
+          {activeTab === 'crop' ? (
+            <div className="space-y-3">
+              <div className="relative h-[300px] w-full rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800">
+                <Cropper
+                  image={image}
+                  crop={crop}
+                  zoom={zoom}
+                  aspect={aspectRatios[selectedAspectRatio]}
+                  onCropChange={onCropChange}
+                  onZoomChange={onZoomChange}
+                  onCropComplete={onCropComplete}
+                  classes={{
+                    containerClassName: "rounded-lg"
+                  }}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <div>
+                  <h3 className="text-xs font-medium mb-1">Aspect Ratio</h3>
+                  <div className="flex flex-wrap gap-1">
+                    {Object.entries(aspectRatios).map(([name]) => (
+                      <Badge
+                        key={name}
+                        variant={selectedAspectRatio === name ? "default" : "secondary"}
+                        className="cursor-pointer text-xs"
+                        onClick={() => setSelectedAspectRatio(name as keyof typeof aspectRatios)}
+                      >
+                        {name}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <div className="flex items-center gap-1 mb-1">
+                    <ZoomIn className="h-3 w-3" />
+                    <h3 className="text-xs font-medium">Zoom</h3>
+                  </div>
+                  <Slider
+                    value={[zoom]}
+                    min={1}
+                    max={3}
+                    step={0.1}
+                    onValueChange={([value]) => setZoom(value)}
+                    className="w-full"
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-2">
+                <Button size="sm" variant="outline" onClick={onClose}>Cancel</Button>
+                <Button size="sm" onClick={handleCropFinish}>Next</Button>
+              </div>
             </div>
+          ) : (
+            <div className="space-y-3">
+              <div className="relative h-[300px] w-full rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800">
+                {previewUrl && (
+                  <img
+                    src={previewUrl}
+                    alt="Preview"
+                    className="w-full h-full object-contain"
+                    style={{ filter: filters[selectedFilter as keyof typeof filters] }}
+                  />
+                )}
+              </div>
 
-            <div className="space-y-4">
               <div>
-                <h3 className="text-sm font-medium mb-2">Aspect Ratio</h3>
-                <div className="flex flex-wrap gap-2">
-                  {Object.entries(aspectRatios).map(([name]) => (
+                <h3 className="text-xs font-medium mb-1">Filters</h3>
+                <div className="grid grid-cols-5 gap-1">
+                  {Object.entries(filters).map(([name]) => (
                     <Badge
                       key={name}
-                      variant={selectedAspectRatio === name ? "default" : "secondary"}
-                      className="cursor-pointer"
-                      onClick={() => setSelectedAspectRatio(name as keyof typeof aspectRatios)}
+                      variant={selectedFilter === name ? "default" : "secondary"}
+                      className="cursor-pointer text-xs py-1 justify-center"
+                      onClick={() => setSelectedFilter(name)}
                     >
-                      {name}
+                      {name.charAt(0).toUpperCase() + name.slice(1)}
                     </Badge>
                   ))}
                 </div>
               </div>
 
-              <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <ZoomIn className="h-4 w-4" />
-                  <h3 className="text-sm font-medium">Zoom</h3>
-                </div>
-                <Slider
-                  value={[zoom]}
-                  min={1}
-                  max={3}
-                  step={0.1}
-                  onValueChange={([value]) => setZoom(value)}
-                  className="w-full"
-                />
+              <div className="flex justify-end gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setActiveTab('crop')}
+                  className="flex items-center gap-1"
+                >
+                  <RotateCcw className="h-3 w-3" />
+                  Back
+                </Button>
+                <Button size="sm" onClick={handleFilterComplete}>Apply</Button>
               </div>
             </div>
-
-            <div className="flex justify-end gap-3">
-              <Button variant="outline" onClick={onClose}>Cancel</Button>
-              <Button onClick={handleCropFinish}>Next</Button>
-            </div>
-          </div>
-        ) : (
-          <div className="space-y-6">
-            <div className="relative h-[400px] w-full rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800">
-              {previewUrl && (
-                <img
-                  src={previewUrl}
-                  alt="Preview"
-                  className="w-full h-full object-contain"
-                  style={{ filter: filters[selectedFilter as keyof typeof filters] }}
-                />
-              )}
-            </div>
-
-            <div>
-              <h3 className="text-sm font-medium mb-2">Filters</h3>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
-                {Object.entries(filters).map(([name]) => (
-                  <Badge
-                    key={name}
-                    variant={selectedFilter === name ? "default" : "secondary"}
-                    className="cursor-pointer py-2 justify-center"
-                    onClick={() => setSelectedFilter(name)}
-                  >
-                    {name.charAt(0).toUpperCase() + name.slice(1)}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-
-            <div className="flex justify-end gap-3">
-              <Button 
-                variant="outline" 
-                onClick={() => setActiveTab('crop')}
-                className="flex items-center gap-2"
-              >
-                <RotateCcw className="h-4 w-4" />
-                Back
-              </Button>
-              <Button onClick={handleFilterComplete}>Apply</Button>
-            </div>
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 

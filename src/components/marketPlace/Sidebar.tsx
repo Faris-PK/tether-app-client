@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Search, Car, Home, ShoppingBag, Smartphone, Trophy, Gamepad, Sofa, MapPin } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 import AddProductModal from '../modals/AddProductModal';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/redux/store/store';
 
 
 interface Category {
@@ -28,6 +30,8 @@ interface SidebarProps {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const locationRef = React.useRef<HTMLDivElement>(null);
   const [isAddProductModalOpen, setIsAddProductModalOpen] = useState(false);
+  const user = useSelector((state: RootState) => state.user.user);
+
 
 
   const categories: Category[] = [
@@ -87,7 +91,7 @@ interface SidebarProps {
         {/* Location */}
         <div className="flex items-center gap-2 text-blue-400 text-sm mb-4 cursor-pointer" onClick={() => onLocationClick?.()}>
         <MapPin className="w-5 h-5" />
-        <span>Your location</span>
+        <span>{user?.location.toString() ? user?.location.toString() : "Your location" }</span>
         </div>
 
 
