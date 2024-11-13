@@ -55,7 +55,10 @@ const MarketPlacePage: React.FC<MarketPlacePageProps> = () => {
   
   useEffect(() => {
     fetchProducts();
+    //console.log(user);
   }, []);
+ 
+  
 
   const handleSearch = (query: string) => {
     console.log('Search query:', query);

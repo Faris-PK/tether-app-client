@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,8 +10,11 @@ import { AppDispatch } from '@/redux/store/store';
 import { updateUserLocation } from '@/redux/slices/userSlice';
 import { api } from '@/api/userApi';
 import mbxGeocoding from '@mapbox/mapbox-sdk/services/geocoding';
+import mapboxgl from "mapbox-gl";
+import 'mapbox-gl/dist/mapbox-gl.css';
 
 const googleClientId = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
+mapboxgl.accessToken = googleClientId;
 
 // Initialize Mapbox geocoding client
 const geocodingClient = mbxGeocoding({
@@ -32,6 +35,9 @@ const LocationModal: React.FC<LocationModalProps> = ({ isOpen, onClose, isDarkMo
   const [radius, setRadius] = useState<string>('80');
   const [error, setError] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
+  const mapContainer = useRef<any>()
+  const map = useRef<mapboxgl.Map | null>(null);
+  const marker = useRef<mapboxgl.Marker | null>(null);
 
   const radiusOptions: string[] = ['20', '40', '60', '80', '100'];
 
@@ -65,6 +71,32 @@ const LocationModal: React.FC<LocationModalProps> = ({ isOpen, onClose, isDarkMo
       setLocationSuggestions([]);
     }
   };
+
+  useEffect(() => {
+    if (user && mapContainer.current) {
+      map.current = new mapboxgl.Map({
+        container: mapContainer.current,
+        style: 'mapbox://styles/mapbox/standard',
+        center: [user?.userLocation?.coordinates?.longitude, user?.userLocation.coordinates.latitude],
+        zoom: 17,
+        scrollZoom: false,
+      });
+
+      marker.current = new mapboxgl.Marker({
+        anchor: 'bottom'
+      })
+        .setLngLat([user?.userLocation?.coordinates?.longitude, user?.userLocation.coordinates.latitude])
+        .addTo(map.current);
+
+      map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
+      map.current.addControl(new mapboxgl.FullscreenControl(), 'top-right');
+
+      return () => {
+        marker.current?.remove();
+        map.current?.remove();
+      };
+    }
+  }, [user]);
 
   const handleLocationSelect = async (place: any) => {
     setIsLoading(true);
@@ -105,7 +137,7 @@ const LocationModal: React.FC<LocationModalProps> = ({ isOpen, onClose, isDarkMo
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold">Change location</DialogTitle>
         </DialogHeader>
-        
+
         <div className="space-y-6 py-4">
           {/* Location Input */}
           <div className="space-y-2">
@@ -116,15 +148,15 @@ const LocationModal: React.FC<LocationModalProps> = ({ isOpen, onClose, isDarkMo
               <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
               <Input
                 className={`pl-10 ${
-                  isDarkMode 
-                    ? 'bg-gray-800 border-gray-700 text-white' 
+                  isDarkMode
+                    ? 'bg-gray-800 border-gray-700 text-white'
                     : 'bg-white border-gray-200'
                 }`}
                 placeholder="Location"
                 value={locationQuery}
                 onChange={handleInputChange}
               />
-              
+
               {/* Location Suggestions */}
               {locationSuggestions.length > 0 && (
                 <div className={`absolute z-10 w-full mt-1 rounded-md shadow-lg ${
@@ -163,8 +195,8 @@ const LocationModal: React.FC<LocationModalProps> = ({ isOpen, onClose, isDarkMo
             </label>
             <Select value={radius} onValueChange={setRadius}>
               <SelectTrigger className={`w-full ${
-                isDarkMode 
-                  ? 'bg-gray-800 border-gray-700 text-white' 
+                isDarkMode
+                  ? 'bg-gray-800 border-gray-700 text-white'
                   : 'bg-white border-gray-200'
               }`}>
                 <SelectValue>{radius} Kilometers</SelectValue>
@@ -180,34 +212,39 @@ const LocationModal: React.FC<LocationModalProps> = ({ isOpen, onClose, isDarkMo
           </div>
 
           {/* Map Preview */}
-          <div className={`rounded-lg overflow-hidden border ${
+          <div ref={mapContainer} className={`rounded-lg overflow-hidden border ${
             isDarkMode ? 'border-gray-700' : 'border-gray-200'
-          }`}>
-            <div className="relative h-48 bg-gray-100">
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-sm text-gray-500">Map Preview</span>
-              </div>
-              <div className="absolute bottom-4 right-4 flex gap-2">
-                <Button 
-                  variant="secondary" 
-                  size="icon"
-                  className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}
-                >
-                  <Plus className="h-4 w-4" />
-                </Button>
-                <Button 
-                  variant="secondary" 
-                  size="icon"
-                  className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}
-                >
-                  <Minus className="h-4 w-4" />
-                </Button>
-              </div>
+          } h-64 relative`}>
+            <div className="absolute bottom-4 right-4 flex gap-2">
+              <Button
+                variant="secondary"
+                size="icon"
+                className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}
+                onClick={() => {
+                  if (map.current) {
+                    map.current.zoomIn();
+                  }
+                }}
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="secondary"
+                size="icon"
+                className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}
+                onClick={() => {
+                  if (map.current) {
+                    map.current.zoomOut();
+                  }
+                }}
+              >
+                <Minus className="h-4 w-4" />
+              </Button>
             </div>
           </div>
 
           {/* Apply Button */}
-          <Button 
+          <Button
             className="w-full bg-blue-500 hover:bg-blue-600 text-white"
             onClick={handleApply}
             disabled={isLoading}
