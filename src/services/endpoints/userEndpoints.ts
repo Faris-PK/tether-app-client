@@ -8,7 +8,8 @@ export const authRoutes = {
     googleLogin:'/auth/google',
     userProfile: '/user/profile',
     uploadImage: '/user/upload-image',
-    updateProfile:'/user/remove-profile-picture'
+    updateProfile:'/user/remove-profile-picture',
+    userFind:'/user/find'
 
 } 
 
@@ -27,6 +28,7 @@ export const postRoutes = {
     editComment: 'posts/comments/edit',
     deleteComment: 'posts/comments/delete',
     addReplyToComment: 'posts/comments/reply',
+    getSinglePost : 'posts/singlePost'
     
   };
 
@@ -56,12 +58,11 @@ export const postRoutes = {
   export const marketplaceRoutes = {
     createProduct: 'market/create',
     getAllProducts: '/market/',
-    getUserProducts: '/market/user/products',
-    getProductById: '/market/products',
-    updateProduct: '/market/products/update',
-    deleteProduct: 'market/products/delete',
-    searchProducts: 'market/search',
-    getCategoriesProducts: 'market/category',
+    getUserProducts: '/market/products',
+    searchProducts: '/market/search',
+    getCategoriesProducts: '/market/category',
+    getProductsByPrice: '/market/products/price',
+    getProductsByDate: '/market/products/date'
   };
 
   export const paymentRoutes = {

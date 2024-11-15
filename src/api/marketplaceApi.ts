@@ -12,77 +12,67 @@ export const MarketplaceApi = {
     return response.data;
   },
 
-  // Get all marketplace products with filters
-  getAllProducts: async (params?: {
-    page?: number;
-    limit?: number;
-    minPrice?: number;
-    maxPrice?: number;
-    category?: string;
-    location?: string;
-    sortBy?: 'price' | 'date';
-    order?: 'asc' | 'desc';
-  }) => {
+  getAllProducts: async () => {
     const response = await API.get(marketplaceRoutes.getAllProducts, {
-      params,
+     
       withCredentials: true
     });
     return response.data;
   },
 
   // Get products for specific user
-  getUserProducts: async () => {
-    const response = await API.get(marketplaceRoutes.getUserProducts, {
+  getUserProducts: async (userId: string) => {
+    const response = await API.get(`${marketplaceRoutes.getUserProducts}/${userId}`, {
       withCredentials: true
     });
     return response.data;
   },
 
-  // Get single product by ID
-  getProductById: async (productId: string) => {
-    const response = await API.get(`${marketplaceRoutes.getProductById}/${productId}`, {
+  // Search Products
+  searchProducts: async (query: string) => {
+    const response = await API.get(`${marketplaceRoutes.searchProducts}?q=${query}`, {
       withCredentials: true
     });
     return response.data;
   },
 
-  // Update product
-  updateProduct: async (productId: string, formData: FormData) => {
-    const response = await API.put(
-      `${marketplaceRoutes.updateProduct}/${productId}`,
-      formData,
+  // Get Products by Location and Radius
+  getProductsByLocation: async (latitude: number, longitude: number, radius: number) => {
+    const response = await API.get(
+      `${marketplaceRoutes.getCategoriesProducts}?lat=${latitude}&lng=${longitude}&radius=${radius}`,
       {
-        withCredentials: true,
-        headers: { 'Content-Type': 'multipart/form-data' }
+        withCredentials: true
       }
     );
     return response.data;
   },
 
-  // Delete product
-  deleteProduct: async (productId: string) => {
-    const response = await API.delete(
-      `${marketplaceRoutes.deleteProduct}/${productId}`,
-      { withCredentials: true }
+  // Get Products by Price Range
+  getProductsByPrice: async (minPrice: number, maxPrice: number) => {
+    const response = await API.get(
+      `${marketplaceRoutes.getProductsByPrice}?min=${minPrice}&max=${maxPrice}`,
+      {
+        withCredentials: true
+      }
     );
     return response.data;
   },
 
-  // Search products
-  searchProducts: async (query: string) => {
-    const response = await API.get(marketplaceRoutes.searchProducts, {
-      params: { q: query },
+  // Get Products by Category
+  getProductsByCategory: async (category: string) => {
+    const response = await API.get(`${marketplaceRoutes.getCategoriesProducts}?category=${category}`, {
       withCredentials: true
     });
     return response.data;
   },
 
-  // Get products by category
-  getProductsByCategory: async (category: string) => {
-    const response = await API.get(
-      `${marketplaceRoutes.getCategoriesProducts}/${category}`,
-      { withCredentials: true }
-    );
+  // Get Products by Date (Newest or Oldest)
+  getProductsByDate: async (sort: 'newest' | 'oldest') => {
+    const response = await API.get(`${marketplaceRoutes.getProductsByDate}?sort=${sort}`, {
+      withCredentials: true
+    });
     return response.data;
-  },
+  }
+
+  
 };

@@ -65,7 +65,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({ products, loading }) => {
               </div>
               <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-3">
                 <MapPin className="w-4 h-4 mr-1" />
-                {product.location}
+                {product.location.name}
               </div>
             </div>
           </Card>

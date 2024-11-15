@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -6,9 +6,21 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, User, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
-import { MarketplaceProduct } from '../../types/IMarketplace';
+import { MapPin, User, Calendar, ChevronLeft, ChevronRight, MessageSquare } from 'lucide-react';
 import { Button } from "@/components/ui/button";
+import { MarketplaceProduct } from '@/types/IMarketplace';
+import mbxGeocoding from '@mapbox/mapbox-sdk/services/geocoding';
+import mapboxgl from "mapbox-gl";
+import 'mapbox-gl/dist/mapbox-gl.css';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/redux/store/store';
+
+const googleClientId = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
+mapboxgl.accessToken = googleClientId;
+
+const geocodingClient = mbxGeocoding({
+  accessToken: googleClientId,
+});
 
 interface ProductDetailModalProps {
   product: MarketplaceProduct | null;
@@ -21,9 +33,12 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
   isOpen, 
   onClose 
 }) => {
-  const [currentImageIndex, setCurrentImageIndex] = React.useState(0);
-
-  if (!product) return null;
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const user = useSelector((state: RootState) => state.user.user);
+  const mapContainer = useRef<HTMLDivElement | null>(null);
+  const map = useRef<mapboxgl.Map | null>(null);
+  const marker = useRef<mapboxgl.Marker | null>(null);
+  const [mapInitialized, setMapInitialized] = useState(false);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -34,7 +49,7 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
   };
 
   const nextImage = () => {
-    if (product.images) {
+    if (product?.images) {
       setCurrentImageIndex((prev) => 
         prev === product.images.length - 1 ? 0 : prev + 1
       );
@@ -42,112 +57,208 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
   };
 
   const previousImage = () => {
-    if (product.images) {
+    if (product?.images) {
       setCurrentImageIndex((prev) => 
         prev === 0 ? product.images.length - 1 : prev - 1
       );
     }
   };
 
+  // Cleanup function for map
+  const cleanupMap = () => {
+    if (marker.current) {
+      marker.current.remove();
+      marker.current = null;
+    }
+    if (map.current) {
+      map.current.remove();
+      map.current = null;
+    }
+    setMapInitialized(false);
+  };
+
+  // Initialize map
+  const initializeMap = () => {
+    if (!mapContainer.current || !product || mapInitialized) return;
+
+    // Clean up existing map if any
+    cleanupMap();
+
+    // Create new map
+    map.current = new mapboxgl.Map({
+      container: mapContainer.current,
+      style: 'mapbox://styles/mapbox/satellite-streets-v12',
+      center: [product.location.coordinates.longitude, product.location.coordinates.latitude],
+      zoom: 17,
+      scrollZoom: false,
+    });
+
+    // Add marker
+    marker.current = new mapboxgl.Marker({
+      anchor: 'bottom'
+    })
+      .setLngLat([product.location.coordinates.longitude, product.location.coordinates.latitude])
+      .addTo(map.current);
+
+    // Add controls
+    map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
+    map.current.addControl(new mapboxgl.FullscreenControl(), 'top-right');
+
+    setMapInitialized(true);
+  };
+
+  // Effect for modal open state
+  useEffect(() => {
+    if (isOpen && product) {
+      // Small delay to ensure DOM is ready
+      const timer = setTimeout(() => {
+        initializeMap();
+      }, 100);
+
+      return () => {
+        clearTimeout(timer);
+        cleanupMap();
+      };
+    }
+  }, [isOpen, product]);
+
+  // Reset current image index when product changes
+  useEffect(() => {
+    setCurrentImageIndex(0);
+  }, [product]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      cleanupMap();
+    };
+  }, []);
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-6xl p-0 gap-0">
-        <div className="flex flex-col md:flex-row h-[80vh]">
-          {/* Left side - Image Carousel */}
-          <div className="md:w-1/2 relative h-64 md:h-full bg-gray-100">
-            {product.images && product.images.length > 0 ? (
-              <>
-                <img
-                  src={product.images[currentImageIndex]}
-                  alt={`${product.title} - Image ${currentImageIndex + 1}`}
-                  className="w-full h-full object-cover"
-                />
-                {product.images.length > 1 && (
-                  <>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white/90"
-                      onClick={previousImage}
-                    >
-                      <ChevronLeft className="h-6 w-6" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white/90"
-                      onClick={nextImage}
-                    >
-                      <ChevronRight className="h-6 w-6" />
-                    </Button>
-                    <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex space-x-2">
-                      {product.images.map((_, index) => (
-                        <div
-                          key={index}
-                          className={`w-2 h-2 rounded-full ${
-                            index === currentImageIndex ? 'bg-white' : 'bg-white/50'
-                          }`}
-                        />
-                      ))}
-                    </div>
-                  </>
-                )}
-              </>
-            ) : (
-              <div className="w-full h-full flex items-center justify-center bg-gray-200">
-                <span className="text-gray-400">No image available</span>
-              </div>
-            )}
+      <DialogContent className="max-w-4xl p-0">
+        <div className="flex flex-col md:flex-row">
+          {/* Left side - Image Gallery */}
+          <div className="md:w-2/3 relative">
+            {/* Main Image */}
+            <div className="relative h-[400px]">
+              {product?.images && product.images.length > 0 ? (
+                <>
+                  <img
+                    src={product.images[currentImageIndex]}
+                    alt={`${product.title} - Image ${currentImageIndex + 1}`}
+                    className="w-full h-full object-cover"
+                  />
+                  {product.images.length > 1 && (
+                    <>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white/90"
+                        onClick={previousImage}
+                      >
+                        <ChevronLeft className="h-6 w-6" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white/90"
+                        onClick={nextImage}
+                      >
+                        <ChevronRight className="h-6 w-6" />
+                      </Button>
+                    </>
+                  )}
+                </>
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-gray-200">
+                  <span className="text-gray-400">No image available</span>
+                </div>
+              )}
+            </div>
+            
+            {/* Thumbnail Strip */}
+            <div className="flex gap-2 p-2 bg-white border-t">
+              {product?.images?.map((image, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentImageIndex(index)}
+                  className={`flex-shrink-0 w-16 h-16 ${
+                    currentImageIndex === index ? 'ring-2 ring-blue-500' : ''
+                  }`}
+                >
+                  <img
+                    src={image}
+                    alt={`Thumbnail ${index + 1}`}
+                    className="w-full h-full object-cover"
+                  />
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Right side - Product Details */}
-          <div className="md:w-1/2 p-6 overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle className="text-2xl font-bold">{product.title}</DialogTitle>
-            </DialogHeader>
+          <div className="md:w-1/3 border-l">
+            <div className="p-4">
+              {/* Title and Price */}
+              {product && (
+                <>
+                  <h2 className="text-xl font-semibold mb-2">{product.title}</h2>
+                  <div className="text-2xl font-bold text-gray-600 mb-4">
+                    ₹{product.price.toLocaleString()}
+                  </div>
 
-            {/* Price and Category */}
-            <div className="flex items-center justify-between mt-6 mb-4">
-              <span className="text-2xl font-bold text-blue-600">
-                ₹{product.price.toLocaleString()}
-              </span>
-              <Badge variant="secondary" className="text-sm">
-                {product.category}
-              </Badge>
-            </div>
+                  {/* Details Section */}
+                  <div className="space-y-4">
+                    <h3 className="font-semibold">Details</h3>
+                    <p>{product.location.name}</p>
+                    {product?.description && (
+                      <div className="space-y-2 text-sm">
+                        {product.description.split(',').map((line, index) => (
+                          <p key={index}>{line.trim()}</p>
+                        ))}
+                      </div>
+                    )}
+                  </div>
 
-            {/* Location */}
-            <div className="flex items-center text-gray-600 mb-4">
-              <MapPin className="w-4 h-4 mr-2" />
-              <span>{product.location}</span>
-            </div>
+                  {/* Location Map */}
+                  <div className="mt-4">
+                    <div 
+                      ref={mapContainer} 
+                      className="h-32 bg-gray-100 rounded-sm overflow-hidden"
+                    />
+                  </div>
 
-            {/* Description */}
-            <div className="mb-6">
-              <h3 className="text-lg font-semibold mb-2">Description</h3>
-              <p className="text-gray-600">{product.description}</p>
-            </div>
-
-            {/* Seller Info */}
-            <div className="flex items-center space-x-4 border-t pt-4">
-              <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-200">
-                {product.userId?.profile_picture ? (
-                  <img
-                    src={product.userId.profile_picture}
-                    alt={product.userId.username}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <User className="w-full h-full p-2 text-gray-400" />
-                )}
-              </div>
-              <div>
-                <h4 className="font-semibold">{product.userId?.username}</h4>
-                <div className="flex items-center text-sm text-gray-500">
-                  <Calendar className="w-4 h-4 mr-1" />
-                  <span>Posted on {formatDate(product.createdAt)}</span>
-                </div>
-              </div>
+                  {/* Seller Info */}
+                  <div className="mt-4 pt-4 border-t">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-200">
+                          {product.userId?.profile_picture ? (
+                            <img
+                              src={product.userId.profile_picture}
+                              alt={product.userId.username}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <User className="w-full h-full p-2 text-gray-400" />
+                          )}
+                        </div>
+                        <div>
+                          <div className="font-medium">{product.userId?.username}</div>
+                          <div className="text-sm text-gray-500">Joined Tether in 2024</div>
+                        </div>
+                      </div>
+                      <div className="flex items-center">
+                        <Button size="sm" variant="outline" className="h-8">
+                          <MessageSquare className="w-4 h-4 mr-1" />
+                          Message
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>

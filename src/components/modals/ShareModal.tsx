@@ -1,25 +1,39 @@
-import React, { useState } from 'react';
-import { X, Link, Copy, Check, Twitter, Facebook } from 'lucide-react';
+import React from 'react';
+import { X, Link, Twitter, Facebook } from 'lucide-react';
 import { WhatsApp } from '@mui/icons-material';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import  BaseModal  from './BaseModal';
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 
 interface Post {
-    _id: string;
-    userId: {
-      username: string;
-      profile_picture: string;
-    };
-    location: string;
-    createdAt: string;
-    caption: string;
-    mediaUrl: string;
-    likes: string[];
-    commentCount?: number;
-    postType: string;
-    isBlocked: boolean;
-  }
+  _id: string;
+  userId: {
+    username: string;
+    profile_picture: string;
+  };
+  location: string;
+  createdAt: string;
+  caption: string;
+  mediaUrl: string;
+  likes: string[];
+  commentCount?: number;
+  postType: string;
+  isBlocked: boolean;
+}
 
 interface ShareModalProps {
   post: Post;
@@ -27,15 +41,15 @@ interface ShareModalProps {
   onClose: () => void;
 }
 
- const ShareModal: React.FC<ShareModalProps> = ({ post, isDarkMode, onClose }) => {
-  const [copied, setCopied] = useState(false);
-  const shareUrl = `${window.location.origin}/post/${post._id}`;
+const ShareModal: React.FC<ShareModalProps> = ({ post, isDarkMode, onClose }) => {
+  const [showCopyAlert, setShowCopyAlert] = React.useState(false);
+  const shareUrl = `${window.location.origin}/user/post/${post._id}`;
 
   const copyToClipboard = async (text: string) => {
     try {
       await navigator.clipboard.writeText(text);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      setShowCopyAlert(true);
+      setTimeout(() => setShowCopyAlert(false), 500);
     } catch (err) {
       console.error('Failed to copy text: ', err);
     }
@@ -51,79 +65,80 @@ interface ShareModalProps {
     window.open(shareUrls[platform as keyof typeof shareUrls], '_blank');
   };
 
+  const shareOptions = [
+    { 
+      text: 'Copy Link', 
+      action: () => copyToClipboard(shareUrl), 
+      icon: <Link className="mr-2 h-4 w-4" /> 
+    },
+    { 
+      text: 'Share on Twitter', 
+      action: () => shareToSocial('twitter', shareUrl), 
+      icon: <Twitter className="mr-2 h-4 w-4" />,
+      color: 'text-blue-400'
+    },
+    { 
+      text: 'Share on Facebook', 
+      action: () => shareToSocial('facebook', shareUrl), 
+      icon: <Facebook className="mr-2 h-4 w-4" />,
+      color: 'text-blue-600'
+    },
+    { 
+      text: 'Share on WhatsApp', 
+      action: () => shareToSocial('whatsapp', shareUrl), 
+      icon: <WhatsApp className="mr-2 h-4 w-4" />,
+      color: 'text-green-500'
+    }
+  ];
+
   return (
-    <BaseModal onClose={onClose}>
-      <div className={cn(
-        "rounded-lg shadow-lg w-96",
-        isDarkMode ? "bg-gray-800" : "bg-white"
-      )}>
-        <div className={cn(
-          "p-4 flex justify-between items-center border-b",
-          isDarkMode ? "border-gray-700" : "border-gray-200"
+    <>
+      <Dialog open onOpenChange={() => onClose()}>
+        <DialogContent className={cn(
+          "sm:max-w-[380px]",
+          isDarkMode ? "bg-gray-800 text-white" : "bg-white"
         )}>
-          <h2 className={cn(
-            "text-lg font-semibold",
-            isDarkMode ? "text-white" : "text-gray-800"
-          )}>
-            Share Post
-          </h2>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onClose}
-            className={cn(
-              "p-1 hover:bg-transparent",
-              isDarkMode ? "text-gray-400 hover:text-white" : "text-gray-600 hover:text-gray-900"
-            )}
-          >
-            <X size={20} />
-          </Button>
-        </div>
+          <DialogHeader>
+            <DialogTitle>Share Post</DialogTitle>
+            <DialogDescription>
+              Choose how you want to share this post
+            </DialogDescription>
+          </DialogHeader>
 
-        <div className="p-4 space-y-4">
-          <button
-            onClick={() => copyToClipboard(shareUrl)}
-            className={cn(
-              "w-full flex items-center justify-between p-3 rounded-lg transition duration-200",
-              isDarkMode
-                ? "bg-gray-700 hover:bg-gray-600 text-white"
-                : "bg-gray-100 hover:bg-gray-200 text-gray-800"
-            )}
-          >
-            <div className="flex items-center">
-              <Link className="w-5 h-5 mr-3" />
-              <span>Copy Link</span>
+          <ScrollArea className="max-h-[400px] overflow-auto">
+            <div className="space-y-4 p-4">
+              {shareOptions.map((option) => (
+                <Button
+                  key={option.text}
+                  variant="ghost"
+                  className={cn(
+                    "w-full justify-start",
+                    isDarkMode ? "text-white hover:bg-gray-700" : "text-gray-900 hover:bg-gray-100",
+                    option.color
+                  )}
+                  onClick={option.action}
+                >
+                  {option.icon}
+                  {option.text}
+                </Button>
+              ))}
             </div>
-            {copied ? (
-              <Check className="w-5 h-5 text-green-500" />
-            ) : (
-              <Copy className="w-5 h-5" />
-            )}
-          </button>
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
 
-          <div className="grid grid-cols-3 gap-4">
-            {[
-              { platform: 'twitter', icon: Twitter, color: 'text-blue-400' },
-              { platform: 'facebook', icon: Facebook, color: 'text-blue-600' },
-              { platform: 'whatsapp', icon: WhatsApp, color: 'text-green-500' }
-            ].map(({ platform, icon: Icon, color }) => (
-              <Button
-                key={platform}
-                variant="outline"
-                className={cn(
-                  "flex items-center justify-center p-3 rounded-lg",
-                  isDarkMode ? "hover:bg-gray-700" : "hover:bg-gray-100"
-                )}
-                onClick={() => shareToSocial(platform, shareUrl)}
-              >
-                <Icon className={cn("w-5 h-5", color)} />
-              </Button>
-            ))}
+      <AlertDialog open={showCopyAlert} onOpenChange={setShowCopyAlert}>
+        <AlertDialogContent className={cn(
+          "max-w-[200px] p-4",
+          isDarkMode ? "bg-gray-800 text-white" : "bg-white"
+        )}>
+          <div className="flex items-center justify-center">
+            <p className="text-sm font-medium">Link copied!</p>
           </div>
-        </div>
-      </div>
-    </BaseModal>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 };
 
-export default ShareModal
+export default ShareModal;

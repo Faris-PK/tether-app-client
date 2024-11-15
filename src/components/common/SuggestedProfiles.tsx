@@ -7,7 +7,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { connectionApi } from '../../api/networkApi';
 import { useDispatch } from 'react-redux';
 import { addFollowedUser, removeFollowedUser } from '../../redux/slices/userSlice';
-
+import { useNavigate } from 'react-router-dom';  
 type Suggestion = {
   _id: string;
   username: string;
@@ -20,6 +20,7 @@ type Suggestion = {
 const SuggestedProfiles = () => {
   const { isDarkMode } = useTheme();
   const dispatch = useDispatch();
+  const navigate = useNavigate();  
   const [peopleYouMayKnow, setPeopleYouMayKnow] = useState<Suggestion[]>([]);
   const [showAllSuggestions, setShowAllSuggestions] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -70,6 +71,10 @@ const SuggestedProfiles = () => {
     }
   };
 
+  const handleNavigateToProfile = (userId: string) => {
+    navigate(`/user/userProfile/${userId}`);
+  };
+
   if (loading || error) {
     return (
       <Card className={`w-full rounded-xl shadow-md ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
@@ -83,8 +88,11 @@ const SuggestedProfiles = () => {
   }
 
   const SuggestionItem = ({ profile }: { profile: Suggestion }) => (
-    <div className="flex items-center justify-between py-2 ">
-      <div className="flex items-center space-x-2">
+    <div className="flex items-center justify-between py-2">
+      <div
+        className="flex items-center space-x-2 cursor-pointer"
+        onClick={() => handleNavigateToProfile(profile._id)}
+      >
         <div className="relative w-8 h-8">
           <img
             src={profile.profile_picture}
@@ -97,9 +105,6 @@ const SuggestedProfiles = () => {
             </Badge>
           )}
         </div>
-         {/* <span className="text-xs text-gray-500">
-            {profile.mutualFriends} mutual friends
-          </span> */}
         <div className="flex flex-col min-w-0">
           <div className="flex items-center space-x-1">
             <span className={`font-medium text-sm truncate ${isDarkMode ? 'text-gray-200' : 'text-black'}`}>
@@ -109,20 +114,20 @@ const SuggestedProfiles = () => {
         </div>
       </div>
       <div className="flex items-center space-x-1 flex-shrink-0">
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={() => handleFollowAction(profile._id, profile.isFollowing)}
-        className={`h-7 px-3 text-xs font-medium rounded-md transition-all duration-300
-          ${profile.isFollowing 
-            ? `${isDarkMode 
-                ? 'bg-gray-700 hover:bg-gray-600' 
-                : 'bg-gray-100 hover:bg-gray-200'} text-blue-500 hover:text-blue-600`
-            : 'bg-[#1D9BF0] text-white hover:bg-[#1A8CD8] hover:text-gray-100'
-          }`}
-      >
-        {profile.isFollowing ? 'Following' : 'Follow'}
-      </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => handleFollowAction(profile._id, profile.isFollowing)}
+          className={`h-7 px-3 text-xs font-medium rounded-md transition-all duration-300
+            ${profile.isFollowing 
+              ? `${isDarkMode 
+                  ? 'bg-gray-700 hover:bg-gray-600' 
+                  : 'bg-gray-100 hover:bg-gray-200'} text-blue-500 hover:text-blue-600`
+              : 'bg-[#1D9BF0] text-white hover:bg-[#1A8CD8] hover:text-gray-100'
+            }`}
+        >
+          {profile.isFollowing ? 'Following' : 'Follow'}
+        </Button>
         <button
           onClick={() => removeSuggestion(profile._id)}
           className={`p-1 rounded-full hover:bg-gray-200 transition-colors ${

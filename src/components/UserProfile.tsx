@@ -15,13 +15,17 @@ import { useTheme } from '../contexts/ThemeContext';
 import { api } from '@/api/userApi';
 import { useNavigate, useParams } from 'react-router-dom';
 import { PostApi } from '@/api/postApi';
-import { clearUser } from '@/redux/slices/userSlice';
+import { addFollowedUser, clearUser, removeFollowedUser } from '@/redux/slices/userSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/redux/store/store';
 import Modal from 'react-modal';
 import FollowersModal from './modals/FollowersModal';
 import CommentModal from './modals/CommentModal';
 import PremiumBadge from './PremiumBadge';
+import { MarketplaceApi } from '@/api/marketplaceApi';
+import ProductGrid from './marketPlace/ProductGrid';
+import { MarketplaceProduct } from '@/types/IMarketplace';
+import { connectionApi } from '@/api/networkApi';
 
 
 interface Post {
@@ -87,6 +91,9 @@ const UserProfile: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const currentUserId = profile?._id;
   const user = useSelector((state: RootState) => state.user?.user);
+  const [marketplaceProducts, setMarketplaceProducts] = useState<MarketplaceProduct[]>([]);
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [followLoading, setFollowLoading] = useState(false);
 
  // console.log(profile?._id)
 
@@ -106,6 +113,60 @@ const UserProfile: React.FC = () => {
 
     }
   };
+
+
+  useEffect(() => {
+    if (user?.following && profile?._id) {
+      setIsFollowing(user.following.includes(profile._id));
+    }
+  }, [user?.following, profile?._id]);
+
+  const handleFollowAction = async () => {
+    if (!user || !profile) return;
+    
+    try {
+      setFollowLoading(true);
+      if (isFollowing) {
+        await connectionApi.unfollowUser(profile._id);
+        dispatch(removeFollowedUser(profile._id));
+        // Update local state
+        setProfile(prev => prev ? {
+          ...prev,
+          followers: prev.followers.filter(id => id !== user._id)
+        } : null);
+      } else {
+        await connectionApi.followUser(profile._id);
+        dispatch(addFollowedUser(profile._id));
+        // Update local state
+        setProfile(prev => prev ? {
+          ...prev,
+          followers: [...prev.followers, user._id]
+        } : null);
+      }
+    } catch (error) {
+      console.error('Error updating follow status:', error);
+    } finally {
+      setFollowLoading(false);
+    }
+  };
+
+
+  
+
+  const fetchMarketplaceProducts = useCallback(async () => {
+    try {
+      const response = await MarketplaceApi.getUserProducts(userId!);
+      console.log( ' fetchMarketplaceProducts : ', response)
+      setMarketplaceProducts(response);
+    } catch (err) {
+      console.error('Error fetching marketplace products:', err);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchMarketplaceProducts();
+  }, [fetchMarketplaceProducts]);
+
 
   const filteredPosts = posts.filter((post) => {
     if (postType === 'all') return true;
@@ -292,12 +353,21 @@ const UserProfile: React.FC = () => {
                   </div>
                 </div>
                 
+                {user && profile && user._id !== profile._id && (
                 <button 
-                  className={`px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md text-sm flex items-center transition-colors duration-200`}
+                  onClick={handleFollowAction}
+                  disabled={followLoading}
+                  className={`px-4 py-2 ${
+                    isFollowing 
+                      ? `${isDarkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'} 
+                        text-blue-500 hover:text-blue-600`
+                      : 'bg-[#1D9BF0] hover:bg-[#1A8CD8] text-white'
+                  } rounded-md text-sm flex items-center transition-colors duration-200`}
                 >
                   <UserPlus size={16} className="mr-2" />
-                  Follow
+                  {followLoading ? 'Loading...' : isFollowing ? 'Following' : 'Follow'}
                 </button>
+              )}
               </div>
 
               <p className={`${isDarkMode ? 'text-gray-300' : 'text-gray-600'} my-6`}>{profile?.bio}</p>
@@ -406,9 +476,31 @@ const UserProfile: React.FC = () => {
 
               {activeTab === 'marketplace' && (
                 <div>
-                  <h2 className="text-2xl font-bold text-white mb-6">Marketplace</h2>
-                  <p className="text-gray-400 text-center py-8">No marketplace items available.</p>
-                </div>
+                {/* <h2 className="text-2xl font-bold text-white mb-6">Marketplace</h2> */}
+                
+                {marketplaceProducts.length > 0 ? (
+                        <ProductGrid products={marketplaceProducts} loading={loading} />
+                ) : (
+                  <div className={`flex flex-col items-center justify-center h-96 p-6 rounded-lg ${
+                    isDarkMode ? 'bg-gray-600' : 'bg-gray-100'
+                  }`}
+                  >
+                    <div className={`flex items-center justify-center w-24 h-24 rounded-full mb-4 ${
+                      isDarkMode ? 'bg-gray-700' : 'bg-gray-300'
+                    }`}
+                    >
+                      <ShoppingBag size={32} className={isDarkMode ? 'text-gray-500' : 'text-gray-500'} />
+                    </div>
+                    <h2 className={`${isDarkMode ? 'text-gray-200' : 'text-gray-800'} text-xl font-semibold mb-2`}>
+                      No Marketplace Items Available
+                    </h2>
+                    <p className={isDarkMode ? 'text-gray-400' : 'text-gray-500'}>
+                      You don't have any marketplace items yet. Click the button below to add one!
+                    </p>
+                  
+                  </div>
+                )}
+              </div>
               )}
             </div>
           </div>

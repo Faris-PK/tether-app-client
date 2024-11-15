@@ -76,7 +76,7 @@ const LocationModal: React.FC<LocationModalProps> = ({ isOpen, onClose, isDarkMo
     if (user && mapContainer.current) {
       map.current = new mapboxgl.Map({
         container: mapContainer.current,
-        style: 'mapbox://styles/mapbox/standard',
+        style: 'mapbox://styles/mapbox/satellite-streets-v12',
         center: [user?.userLocation?.coordinates?.longitude, user?.userLocation.coordinates.latitude],
         zoom: 17,
         scrollZoom: false,
@@ -214,34 +214,7 @@ const LocationModal: React.FC<LocationModalProps> = ({ isOpen, onClose, isDarkMo
           {/* Map Preview */}
           <div ref={mapContainer} className={`rounded-lg overflow-hidden border ${
             isDarkMode ? 'border-gray-700' : 'border-gray-200'
-          } h-64 relative`}>
-            <div className="absolute bottom-4 right-4 flex gap-2">
-              <Button
-                variant="secondary"
-                size="icon"
-                className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}
-                onClick={() => {
-                  if (map.current) {
-                    map.current.zoomIn();
-                  }
-                }}
-              >
-                <Plus className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="secondary"
-                size="icon"
-                className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}
-                onClick={() => {
-                  if (map.current) {
-                    map.current.zoomOut();
-                  }
-                }}
-              >
-                <Minus className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
+          } h-64 relative`}></div>
 
           {/* Apply Button */}
           <Button

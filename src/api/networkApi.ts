@@ -31,4 +31,5 @@ export const connectionApi = {
     const response = await API.delete(`${networkRoutes.removeSuggestion}/${userId}`, { withCredentials: true });
     return response.data;
   },
+  
 };

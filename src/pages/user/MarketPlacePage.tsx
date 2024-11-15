@@ -43,8 +43,8 @@ const MarketPlacePage: React.FC<MarketPlacePageProps> = () => {
 
   const fetchProducts = async (filters?: any) => {
     try {
-      const response = await MarketplaceApi.getAllProducts(filters);
-     // console.log('response from marketPlace ', response);
+      const response = await MarketplaceApi.getAllProducts();
+      console.log('response from marketPlace ', response);
       setProducts(response);
     } catch (error) {
       console.error('Error fetching products:', error);

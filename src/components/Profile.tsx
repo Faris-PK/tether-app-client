@@ -25,6 +25,9 @@ import ShareIcon from '@mui/icons-material/Share';
 import FollowersModal from './modals/FollowersModal';
 import CommentModal from './modals/CommentModal';
 import PremiumBadge from './PremiumBadge';
+import { MarketplaceApi } from '@/api/marketplaceApi';
+import { MarketplaceProduct } from '@/types/IMarketplace';
+import ProductGrid from './marketPlace/ProductGrid';
 
 
 interface Post {
@@ -70,7 +73,8 @@ const Profile: React.FC = () => {
   const [commentModalPost, setCommentModalPost] = useState<Post | null>(null);
   const modalRef = useRef<HTMLDivElement>(null);
   const currentUserId  = useSelector((state: RootState) => state.user.user?._id);
-  
+  const [marketplaceProducts, setMarketplaceProducts] = useState<MarketplaceProduct[]>([]);
+ 
 
   const navigate = useNavigate();
 
@@ -220,6 +224,20 @@ const Profile: React.FC = () => {
     fetchPosts();
   }, [fetchPosts]);
 
+  const fetchMarketplaceProducts = useCallback(async () => {
+    try {
+      const response = await MarketplaceApi.getUserProducts(user?._id);
+      //console.log( ' fetchMarketplaceProducts : ', response)
+      setMarketplaceProducts(response);
+    } catch (err) {
+      console.error('Error fetching marketplace products:', err);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchMarketplaceProducts();
+  }, [fetchMarketplaceProducts]);
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
@@ -321,6 +339,41 @@ const Profile: React.FC = () => {
     );
   }
   
+
+
+  interface MarketplaceProductCardProps {
+    product: MarketplaceProduct;
+  }
+  
+  const MarketplaceProductCard: React.FC<MarketplaceProductCardProps> = ({ product }) => {
+    return (
+      <div className={`flex flex-col items-center justify-center p-4 rounded-lg shadow-md transition-colors duration-200 ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
+        {product.images && product.images.length > 0 && (
+          <img src={product.images[0]} alt={product.title} className="w-full max-h-[200px] object-cover rounded-t-lg mb-4" />
+        )}
+        
+        <h3 className={`text-xl font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'} mb-2`}>
+          {product.title}
+        </h3>
+        
+        <p className={`${isDarkMode ? 'text-gray-300' : 'text-gray-600'} mb-2`}>
+          {product.description}
+        </p>
+        
+        <div className={`flex items-center ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+          <MapPin size={16} className="mr-1 text-green-400" />
+          <span>{product.location.name}</span>
+        </div>
+        
+        <div className={`mt-4 flex justify-between w-full ${isDarkMode ? 'border-t-gray-700' : 'border-t-gray-200'} border-t pt-2`}>
+          <span className={`font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>${product.price}</span>
+          <span className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+            {formatDistanceToNow(new Date(product.createdAt), { addSuffix: true }).replace('about ', '')}
+          </span>
+        </div>
+      </div>
+    );
+  };
     return (
      <div className={`${isDarkMode ? 'bg-gray-700' : 'bg-gray-100'} p-4 rounded-xl mb-4 shadow-md transition-colors duration-200`}>
         <div className="flex justify-between items-start mb-4">
@@ -446,6 +499,7 @@ const Profile: React.FC = () => {
                   {user?.premium_status && (
                     <div className="mt-1">
                       <PremiumBadge />
+                      
                     </div>
                   )}
 
@@ -538,30 +592,30 @@ const Profile: React.FC = () => {
 
 
           <div className={`w-full mt-6 rounded-xl overflow-hidden shadow-xl ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
-            <div className="flex justify-center border-b border-gray-700">
-              <button
-                className={`flex items-center justify-center py-3 px-6 font-medium text-sm focus:outline-none transition-colors duration-200 ${
-                  activeTab === 'posts'
-                    ? 'text-blue-500 border-b-2 border-blue-500'
-                    : 'text-gray-400 hover:text-gray-200'
-                }`}
-                onClick={() => setActiveTab('posts')}
-              >
-                <FileText className="w-4 h-4 mr-2" />
-                Posts
-              </button>
-              <button
-                className={`flex items-center justify-center py-3 px-6 font-medium text-sm focus:outline-none transition-colors duration-200 ${
-                  activeTab === 'marketplace'
-                    ? 'text-blue-500 border-b-2 border-blue-500'
-                    : 'text-gray-400 hover:text-gray-200'
-                }`}
-                onClick={() => setActiveTab('marketplace')}
-              >
-                <ShoppingBag className="w-4 h-4 mr-2" />
-                Marketplace
-              </button>
-            </div>
+          <div className="flex justify-center border-b border-gray-700">
+            <button
+              className={`flex items-center justify-center py-3 px-6 font-medium text-sm focus:outline-none transition-colors duration-200 ${
+                activeTab === 'posts'
+                  ? 'text-blue-500 border-b-2 border-blue-500'
+                  : 'text-gray-400 hover:text-gray-200'
+              }`}
+              onClick={() => setActiveTab('posts')}
+            >
+              <FileText className="w-4 h-4 mr-2" />
+              Posts
+            </button>
+            <button
+              className={`flex items-center justify-center py-3 px-6 font-medium text-sm focus:outline-none transition-colors duration-200 ${
+                activeTab === 'marketplace'
+                  ? 'text-blue-500 border-b-2 border-blue-500'
+                  : 'text-gray-400 hover:text-gray-200'
+              }`}
+              onClick={() => setActiveTab('marketplace')}
+            >
+              <ShoppingBag className="w-4 h-4 mr-2" />
+              Marketplace
+            </button>
+          </div>
             
             <div className="p-6">
               {activeTab === 'posts' && (
@@ -602,7 +656,7 @@ const Profile: React.FC = () => {
                     ))}
                     </div>
                   ) : (
-                    <div className={`flex flex-col items-center justify-center h-96 p-6 rounded-md ${
+                    <div className={`flex flex-col items-center justify-center h-96 p-6 rounded-lg ${
                       isDarkMode ? 'bg-gray-800' : 'bg-gray-100'
                     }`}
                   >
@@ -625,11 +679,33 @@ const Profile: React.FC = () => {
               )}
 
               {activeTab === 'marketplace' && (
-                <div>
-                  <h2 className="text-2xl font-bold text-white mb-6">Marketplace</h2>
-                  <p className="text-gray-400 text-center py-8">Your marketplace items will be displayed here.</p>
-                </div>
-              )}
+                  <div>
+                    {/* <h2 className="text-2xl font-bold text-white mb-6">Marketplace</h2> */}
+                    
+                    {marketplaceProducts.length > 0 ? (
+                            <ProductGrid products={marketplaceProducts} loading={loading} />
+                    ) : (
+                      <div className={`flex flex-col items-center justify-center h-96 p-6 rounded-lg ${
+                        isDarkMode ? 'bg-gray-600' : 'bg-gray-100'
+                      }`}
+                      >
+                        <div className={`flex items-center justify-center w-24 h-24 rounded-full mb-4 ${
+                          isDarkMode ? 'bg-gray-700' : 'bg-gray-300'
+                        }`}
+                        >
+                          <ShoppingBag size={32} className={isDarkMode ? 'text-gray-500' : 'text-gray-500'} />
+                        </div>
+                        <h2 className={`${isDarkMode ? 'text-gray-200' : 'text-gray-800'} text-xl font-semibold mb-2`}>
+                          No Marketplace Items Available
+                        </h2>
+                        <p className={isDarkMode ? 'text-gray-400' : 'text-gray-500'}>
+                          You don't have any marketplace items yet. Click the button below to add one!
+                        </p>
+                      
+                      </div>
+                    )}
+                  </div>
+                )}
             </div>
           </div>
         </div>

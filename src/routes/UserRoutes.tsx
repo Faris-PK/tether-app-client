@@ -10,6 +10,7 @@ import { ThemeProvider } from '../contexts/ThemeContext';
 import UserProfile from '../pages/user/UserProfilePage';
 import Marketplace from '@/pages/user/MarketPlacePage';
 import PaymentSuccessPage from '@/pages/user/PaymentSuccessPage';
+import SharedPostPage from '@/pages/user/SharedPostPage';
 
 
 const UserRoutes: React.FC = () => {
@@ -25,6 +26,7 @@ const UserRoutes: React.FC = () => {
         <Route path="home" element={<PrivateRoute element={<HomePage />} />} />
         <Route path="profile" element={<PrivateRoute element={<ProfilePage />} />} />
         <Route path="UserProfile/:userId" element={<PrivateRoute element={<UserProfile/>} />} />
+        <Route path="post/:postId" element={<PrivateRoute element={<SharedPostPage/>} />} />
         <Route path="MarketPlace" element={<PrivateRoute element={<Marketplace/>} />} />
         <Route path="paymentsuccess" element={<PaymentSuccessPage />} />
         <Route path="payment/cancel" element={<Navigate to="/user/home" />} />

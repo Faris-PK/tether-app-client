@@ -17,6 +17,10 @@ export const PostApi = {
     const response = await API.get(postRoutes.getAllPosts, { withCredentials: true });
     return response.data;
   },
+  getSinglePost: async (postId:string) => {
+    const response = await API.get(`${postRoutes.getSinglePost}/${postId}`, { withCredentials: true });
+    return response.data;
+  },
   getProfilePosts: async (userId : string) => {
     const response = await API.get(`${postRoutes.getUserPots}/${userId}`, { withCredentials: true });
     return response.data;

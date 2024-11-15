@@ -64,7 +64,7 @@ const PremiumSubscriptionModal: React.FC<PremiumSubscriptionModalProps> = ({ isO
       features: [ 
         "All monthly features", 
         "Save 17% yearly", 
-        "Early access to new features", 
+        "Item promoting option", 
         "Premium analytics", 
         "Custom profile themes", 
         "Marketplace access", 

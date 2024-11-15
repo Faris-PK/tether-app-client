@@ -31,7 +31,13 @@ interface FormFields {
   title: string;
   price: string;
   category: string;
-  location: string;
+  location: {
+    name: string;
+    coordinates: {
+      latitude: number;
+      longitude: number;
+    };
+  };
   description: string;
 }
 
@@ -45,7 +51,13 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
     title: '',
     price: '',
     category: '',
-    location: '',
+    location: {
+      name: '',
+      coordinates: {
+        latitude: 0,
+        longitude: 0
+      }
+    },
     description: ''
   });
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
@@ -58,7 +70,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ): void => {
     const { name, value } = e.target;
-    if (name !== 'location') { // Handle non-location inputs normally
+    if (name !== 'location') {
       setFormData(prev => ({
         ...prev,
         [name]: value
@@ -69,6 +81,19 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
   const handleLocationChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { value } = e.target;
     setLocationQuery(value);
+    
+    // Update the location name in formData
+    setFormData(prev => ({
+      ...prev,
+      location: {
+        ...prev.location,
+        name: value,
+        coordinates: {
+          latitude: 0,
+          longitude: 0
+        }
+      }
+    }));
     
     if (value.length > 2) {
       geocodingClient
@@ -91,11 +116,17 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
   };
 
   const handleLocationSelect = (place: any) => {
-    console.log(place);
+    const [longitude, latitude] = place.center;
     
     setFormData(prev => ({
       ...prev,
-      location: place.place_name,
+      location: {
+        name: place.place_name,
+        coordinates: {
+          latitude,
+          longitude
+        }
+      }
     }));
     setLocationQuery(place.place_name);
     setLocationSuggestions([]);
@@ -123,10 +154,14 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
     try {
       const formDataToSend = new FormData();
       
-      // Append text fields
-      Object.entries(formData).forEach(([key, value]) => {
-        formDataToSend.append(key, value);
-      });
+      // Append location as a stringified object
+      formDataToSend.append('location', JSON.stringify(formData.location));
+      
+      // Append other fields
+      formDataToSend.append('title', formData.title);
+      formDataToSend.append('price', formData.price);
+      formDataToSend.append('category', formData.category);
+      formDataToSend.append('description', formData.description);
 
       // Append images
       selectedFiles.forEach(file => {
@@ -231,6 +266,13 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
                     {place.place_name}
                   </div>
                 ))}
+              </div>
+            )}
+            
+            {/* Display selected coordinates if available */}
+            {formData.location.coordinates.latitude !== 0 && (
+              <div className="mt-1 text-sm text-gray-500">
+                Selected coordinates: {formData.location.coordinates.latitude.toFixed(6)}, {formData.location.coordinates.longitude.toFixed(6)}
               </div>
             )}
           </div>

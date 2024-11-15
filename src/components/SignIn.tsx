@@ -20,7 +20,7 @@ const SignIn: React.FC = () => {
     e.preventDefault();
     try {
       const response = await api.login(email, password);
-      //console.log(response);
+      //console.log("Logined data",response);
 
       dispatch(setUser(response.user));
       setSuccess('Login successful!');

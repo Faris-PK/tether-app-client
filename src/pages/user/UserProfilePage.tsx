@@ -1,12 +1,9 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
-
 import Title from '@/components/common/Title';
 import SearchBar from '@/components/common/SearchBar';
 import ProfileCard from '@/components/common/ProfileCard';
 import SideNav from '@/components/common/SettingsNav';
-import StoryArea from '@/components/home/StoryArea';
-import PostList from '@/components/home/PostList';
 import SuggestedProfiles from '@/components/common/SuggestedProfiles';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '@/redux/store/store';

@@ -9,7 +9,7 @@ import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store/store';
 
 interface PostHeaderProps {
-  userId:string;
+  userId: string;
   username: string;
   profilePicture: string;
   location: string;
@@ -31,14 +31,11 @@ const PostHeader: React.FC<PostHeaderProps> = ({
   const user = useSelector((state: RootState) => state.user.user);
 
   const handleNavigateToProfile = () => {
-    console.log(userId)
-    if(userId === user?._id){
+    if (userId === user?._id) {
       navigate('/user/profile');
-    }else{
+    } else {
       navigate(`/user/userProfile/${userId}`);
     }
-     
-
   };
 
   return (
@@ -54,18 +51,24 @@ const PostHeader: React.FC<PostHeaderProps> = ({
         />
         <div>
           <h3 className={cn(
-            "font-semibold",
+            "font-bold",
             isDarkMode ? "text-white" : "text-black"
           )}>
             {username}
           </h3>
           {location && (
-            <div className="flex items-center text-gray-700 text-md">
+            <div className={cn(
+              "flex items-center text-md",
+              isDarkMode ? "text-gray-400" : "text-gray-800"
+            )}>
               <MapPin size={14} className="mr-1" />
               <span>{location}</span>
             </div>
           )}
-          <span className="text-gray-500 text-sm">
+          <span className={cn(
+            "text-sm",
+            isDarkMode ? "text-gray-400" : "text-gray-500"
+          )}>
             {formatDistanceToNow(new Date(createdAt), { addSuffix: true })}
           </span>
         </div>

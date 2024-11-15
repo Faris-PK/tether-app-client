@@ -6,6 +6,7 @@ import { connectionApi } from '../../api/networkApi';
 import { Button } from '@/components/ui/button';
 import { useTheme } from '../../contexts/ThemeContext';
 import { api } from '@/api/userApi';
+import { useNavigate } from 'react-router-dom'; // Import useNavigate
 
 interface User {
   _id: string;
@@ -25,6 +26,7 @@ interface FollowersModalProps {
 const FollowersModal: React.FC<FollowersModalProps> = ({ isOpen, onClose, title, currentUserId }) => {
   const dispatch = useDispatch();
   const { isDarkMode } = useTheme();
+  const navigate = useNavigate(); // Initialize navigate
   const [users, setUsers] = useState<User[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -37,8 +39,6 @@ const FollowersModal: React.FC<FollowersModalProps> = ({ isOpen, onClose, title,
         setLoading(true);
         setError(null);
         const response = await (title === 'Followers' ? api.getFollowers(currentUserId) : api.getFollowing(currentUserId));
-        console.log('response : ', response.data);
-
         const usersWithFollowStatus = response.data.map((user: any) => ({
           _id: user._id,
           username: user.username,
@@ -91,6 +91,14 @@ const FollowersModal: React.FC<FollowersModalProps> = ({ isOpen, onClose, title,
     } catch (err) {
       setError('Failed to update follow status');
       console.error('Error updating follow status:', err);
+    }
+  };
+
+  const handleNavigateToProfile = (userId: string) => {
+    if (userId === currentUserId) {
+      navigate('/user/profile');
+    } else {
+      navigate(`/user/userProfile/${userId}`);
     }
   };
 
@@ -158,6 +166,7 @@ const FollowersModal: React.FC<FollowersModalProps> = ({ isOpen, onClose, title,
                       ? 'hover:bg-gray-700' 
                       : 'hover:bg-gray-50'
                   }`}
+                  onClick={() => handleNavigateToProfile(user._id)} // Navigate on click
                 >
                   <div className="flex items-center gap-3">
                     <img
@@ -181,7 +190,10 @@ const FollowersModal: React.FC<FollowersModalProps> = ({ isOpen, onClose, title,
                   
                   {user._id !== currentUserId && (
                     <button
-                      onClick={() => handleFollowToggle(user._id, user.isFollowing)}
+                      onClick={(e) => {
+                        e.stopPropagation(); // Prevent navigation on button click
+                        handleFollowToggle(user._id, user.isFollowing);
+                      }}
                       className={`px-4 py-1 rounded-full text-sm font-medium transition-colors duration-200 ${
                         user.isFollowing
                           ? isDarkMode

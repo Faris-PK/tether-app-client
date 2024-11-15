@@ -10,6 +10,7 @@ export default interface IUser extends Document {
   profile_picture?: string;
   cover_photo?: string;
   premium_status: boolean;
+
   dob:string;
   userLocation: {
     name: string;
