@@ -50,7 +50,7 @@ Modal.setAppElement('#root');
 
 const Profile: React.FC = () => {
   const { isDarkMode } = useTheme();
-  const user = useSelector((state: RootState) => state.user?.user);
+  const user = useSelector((state: RootState) => state?.user?.user);
   
   const dispatch = useDispatch<AppDispatch>();
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
@@ -341,39 +341,6 @@ const Profile: React.FC = () => {
   
 
 
-  interface MarketplaceProductCardProps {
-    product: MarketplaceProduct;
-  }
-  
-  const MarketplaceProductCard: React.FC<MarketplaceProductCardProps> = ({ product }) => {
-    return (
-      <div className={`flex flex-col items-center justify-center p-4 rounded-lg shadow-md transition-colors duration-200 ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
-        {product.images && product.images.length > 0 && (
-          <img src={product.images[0]} alt={product.title} className="w-full max-h-[200px] object-cover rounded-t-lg mb-4" />
-        )}
-        
-        <h3 className={`text-xl font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'} mb-2`}>
-          {product.title}
-        </h3>
-        
-        <p className={`${isDarkMode ? 'text-gray-300' : 'text-gray-600'} mb-2`}>
-          {product.description}
-        </p>
-        
-        <div className={`flex items-center ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-          <MapPin size={16} className="mr-1 text-green-400" />
-          <span>{product.location.name}</span>
-        </div>
-        
-        <div className={`mt-4 flex justify-between w-full ${isDarkMode ? 'border-t-gray-700' : 'border-t-gray-200'} border-t pt-2`}>
-          <span className={`font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>${product.price}</span>
-          <span className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-            {formatDistanceToNow(new Date(product.createdAt), { addSuffix: true }).replace('about ', '')}
-          </span>
-        </div>
-      </div>
-    );
-  };
     return (
      <div className={`${isDarkMode ? 'bg-gray-700' : 'bg-gray-100'} p-4 rounded-xl mb-4 shadow-md transition-colors duration-200`}>
         <div className="flex justify-between items-start mb-4">

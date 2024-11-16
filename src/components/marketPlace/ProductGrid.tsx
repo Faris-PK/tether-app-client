@@ -1,18 +1,33 @@
 import React, { useState } from 'react';
 import { Card } from "@/components/ui/card";
-import { MapPin } from 'lucide-react';
+import { MapPin, MoreVertical } from 'lucide-react';
 import { MarketplaceProduct } from '../../types/IMarketplace';
 import ProductDetailModal from '../modals/ProductDetailModal';
+import ProductPromotionModal from '../modals/ProductPromotionModal';
 import EmptyState from './EmptyState';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/redux/store/store';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import { toast } from 'react-hot-toast';
 
 interface ProductGridProps {
   products: MarketplaceProduct[];
   loading?: boolean;
+  onProductUpdate?: () => void;
 }
 
-const ProductGrid: React.FC<ProductGridProps> = ({ products, loading }) => {
+const ProductGrid: React.FC<ProductGridProps> = ({ products, loading, onProductUpdate }) => {
   const [selectedProduct, setSelectedProduct] = useState<MarketplaceProduct | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isPromotionModalOpen, setIsPromotionModalOpen] = useState(false);
+  const [productToPromote, setProductToPromote] = useState<MarketplaceProduct | null>(null);
+  const currentUserId = useSelector((state: RootState) => state.user?.user?._id);
 
   const handleProductClick = (product: MarketplaceProduct) => {
     setSelectedProduct(product);
@@ -22,6 +37,12 @@ const ProductGrid: React.FC<ProductGridProps> = ({ products, loading }) => {
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setSelectedProduct(null);
+  };
+
+  const handlePromoteProduct = (product: MarketplaceProduct, event: React.MouseEvent) => {
+    event.stopPropagation();
+    setProductToPromote(product);
+    setIsPromotionModalOpen(true);
   };
 
   if (loading) {
@@ -44,9 +65,41 @@ const ProductGrid: React.FC<ProductGridProps> = ({ products, loading }) => {
         {products.map((product) => (
           <Card 
             key={product._id}
-            className="overflow-hidden hover:shadow-lg transition-shadow duration-300 bg-white dark:bg-gray-800 cursor-pointer rounded-lg"
+            className="overflow-hidden hover:shadow-lg transition-shadow duration-300 bg-white dark:bg-gray-800 cursor-pointer rounded-lg relative"
             onClick={() => handleProductClick(product)}
           >
+            {product.isPromoted && (
+              <div className="absolute top-2 right-2 z-10">
+                <span className="bg-blue-500 text-white px-2 py-1 rounded-full text-xs font-semibold">
+                  Promoted
+                </span>
+              </div>
+            )}
+            
+            {currentUserId === product.userId._id &&  !product.isPromoted &&  (
+              <div className="absolute top-2 right-2 z-10" onClick={(e) => e.stopPropagation()}>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      className="h-8 w-8 p-0 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    >
+                      <MoreVertical className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    {!product.isPromoted && (
+                      <DropdownMenuItem
+                        onClick={(e) => handlePromoteProduct(product, e)}
+                      >
+                        Promote Item
+                      </DropdownMenuItem>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            )}
+
             <div className="relative h-48 bg-gray-100 dark:bg-gray-800">
               <img
                 src={product.images[0]}
@@ -77,6 +130,22 @@ const ProductGrid: React.FC<ProductGridProps> = ({ products, loading }) => {
         isOpen={isModalOpen}
         onClose={handleCloseModal}
       />
+
+      {productToPromote && (
+        <ProductPromotionModal
+          isOpen={isPromotionModalOpen}
+          onClose={() => {
+            setIsPromotionModalOpen(false);
+            setProductToPromote(null);
+          }}
+          product={productToPromote}
+          onPromotionSuccess={() => {
+            onProductUpdate?.();
+            setIsPromotionModalOpen(false);
+            setProductToPromote(null);
+          }}
+        />
+      )}
     </>
   );
 };

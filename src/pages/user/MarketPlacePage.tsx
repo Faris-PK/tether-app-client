@@ -44,7 +44,7 @@ const MarketPlacePage: React.FC<MarketPlacePageProps> = () => {
   const fetchProducts = async (filters?: any) => {
     try {
       const response = await MarketplaceApi.getAllProducts();
-      console.log('response from marketPlace ', response);
+    //  console.log('response from marketPlace ', response);
       setProducts(response);
     } catch (error) {
       console.error('Error fetching products:', error);
@@ -101,6 +101,8 @@ const MarketPlacePage: React.FC<MarketPlacePageProps> = () => {
       // Handle error
     }
   };
+
+
 
   return (
     <div className={`mx-auto p-4 scrollbar-hide ${isDarkMode ? 'bg-gray-900' : 'bg-[#d8d4cd]'} min-h-screen flex flex-col transition-colors duration-200`}>
@@ -249,7 +251,11 @@ const MarketPlacePage: React.FC<MarketPlacePageProps> = () => {
           onLocationClick={handleLocationClick}
         />
         <main className="flex-1 space-y-4">
-          <ProductGrid products={products} loading={loading} />
+          <ProductGrid 
+          products={products} 
+          loading={loading} 
+          onProductUpdate={handleRefreshProducts}
+          />
         </main>
       </div>
 

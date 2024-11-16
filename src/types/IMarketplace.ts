@@ -24,6 +24,8 @@ export interface MarketplaceProduct {
   userId: User;
   createdAt: string;
   updatedAt: string;
+  isPromoted: boolean;
+  promotionExpiry?: string;
   __v: number;
 }
 

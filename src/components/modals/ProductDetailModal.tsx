@@ -169,6 +169,13 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                       </Button>
                     </>
                   )}
+                  {/* {product.isPromoted && (
+                    <div className="absolute top-2 right-2 z-10">
+                      <Badge variant="secondary" className="px-2 py-1">
+                        Promoted
+                      </Badge>
+                    </div>
+                  )} */}
                 </>
               ) : (
                 <div className="w-full h-full flex items-center justify-center bg-gray-200">
@@ -203,7 +210,14 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
               {/* Title and Price */}
               {product && (
                 <>
-                  <h2 className="text-xl font-semibold mb-2">{product.title}</h2>
+                  <div className="flex items-center justify-between mb-2">
+                    <h2 className="text-xl font-semibold">{product.title}</h2>
+                    {product.isPromoted && (
+                      <Badge variant="secondary" className="px-2 py-1 text-blue-600">
+                        Promoted
+                      </Badge>
+                    )}
+                  </div>
                   <div className="text-2xl font-bold text-gray-600 mb-4">
                     ₹{product.price.toLocaleString()}
                   </div>

@@ -11,6 +11,7 @@ import UserProfile from '../pages/user/UserProfilePage';
 import Marketplace from '@/pages/user/MarketPlacePage';
 import PaymentSuccessPage from '@/pages/user/PaymentSuccessPage';
 import SharedPostPage from '@/pages/user/SharedPostPage';
+import PromotionSuccessPage from '@/pages/user/PromotionSuccessPage';
 
 
 const UserRoutes: React.FC = () => {
@@ -30,6 +31,7 @@ const UserRoutes: React.FC = () => {
         <Route path="MarketPlace" element={<PrivateRoute element={<Marketplace/>} />} />
         <Route path="paymentsuccess" element={<PaymentSuccessPage />} />
         <Route path="payment/cancel" element={<Navigate to="/user/home" />} />
+        <Route path="promotesuccess" element={<PromotionSuccessPage />} />
 
 
 

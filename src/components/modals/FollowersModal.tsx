@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { X, Search } from 'lucide-react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { addFollowedUser, removeFollowedUser } from '../../redux/slices/userSlice';
 import { connectionApi } from '../../api/networkApi';
 import { Button } from '@/components/ui/button';
 import { useTheme } from '../../contexts/ThemeContext';
 import { api } from '@/api/userApi';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate
+import { useNavigate } from 'react-router-dom';
+import { RootState } from '@/redux/store/store';
 
 interface User {
   _id: string;
@@ -26,12 +27,13 @@ interface FollowersModalProps {
 const FollowersModal: React.FC<FollowersModalProps> = ({ isOpen, onClose, title, currentUserId }) => {
   const dispatch = useDispatch();
   const { isDarkMode } = useTheme();
-  const navigate = useNavigate(); // Initialize navigate
+  const navigate = useNavigate();
   const [users, setUsers] = useState<User[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const actualUserId = useSelector((state: RootState) => state.user.user?._id);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -59,7 +61,7 @@ const FollowersModal: React.FC<FollowersModalProps> = ({ isOpen, onClose, title,
 
     if (isOpen) {
       fetchUsers();
-      setSearchQuery(''); // Reset search when modal opens
+      setSearchQuery('');
     }
   }, [isOpen, title]);
 
@@ -107,7 +109,6 @@ const FollowersModal: React.FC<FollowersModalProps> = ({ isOpen, onClose, title,
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg w-full max-w-md shadow-lg transition-colors duration-200`}>
-        {/* Header */}
         <div className={`border-b ${isDarkMode ? 'border-gray-600' : 'border-gray-200'} p-4 flex items-center justify-between`}>
           <h2 className={`text-xl font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
             {title}
@@ -124,7 +125,6 @@ const FollowersModal: React.FC<FollowersModalProps> = ({ isOpen, onClose, title,
           </button>
         </div>
 
-        {/* Search Input */}
         <div className={`p-4 border-b ${isDarkMode ? 'border-gray-600' : 'border-gray-200'}`}>
           <div className={`flex items-center gap-2 px-3 py-2 rounded-lg ${
             isDarkMode ? 'bg-gray-700' : 'bg-gray-100'
@@ -142,7 +142,6 @@ const FollowersModal: React.FC<FollowersModalProps> = ({ isOpen, onClose, title,
           </div>
         </div>
 
-        {/* Content */}
         <div className="max-h-[60vh] overflow-y-auto">
           {loading ? (
             <div className={`p-4 text-center ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
@@ -158,7 +157,7 @@ const FollowersModal: React.FC<FollowersModalProps> = ({ isOpen, onClose, title,
             </div>
           ) : (
             <div className="p-2">
-              { filteredUsers.map((user) => (
+              {filteredUsers.map((user) => (
                 <div
                   key={user._id}
                   className={`flex items-center justify-between p-2 rounded-lg transition-colors duration-200 ${
@@ -166,9 +165,9 @@ const FollowersModal: React.FC<FollowersModalProps> = ({ isOpen, onClose, title,
                       ? 'hover:bg-gray-700' 
                       : 'hover:bg-gray-50'
                   }`}
-                  onClick={() => handleNavigateToProfile(user._id)} // Navigate on click
+                  onClick={() => handleNavigateToProfile(user._id)}
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 cursor-pointer">
                     <img
                       src={user.profile_picture || '/default-avatar.jpg'}
                       alt={user.username}
@@ -178,20 +177,20 @@ const FollowersModal: React.FC<FollowersModalProps> = ({ isOpen, onClose, title,
                       <h3 className={`font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
                         {user.username}
                       </h3>
-                      {user.bio && (
+                      {/* {user.bio && (
                         <p className={`text-sm line-clamp-1 ${
                           isDarkMode ? 'text-gray-400' : 'text-gray-500'
                         }`}>
                           {user.bio}
                         </p>
-                      )}
+                      )} */}
                     </div>
                   </div>
                   
-                  {user._id !== currentUserId && (
+                  {user._id !== currentUserId && user._id !== actualUserId && (
                     <button
                       onClick={(e) => {
-                        e.stopPropagation(); // Prevent navigation on button click
+                        e.stopPropagation();
                         handleFollowToggle(user._id, user.isFollowing);
                       }}
                       className={`px-4 py-1 rounded-full text-sm font-medium transition-colors duration-200 ${

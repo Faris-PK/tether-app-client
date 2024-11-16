@@ -27,52 +27,18 @@ export const MarketplaceApi = {
     });
     return response.data;
   },
-
-  // Search Products
-  searchProducts: async (query: string) => {
-    const response = await API.get(`${marketplaceRoutes.searchProducts}?q=${query}`, {
-      withCredentials: true
-    });
+  promoteProduct: async (productId: string): Promise<{ sessionUrl: string }> => {
+    const response = await API.post(`/market/promote/${productId}`);
     return response.data;
   },
 
-  // Get Products by Location and Radius
-  getProductsByLocation: async (latitude: number, longitude: number, radius: number) => {
-    const response = await API.get(
-      `${marketplaceRoutes.getCategoriesProducts}?lat=${latitude}&lng=${longitude}&radius=${radius}`,
-      {
-        withCredentials: true
-      }
-    );
-    return response.data;
-  },
-
-  // Get Products by Price Range
-  getProductsByPrice: async (minPrice: number, maxPrice: number) => {
-    const response = await API.get(
-      `${marketplaceRoutes.getProductsByPrice}?min=${minPrice}&max=${maxPrice}`,
-      {
-        withCredentials: true
-      }
-    );
-    return response.data;
-  },
-
-  // Get Products by Category
-  getProductsByCategory: async (category: string) => {
-    const response = await API.get(`${marketplaceRoutes.getCategoriesProducts}?category=${category}`, {
-      withCredentials: true
-    });
-    return response.data;
-  },
-
-  // Get Products by Date (Newest or Oldest)
-  getProductsByDate: async (sort: 'newest' | 'oldest') => {
-    const response = await API.get(`${marketplaceRoutes.getProductsByDate}?sort=${sort}`, {
-      withCredentials: true
-    });
+  checkPromotionStatus: async (sessionId: string) => {
+    
+    const response = await API.get(`/market/promote/success?session_id=${sessionId}`);
     return response.data;
   }
+
+
 
   
 };

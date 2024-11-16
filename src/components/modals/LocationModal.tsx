@@ -76,7 +76,7 @@ const LocationModal: React.FC<LocationModalProps> = ({ isOpen, onClose, isDarkMo
     if (user && mapContainer.current) {
       map.current = new mapboxgl.Map({
         container: mapContainer.current,
-        style: 'mapbox://styles/mapbox/satellite-streets-v12',
+        style: 'mapbox://styles/mapbox/streets-v12',
         center: [user?.userLocation?.coordinates?.longitude, user?.userLocation.coordinates.latitude],
         zoom: 17,
         scrollZoom: false,
