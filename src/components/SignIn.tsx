@@ -101,6 +101,7 @@ const SignIn: React.FC = () => {
                 required
               />
             </div>
+ 
 
             {/* Material UI Button for the login */}
             <Button
@@ -113,6 +114,13 @@ const SignIn: React.FC = () => {
               Connect Now
             </Button>
           </form>
+          <Link
+            to="/user/forgot-password"
+            className="text-[#1D9BF0] text-md hover:text-[#2589cc] mt-2 block text-right"
+          >
+            Forgot Password?
+          </Link>
+
 
           <div className="flex items-center my-6">
             <hr className="flex-grow border-gray-300" />
@@ -130,6 +138,7 @@ const SignIn: React.FC = () => {
               shape="rectangular"
               logo_alignment="left"
             />
+
           </div>
         </div>
       </div>

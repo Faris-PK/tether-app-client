@@ -86,6 +86,19 @@ export const api = {
     const response = await API.get(`${networkRoutes.getFollowing}/${userId}`, { withCredentials: true });
     return response.data;
   },
+  forgotPassword: async (email: string) => {
+    const response = await API.post(authRoutes.ForgotPassword, { email });
+    return response.data;
+  },
+
+  resetPassword: async (email: string, otp: string, newPassword: string) => {
+    const response = await API.post(authRoutes.ResetPassword, { 
+      email, 
+      otp, 
+      newPassword 
+    });
+    return response.data;
+  },
   
 
 };

@@ -12,6 +12,8 @@ import Marketplace from '@/pages/user/MarketPlacePage';
 import PaymentSuccessPage from '@/pages/user/PaymentSuccessPage';
 import SharedPostPage from '@/pages/user/SharedPostPage';
 import PromotionSuccessPage from '@/pages/user/PromotionSuccessPage';
+import ForgotPasswordPage from '@/pages/user/ForgotPasswordPage';
+import ResetPasswordPage from '@/pages/user/ResetPasswordPage';
 
 
 const UserRoutes: React.FC = () => {
@@ -22,6 +24,8 @@ const UserRoutes: React.FC = () => {
         <Route path="register" element={<PublicRoute element={<RegisterPage />} />} />
         <Route path="signin" element={<PublicRoute element={<SignInPage />} />} />
         <Route path="otp" element={<PublicRoute element={<OtpPage />} />} />
+        <Route path="forgot-password" element={<PublicRoute element={<ForgotPasswordPage />} />} />
+        <Route path="reset-password" element={<PublicRoute element={<ResetPasswordPage />} />} />
 
         {/* Private Routes */}
         <Route path="home" element={<PrivateRoute element={<HomePage />} />} />
