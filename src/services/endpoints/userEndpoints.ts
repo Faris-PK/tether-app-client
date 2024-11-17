@@ -66,6 +66,8 @@ export const postRoutes = {
     getProductsByPrice: '/market/products/price',
     getProductsByDate: '/market/products/date',
     promoteProduct: '/market/promote',
+    updateProduct: '/market/update',
+  deleteProduct: '/market/delete'
   };
 
   export const paymentRoutes = {

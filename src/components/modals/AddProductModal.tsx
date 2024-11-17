@@ -186,7 +186,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className={`sm:max-w-[425px] ${isDarkMode ? 'bg-gray-800 text-white' : 'bg-white'}`}>
+      <DialogContent className={`sm:max-w-[425px] ${isDarkMode ? 'bg-gray-800 text-white' : 'bg-white'} `}>
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold">Create New Listing</DialogTitle>
         </DialogHeader>

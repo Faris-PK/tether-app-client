@@ -3,7 +3,6 @@ import API from '../services/axios';
 import { marketplaceRoutes } from '../services/endpoints/userEndpoints';
 
 export const MarketplaceApi = {
-  // Create a new product listing
   createProduct: async (formData: FormData) => {
     const response = await API.post(marketplaceRoutes.createProduct, formData, {
       withCredentials: true,
@@ -35,6 +34,21 @@ export const MarketplaceApi = {
   checkPromotionStatus: async (sessionId: string) => {
     
     const response = await API.get(`/market/promote/success?session_id=${sessionId}`);
+    return response.data;
+  },
+
+  updateProduct: async (productId: string, formData: FormData) => {
+    const response = await API.put(`${marketplaceRoutes.updateProduct}/${productId}`, formData, {
+      withCredentials: true,
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+    return response.data;
+  },
+
+  deleteProduct: async (productId: string) => {
+    const response = await API.delete(`${marketplaceRoutes.deleteProduct}/${productId}`, {
+      withCredentials: true
+    });
     return response.data;
   }
 

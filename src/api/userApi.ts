@@ -91,10 +91,9 @@ export const api = {
     return response.data;
   },
 
-  resetPassword: async (email: string, otp: string, newPassword: string) => {
+  resetPassword: async (token: string, newPassword: string) => {
     const response = await API.post(authRoutes.ResetPassword, { 
-      email, 
-      otp, 
+      token, 
       newPassword 
     });
     return response.data;

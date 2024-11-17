@@ -97,7 +97,7 @@ const FollowersModal: React.FC<FollowersModalProps> = ({ isOpen, onClose, title,
   };
 
   const handleNavigateToProfile = (userId: string) => {
-    if (userId === currentUserId) {
+    if (userId === actualUserId) {
       navigate('/user/profile');
     } else {
       navigate(`/user/userProfile/${userId}`);

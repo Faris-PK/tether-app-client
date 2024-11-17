@@ -113,6 +113,24 @@ const Register: React.FC = () => {
               {errors.email && <FormHelperText error>{errors.email.message}</FormHelperText>}
             </div>
 
+            {/* Mobile Field */}
+            <div className="mb-2">
+              <TextField
+                label="Mobile"
+                type="tel"
+                variant="outlined"
+                fullWidth
+                {...register('mobile', {
+                  required: 'Mobile number is required',
+                  pattern: {
+                    value: /^[0-9]{10}$/,
+                    message: 'Mobile number must be 10 digits',
+                  },
+                })}
+              />
+              {errors.mobile && <FormHelperText error>{errors.mobile.message}</FormHelperText>}
+            </div>
+
             {/* Password Field */}
             <div className="mb-2">
               <FormControl fullWidth variant="outlined">
@@ -154,13 +172,13 @@ const Register: React.FC = () => {
                   })}
                   endAdornment={
                     <InputAdornment position="end">
-                      <IconButton
+                      {/* <IconButton
                         aria-label="toggle confirm password visibility"
                         onClick={handleClickShowConfirmPassword}
                         edge="end"
                       >
                         {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
-                      </IconButton>
+                      </IconButton> */}
                     </InputAdornment>
                   }
                   label="Confirm Password"
@@ -169,23 +187,7 @@ const Register: React.FC = () => {
               </FormControl>
             </div>
 
-            {/* Mobile Field */}
-            <div className="mb-2">
-              <TextField
-                label="Mobile"
-                type="tel"
-                variant="outlined"
-                fullWidth
-                {...register('mobile', {
-                  required: 'Mobile number is required',
-                  pattern: {
-                    value: /^[0-9]{10}$/,
-                    message: 'Mobile number must be 10 digits',
-                  },
-                })}
-              />
-              {errors.mobile && <FormHelperText error>{errors.mobile.message}</FormHelperText>}
-            </div>
+            
 
             <Button
               type="submit"

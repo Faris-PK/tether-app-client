@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { AppDispatch } from '../../redux/store/store';
-import Modal from 'react-modal';
 import { X } from 'lucide-react';
 import moment from 'moment';
 import { api } from '../../api/userApi';
@@ -9,10 +8,16 @@ import { setUser } from '../../redux/slices/userSlice';
 import IUser from '../../types/IUser';
 import mbxGeocoding from '@mapbox/mapbox-sdk/services/geocoding';
 import { useTheme } from '../../contexts/ThemeContext';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { AlertDialog, AlertDialogDescription } from "@/components/ui/alert-dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const googleClientId = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
 
-// Initialize Mapbox geocoding client
 const geocodingClient = mbxGeocoding({
   accessToken: googleClientId,
 });
@@ -29,7 +34,6 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose, us
   const [errors, setErrors] = useState<string[]>([]);
   const [success, setSuccess] = useState<string>('');
   const { isDarkMode } = useTheme();
-
   const [locationQuery, setLocationQuery] = useState(user?.userLocation?.name || '');
   const [locationSuggestions, setLocationSuggestions] = useState<any[]>([]);
 
@@ -41,12 +45,9 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose, us
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-  
+    
     if (name === 'location') {
-      console.log(value,"value of location")
       setLocationQuery(value);
-      console.log(value,"value of location 2")
-
       if (value.length > 2) {
         geocodingClient
           .forwardGeocode({
@@ -60,14 +61,13 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose, us
           })
           .catch((error) => console.error('Geocoding error:', error));
       }
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
     }
-  
-
   };
-  
 
   const handleLocationSelect = (place: any) => {
-    setFormData((prev) => ({
+    setFormData(prev => ({
       ...prev,
       userLocation: {
         ...prev.userLocation,
@@ -90,202 +90,140 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose, us
     }
 
     try {
-      console.log(' Data before updating profiel : ', formData)
       const updatedUser = await api.updateUserProfile(formData);
       dispatch(setUser(updatedUser));
       setSuccess('Profile updated successfully!');
       setErrors([]);
       onClose();
     } catch (error: any) {
-      console.error(error);
       setErrors([error.response?.data?.message || 'An error occurred while updating the profile']);
     }
   };
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onRequestClose={onClose}
-      contentLabel="Edit Profile"
-      className={`fixed inset-0 flex items-center justify-center p-4 ${
-        isDarkMode ? 'bg-gray-800 bg-opacity-20' : 'bg-[#D9D9D9] bg-opacity-20'
-      }`}
-      overlayClassName="fixed inset-0 backdrop-blur-sm"
-    >
-      <div
-        className={`bg-[#010F18] rounded-xl w-full max-w-md p-6 relative shadow-black drop-shadow-md transition-colors duration-200 ${
-          isDarkMode ? 'bg-gray-800' : 'bg-[#ffff]'
-        }`}
-      >
-        <button
-          onClick={onClose}
-          className={`absolute top-4 right-4 text-white hover:text-gray-300 ${
-            isDarkMode ? 'text-white hover:text-gray-300' : 'text-[#000] hover:text-gray-600'
-          }`}
-        >
-          <X size={24} />
-        </button>
-        <h2
-          className={`text-2xl font-semibold mb-4 ${
-            isDarkMode ? 'text-white' : 'text-[#000]'
-          }`}
-        >
-          Edit Profile
-        </h2>
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className={`sm:max-w-md ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'}`}>
+        <DialogHeader>
+          <DialogTitle className="text-xl font-semibold">Edit Profile</DialogTitle>
+        </DialogHeader>
+        
+        <form onSubmit={handleUpdateProfile} className="space-y-6">
+          {errors.length > 0 && (
+            <AlertDialog >
+              <AlertDialogDescription>
+                <ul className="list-disc pl-4">
+                  {errors.map((error, index) => (
+                    <li key={index}>{error}</li>
+                  ))}
+                </ul>
+              </AlertDialogDescription>
+            </AlertDialog>
+          )}
 
-        {errors.length > 0 && (
-          <ul className="text-red-500 mb-4">
-            {errors.map((error, index) => (
-              <li key={index}>{error}</li>
-            ))}
-          </ul>
-        )}
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="username">Name</Label>
+              <Input
+                id="username"
+                name="username"
+                value={formData.username || ''}
+                onChange={handleInputChange}
+                className={isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}
+                required
+              />
+            </div>
 
-        <form onSubmit={handleUpdateProfile}>
-          <div className="mb-4">
-            <label
-              className={`block font-medium mb-1 ${
-                isDarkMode ? 'text-gray-300' : 'text-[#000]'
-              }`}
-              htmlFor="username"
-            >
-              Name
-            </label>
-            <input
-              type="text"
-              id="username"
-              name="username"
-              value={formData.username || ''}
-              onChange={handleInputChange}
-              className={`w-full p-2 rounded bg-gray-600 bg-opacity-18 ${
-                isDarkMode
-                  ? 'text-white focus:outline-none focus:ring-1 focus:ring-[#1D9BF0] transition duration-200'
-                  : 'text-[#000] focus:outline-none focus:ring-1 focus:ring-[#1D9BF0] transition duration-200'
-              }`}
-              required
-            />
-          </div>
-          <div className="mb-4">
-            <label
-              className={`block font-medium mb-1 ${
-                isDarkMode ? 'text-gray-300' : 'text-[#000]'
-              }`}
-              htmlFor="dob"
-            >
-              Date of Birth
-            </label>
-            <input
-              type="date"
-              id="dob"
-              name="dob"
-              value={formData.dob ? moment(formData.dob).format('YYYY-MM-DD') : ''}
-              onChange={handleInputChange}
-              className={`w-full p-2 rounded bg-gray-600 bg-opacity-18 ${
-                isDarkMode
-                  ? 'text-white focus:outline-none focus:ring-1 focus:ring-[#1D9BF0] transition duration-200'
-                  : 'text-[#000] focus:outline-none focus:ring-1 focus:ring-[#1D9BF0] transition duration-200'
-              }`}
-            />
-          </div>
-          <div className="mb-4">
-            <label
-              className={`block font-medium mb-1 ${
-                isDarkMode ? 'text-gray-300' : 'text-[#000]'
-              }`}
-              htmlFor="mobile"
-            >
-              Mobile
-            </label>
-            <input
-              type="tel"
-              id="mobile"
-              name="mobile"
-              value={formData.mobile || ''}
-              onChange={handleInputChange}
-              className={`w-full p-2 rounded bg-gray-600 bg-opacity-18 ${
-                isDarkMode
-                  ? 'text-white focus:outline-none focus:ring-1 focus:ring-[#1D9BF0] transition duration-200'
-                  : 'text-[#000] focus:outline-none focus:ring-1 focus:ring-[#1D9BF0] transition duration-200'
-              }`}
-            />
-          </div>
-          <div className="mb-4">
-            <label
-              className={`block font-medium mb-1 ${
-                isDarkMode ? 'text-gray-300' : 'text-[#000]'
-              }`}
-              htmlFor="bio"
-            >
-              Bio
-            </label>
-            <textarea
-              id="bio"
-              name="bio"
-              value={formData.bio || ''}
-              onChange={handleInputChange}
-              className={`w-full p-2 rounded bg-gray-600 bg-opacity-18 ${
-                isDarkMode
-                  ? 'text-white focus:outline-none focus:ring-1 focus:ring-[#1D9BF0] transition duration-200'
-                  : 'text-[#000] focus:outline-none focus:ring-1 focus:ring-[#1D9BF0] transition duration-200'
-              }`}
-              rows={3}
-            />
-          </div>
-          <div className="mb-4">
-            <label
-              className={`block font-medium mb-1 ${
-                isDarkMode ? 'text-gray-300' : 'text-[#000]'
-              }`}
-              htmlFor="location"
-            >
-              Location
-            </label>
-            <input
-              type="text"
-              id="location"
-              name="location"
-              value={locationQuery}
-              onChange={handleInputChange}
-              className={`w-full p-2 rounded bg-gray-600 bg-opacity-18 ${
-                isDarkMode
-                  ? 'text-white focus:outline-none focus:ring-1 focus:ring-[#1D9BF0] transition duration-200'
-                  : 'text-[#000] focus:outline-none focus:ring-1 focus:ring-[#1D9BF0] transition duration-200'
-              }`}
-            />
+            <div className="space-y-2">
+              <Label htmlFor="dob">Date of Birth</Label>
+              <Input
+                type="date"
+                id="dob"
+                name="dob"
+                value={formData.dob ? moment(formData.dob).format('YYYY-MM-DD') : ''}
+                onChange={handleInputChange}
+                className={isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}
+              />
+            </div>
 
-            {/* Render location suggestions */}
-            {locationSuggestions.length > 0 && (
-              <ul
-                className={`bg-gray-700 rounded mt-2 ${
-                  isDarkMode ? 'text-white' : 'text-[#000]'
-                }`}
-              >
-                {locationSuggestions.map((place) => (
-                  <li
-                    key={place.id}
-                    className="p-2 cursor-pointer hover:bg-gray-500 transition-colors duration-200"
-                    onClick={() => handleLocationSelect(place)}
-                  >
-                    {place.place_name}
-                  </li>
-                ))}
-              </ul>
-            )}
+            <div className="space-y-2">
+              <Label htmlFor="mobile">Mobile</Label>
+              <Input
+                type="tel"
+                id="mobile"
+                name="mobile"
+                value={formData.mobile || ''}
+                onChange={handleInputChange}
+                className={isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="bio">Bio</Label>
+              <Textarea
+                id="bio"
+                name="bio"
+                value={formData.bio || ''}
+                onChange={handleInputChange}
+                className={isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}
+                rows={3}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="location">Location</Label>
+              <Input
+                type="text"
+                id="location"
+                name="location"
+                value={locationQuery}
+                onChange={handleInputChange}
+                className={isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}
+              />
+              
+              {locationSuggestions.length > 0 && (
+                <ScrollArea className={`mt-1 max-h-48 rounded-md ${
+                  isDarkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'
+                }`}>
+                  <div className="p-1">
+                    {locationSuggestions.map((place) => (
+                      <button
+                        key={place.id}
+                        type="button"
+                        onClick={() => handleLocationSelect(place)}
+                        className={`w-full text-left px-3 py-2 rounded-sm text-sm ${
+                          isDarkMode 
+                            ? 'hover:bg-gray-700 focus:bg-gray-700' 
+                            : 'hover:bg-gray-100 focus:bg-gray-100'
+                        }`}
+                      >
+                        {place.place_name}
+                      </button>
+                    ))}
+                  </div>
+                </ScrollArea>
+              )}
+            </div>
           </div>
-          
-          <button
-            type="submit"
-            className={`w-full py-3 font-semibold transition-all duration-300 ease-in-out ${
-              isDarkMode
-                ? 'bg-[#1D9BF0] text-white hover:bg-[#1aa3d4] hover:text-white'
-                : 'bg-[#1D9BF0] text-white hover:bg-[#2596be] hover:text-white'
-            }`}
-          >
-            Update Profile
-            </button>
+
+          <div className="flex justify-end gap-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onClose}
+              className={isDarkMode ? 'border-gray-700 hover:bg-gray-800' : ''}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              Update Profile
+            </Button>
+          </div>
         </form>
-      </div>
-    </Modal>
+      </DialogContent>
+    </Dialog>
   );
 };
 
