@@ -4,34 +4,58 @@ import { useNavigate } from 'react-router-dom';
 import { adminApi } from '../../api/adminApi';
 import { setAdmin } from '../../redux/slices/adminSlice';
 import { TextField, Button, Box, Typography } from '@mui/material';
+import { toast, Toaster } from 'sonner';
 
 const AdminLoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setErrorMessage('');
+    
     try {
       const response = await adminApi.login(email, password);
       console.log('Response from Admin Login page: ', response);
       dispatch(setAdmin(response.admin));
-      navigate('/admin/dashboard');
+      
+      // Show success toast
+      toast.success('Login successful', {
+        position: 'top-right',
+        duration: 3000,
+        style: {
+          background: '#4CAF50',
+          color: 'white',
+        },
+      });
+      
+      // Navigate after a short delay to allow the toast to be seen
+      setTimeout(() => {
+        navigate('/admin/dashboard');
+      }, 6000);
+      
     } catch (error: any) {
-      if (error.response && error.response.data.message) {
-        setErrorMessage(error.response.data.message);
-      } else {
-        setErrorMessage('Login failed. Please try again.');
-      }
+      const errorMessage = error.response?.data?.message || 'Login failed. Please try again.';
+      
+      // Show error toast
+      toast.error(errorMessage, {
+        position: 'top-right',
+        duration: 4000,
+        style: {
+          background: '#f44336',
+          color: 'white',
+        },
+      });
+      
       console.error('Login failed:', error);
     }
   };
 
   return (
     <div className="flex min-h-screen bg-gradient-to-r from-[#002428] to-[#0a3d44] relative">
+      <Toaster />
+      
       {/* Left side */}
       <div className="hidden lg:flex lg:w-1/2 items-center justify-center">
         <h1 className="text-6xl font-bold text-white">Tether.</h1>
@@ -54,7 +78,6 @@ const AdminLoginPage: React.FC = () => {
             fullWidth
             margin="normal"
             variant="filled"
-            required
             sx={{ backgroundColor: '#E2E2E2', borderRadius: '4px' }}  
           />
           <TextField
@@ -65,7 +88,6 @@ const AdminLoginPage: React.FC = () => {
             fullWidth
             margin="normal"
             variant="filled"
-            required
             sx={{ backgroundColor: '#E2E2E2', borderRadius: '4px' }} 
           />
           <Button
@@ -77,11 +99,6 @@ const AdminLoginPage: React.FC = () => {
           >
             Login
           </Button>
-          {errorMessage && (
-            <Typography color="error" sx={{ mt: 2 }}>
-              {errorMessage}
-            </Typography>
-          )}
         </Box>
       </div>
     </div>

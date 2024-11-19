@@ -1,3 +1,4 @@
+import { MarketplaceProduct } from '@/types/IMarketplace';
 import API from '../services/axios';
 import { adminRoutes } from '../services/endpoints/adminEndpoints';
 import { UserData } from '../types/user';
@@ -49,6 +50,28 @@ export const adminApi = {
 
   updateReportStatus: async (reportId: string, status: string) => {
     const response = await API.put(`${adminRoutes.updateReportStatus}/${reportId}`, 
+      { status },
+      { withCredentials: true }
+    );
+    return response.data;
+  },
+
+  getProducts: async (): Promise<MarketplaceProduct[]> => {
+    const response = await API.get(adminRoutes.getProducts, { withCredentials: true });
+    return response.data;
+  },
+
+  approveProduct: async (productId: string): Promise<MarketplaceProduct> => {
+    const response = await API.patch(
+      `${adminRoutes.approveProduct}/${productId}`,
+      { isApproved: true },
+      { withCredentials: true }
+    );
+    return response.data;
+  },
+  updateProductStatus: async (productId: string, status: 'block' | 'unblock'): Promise<MarketplaceProduct> => {
+    const response = await API.patch(
+      `${adminRoutes.updateProductStatus}/${productId}`,
       { status },
       { withCredentials: true }
     );

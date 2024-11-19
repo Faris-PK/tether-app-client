@@ -25,8 +25,10 @@ import DeleteConfirmationModal from '../modals/DeleteConfirmationModal';
 interface ProductGridProps {
   products: MarketplaceProduct[];
   loading?: boolean;
-  onProductUpdate: () => void;
-}
+  isLoadingMore?: boolean;
+  hasMore?: boolean;
+  onLoadMore?: () => void;
+  onProductUpdate: () => void;}
 
 interface Category {
   icon: React.ReactNode;
@@ -42,7 +44,13 @@ const categories: Category[] = [
   { icon: <Sofa className="w-5 h-5" />, name: 'Furniture' },
 ];
 
-const ProductGrid: React.FC<ProductGridProps> = ({ products, loading, onProductUpdate }) => {
+const ProductGrid: React.FC<ProductGridProps> = ({
+  products,
+  loading,
+  isLoadingMore,
+  hasMore,
+  onLoadMore,
+  onProductUpdate }) => {
 
   const [selectedProduct, setSelectedProduct] = useState<MarketplaceProduct | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -207,6 +215,27 @@ const ProductGrid: React.FC<ProductGridProps> = ({ products, loading, onProductU
           </Card>
         ))}
       </div>
+
+
+      {hasMore && (
+        <div className="mt-8 flex justify-center">
+          <Button
+            onClick={onLoadMore}
+            disabled={isLoadingMore}
+            className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+          >
+            {isLoadingMore ? (
+              <span className="flex items-center">
+                Loading...
+              </span>
+            ) : (
+              'Load More'
+            )}
+          </Button>
+        </div>
+      )}
+
+      
 
       <ProductDetailModal 
         product={selectedProduct}

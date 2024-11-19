@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import  SinglePost  from '../../components/post/SinglePost';
 import  OptionsModal  from '../modals/OptionsModal';
 import  ShareModal  from '../modals/ShareModal';
@@ -47,7 +47,7 @@ const PostList: React.FC<PostListProps> = ({ posts, currentUserId, fetchPosts })
   const [reportedPosts, setReportedPosts] = useState<Set<string>>(new Set());
   const [alertMessage, setAlertMessage] = useState<string>('');
   const [showAlertModal, setShowAlertModal] = useState(false);
-
+ 
 
 
   const sortedPosts = [...localPosts].sort(
@@ -107,6 +107,11 @@ const PostList: React.FC<PostListProps> = ({ posts, currentUserId, fetchPosts })
     }
   };
 
+
+  useEffect(() => {
+    setLocalPosts(posts);
+  }, [posts]);
+  
   return (
     <div className="flex justify-center px-4 sm:px-6">
       <div className="w-full max-w-2xl">

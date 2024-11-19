@@ -26,6 +26,7 @@ export interface MarketplaceProduct {
   updatedAt: string;
   isPromoted: boolean;
   promotionExpiry?: string;
+  isApproved:boolean;
   __v: number;
 }
 

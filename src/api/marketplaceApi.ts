@@ -11,14 +11,45 @@ export const MarketplaceApi = {
     return response.data;
   },
 
-  getAllProducts: async () => {
-    const response = await API.get(marketplaceRoutes.getAllProducts, {
-     
-      withCredentials: true
+  getAllProducts: async (
+    page: number = 1, 
+    limit: number = 8, 
+    filters: {
+      searchQuery?: string;
+      minPrice?: number;
+      maxPrice?: number;
+      category?: string;
+      dateSort?: string;
+    } = {}
+  ) => {
+    const queryParams = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString()
     });
+
+    // Add filters to query params
+    if (filters.searchQuery) {
+      queryParams.append('search', filters.searchQuery);
+    }
+    if (filters.minPrice !== undefined) {
+      queryParams.append('minPrice', filters.minPrice.toString());
+    }
+    if (filters.maxPrice !== undefined) {
+      queryParams.append('maxPrice', filters.maxPrice.toString());
+    }
+    if (filters.category) {
+      queryParams.append('category', filters.category);
+    }
+    if (filters.dateSort) {
+      queryParams.append('dateSort', filters.dateSort);
+    }
+
+    const response = await API.get(
+      `${marketplaceRoutes.getAllProducts}?${queryParams.toString()}`,
+      { withCredentials: true }
+    );
     return response.data;
   },
-
   // Get products for specific user
   getUserProducts: async (userId: string) => {
     const response = await API.get(`${marketplaceRoutes.getUserProducts}/${userId}`, {

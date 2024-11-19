@@ -40,46 +40,85 @@ const MarketPlacePage: React.FC<MarketPlacePageProps> = () => {
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
   const [products, setProducts] = useState<MarketplaceProduct[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const productsPerPage = 8;
 
-  const fetchProducts = async (filters?: any) => {
+  const [filters, setFilters] = useState({
+    searchQuery: '',
+    minPrice: '',
+    maxPrice: '',
+    category: '',
+    dateSort: '',
+  });
+
+
+  const fetchProducts = async (page: number = 1) => {
     try {
-      const response = await MarketplaceApi.getAllProducts();
-    //  console.log('response from marketPlace ', response);
-      setProducts(response);
+      setIsLoadingMore(true);
+      const response = await MarketplaceApi.getAllProducts(page, productsPerPage,  {
+        searchQuery: filters.searchQuery,
+        minPrice: filters.minPrice ? parseFloat(filters.minPrice) : undefined,
+        maxPrice: filters.maxPrice ? parseFloat(filters.maxPrice) : undefined,
+        category: filters.category,
+        dateSort: filters.dateSort
+      });
+
+      console.log('response from market: ', products);
+      
+      if (page === 1) {
+        setProducts(response.products);
+      } else {
+        setProducts(prevProducts => [...prevProducts, ...response.products]);
+      }
+      setTotalPages(response.totalPages);
     } catch (error) {
       console.error('Error fetching products:', error);
     } finally {
+      setIsLoadingMore(false);
       setLoading(false);
+    }
+  };
+
+  
+  const loadMore = () => {
+    if (currentPage < totalPages && !isLoadingMore) {
+      const nextPage = currentPage + 1;
+      setCurrentPage(nextPage);
+      fetchProducts(nextPage);
     }
   };
   
   useEffect(() => {
     fetchProducts();
     //console.log(user);
-  }, []);
+  },[filters]);
  
   
 
   const handleSearch = (query: string) => {
-    console.log('Search query:', query);
-    // Implement search functionality
+    setFilters(prev => ({ ...prev, searchQuery: query }));
+    setCurrentPage(1);
   };
 
   const handlePriceChange = (min: string, max: string) => {
-    console.log('Price range:', { min, max });
-    // Implement price filter
+    setFilters(prev => ({ ...prev, minPrice: min, maxPrice: max }));
+    setCurrentPage(1);
   };
 
   const handleCategorySelect = (category: string) => {
-    console.log('Selected category:', category);
-    // Implement category filter
+    setFilters(prev => ({ ...prev, category }));
+    setCurrentPage(1);
+  };
+
+  const handleDateSort = (dateSort: string) => {
+    setFilters(prev => ({ ...prev, dateSort }));
+    setCurrentPage(1);
   };
 
   const handleLocationClick = () => {
     setIsLocationModalOpen(true);
-  };
-  const handleRefreshProducts = () => {
-    fetchProducts();
   };
 
   const handleLogout = async () => {
@@ -95,14 +134,23 @@ const MarketPlacePage: React.FC<MarketPlacePageProps> = () => {
   const navigateToProfile = async () => {
     try {
       navigate('/user/profile');
-    //  const response = await api.getUserProfile(user?._id);
-    //  console.log('Profile details from frontend', response);
     } catch (error) {
       // Handle error
     }
   };
 
-
+  const resetFilters = () => {
+    setFilters({
+      searchQuery: '',
+      minPrice: '',
+      maxPrice: '',
+      category: '',
+      dateSort: ''
+    });
+    setCurrentPage(1);
+    fetchProducts(1);
+  };
+  
 
   return (
     <div className={`mx-auto p-4 scrollbar-hide ${isDarkMode ? 'bg-gray-900' : 'bg-[#d8d4cd]'} min-h-screen flex flex-col transition-colors duration-200`}>
@@ -249,12 +297,20 @@ const MarketPlacePage: React.FC<MarketPlacePageProps> = () => {
           onPriceChange={handlePriceChange}
           onCategorySelect={handleCategorySelect}
           onLocationClick={handleLocationClick}
+          onDateSort={handleDateSort}
+          onClearFilters={resetFilters}
         />
         <main className="flex-1 space-y-4">
           <ProductGrid 
-          products={products} 
-          loading={loading} 
-          onProductUpdate={handleRefreshProducts}
+            products={products}
+            loading={loading}
+            isLoadingMore={isLoadingMore}
+            hasMore={currentPage < totalPages}
+            onLoadMore={loadMore}
+            onProductUpdate={() => {
+              setCurrentPage(1);
+              fetchProducts(1);
+            }}
           />
         </main>
       </div>
@@ -264,7 +320,6 @@ const MarketPlacePage: React.FC<MarketPlacePageProps> = () => {
         onClose={() => setIsLocationModalOpen(false)}
         isDarkMode={isDarkMode}
       />
-      
     </div>
   );
 };

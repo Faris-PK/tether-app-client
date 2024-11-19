@@ -12,9 +12,11 @@ export const PostApi = {
     });
     return response.data;
   },
-
-  getAllPosts: async () => {
-    const response = await API.get(postRoutes.getAllPosts, { withCredentials: true });
+  getAllPosts: async (page: number = 1, limit: number = 5) => {
+    const response = await API.get(
+      `${postRoutes.getAllPosts}?page=${page}&limit=${limit}`,
+      { withCredentials: true }
+    );
     return response.data;
   },
   getSinglePost: async (postId:string) => {

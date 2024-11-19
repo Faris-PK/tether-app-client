@@ -479,7 +479,7 @@ const UserProfile: React.FC = () => {
                 {/* <h2 className="text-2xl font-bold text-white mb-6">Marketplace</h2> */}
                 
                 {marketplaceProducts.length > 0 ? (
-                        <ProductGrid products={marketplaceProducts} loading={loading} />
+                        <ProductGrid products={marketplaceProducts} loading={loading} onProductUpdate={fetchMarketplaceProducts}/>
                 ) : (
                   <div className={`flex flex-col items-center justify-center h-96 p-6 rounded-lg ${
                     isDarkMode ? 'bg-gray-600' : 'bg-gray-100'

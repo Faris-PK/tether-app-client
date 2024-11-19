@@ -16,6 +16,10 @@ interface SidebarProps {
     onPriceChange?: (min: string, max: string) => void;
     onCategorySelect?: (category: string) => void;
     onLocationClick?: () => void;
+    onDateSort?: (dateSort: string) => void;
+    onClearFilters?: () => void;
+    
+
   }
 
   const Sidebar: React.FC<SidebarProps> = ({ 
@@ -23,11 +27,14 @@ interface SidebarProps {
     onPriceChange, 
     onCategorySelect,
     onLocationClick,
+    onDateSort,
+    onClearFilters
   }) => {
   const { isDarkMode } = useTheme();
   const [priceMin, setPriceMin] = useState<string>('');
   const [priceMax, setPriceMax] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [dateSort, setDateSort] = useState<string>('');
   const locationRef = React.useRef<HTMLDivElement>(null);
   const [isAddProductModalOpen, setIsAddProductModalOpen] = useState(false);
   const user = useSelector((state: RootState) => state.user.user);
@@ -59,10 +66,30 @@ interface SidebarProps {
     onPriceChange?.(type === 'min' ? value : priceMin, type === 'max' ? value : priceMax);
   };
 
+  const handleDateSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = e.target.value;
+    setDateSort(value);
+    onDateSort?.(value);
+  };
+
+  const handleClearFilters = () => {
+    setSearchQuery('');
+    setPriceMin('');
+    setPriceMax('');
+    setDateSort('');
+
+    onSearch?.('');
+    onPriceChange?.('', '');
+    onDateSort?.('');
+    onCategorySelect?.('');
+
+  }
+
   return (
     <div className={`w-64 ${isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'} p-4 h-full rounded-lg shadow-md transition-colors duration-200`}>
       <div className="mb-6">
         <h2 className={`text-xl mb-4 ${isDarkMode ? 'text-white' : 'text-gray-800'} font-semibold`}>Marketplace</h2>
+        
         
         {/* Search Bar */}
         <div className="relative mb-4">
@@ -118,15 +145,16 @@ interface SidebarProps {
 
         {/* Date List Dropdown */}
         <div className="mb-4">
-          <select 
-            className={`w-full ${isDarkMode ? 'bg-gray-700 text-white' : 'bg-gray-100 text-gray-800'} rounded-lg py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500`}
-            onChange={(e) => {/* Add your date sort handler here */}}
-          >
-            <option value="">Date list</option>
-            <option value="newest">Newest first</option>
-            <option value="oldest">Oldest first</option>
-          </select>
-        </div>
+        <select 
+          value={dateSort}
+          className={`w-full ${isDarkMode ? 'bg-gray-700 text-white' : 'bg-gray-100 text-gray-800'} rounded-lg py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500`}
+          onChange={handleDateSortChange}
+        >
+          <option value="">Date list</option>
+          <option value="newest">Newest first</option>
+          <option value="oldest">Oldest first</option>
+        </select>
+      </div>
       </div>
 
       {/* Categories */}
@@ -145,6 +173,12 @@ interface SidebarProps {
           ))}
         </div>
       </div>
+      <button 
+          onClick={handleClearFilters}
+          className={`w-full ${isDarkMode ? 'bg-gray-700 text-white' : 'bg-gray-100 text-gray-800'} rounded-lg py-2 px-3 text-sm hover:bg-gray-200 transition-colors `}
+        >
+          Clear Filters
+        </button>
       <AddProductModal 
         isOpen={isAddProductModalOpen}
         onClose={() => setIsAddProductModalOpen(false)}

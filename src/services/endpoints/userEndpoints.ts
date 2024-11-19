@@ -61,13 +61,9 @@ export const postRoutes = {
     createProduct: 'market/create',
     getAllProducts: '/market/',
     getUserProducts: '/market/products',
-    searchProducts: '/market/search',
-    getCategoriesProducts: '/market/category',
-    getProductsByPrice: '/market/products/price',
-    getProductsByDate: '/market/products/date',
     promoteProduct: '/market/promote',
     updateProduct: '/market/update',
-  deleteProduct: '/market/delete'
+   deleteProduct: '/market/delete'
   };
 
   export const paymentRoutes = {
