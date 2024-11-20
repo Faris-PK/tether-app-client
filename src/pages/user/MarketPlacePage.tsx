@@ -65,7 +65,7 @@ const MarketPlacePage: React.FC<MarketPlacePageProps> = () => {
         dateSort: filters.dateSort
       });
 
-      console.log('response from market: ', products);
+     // console.log('response from market: ', products);
       
       if (page === 1) {
         setProducts(response.products);

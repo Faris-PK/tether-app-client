@@ -9,6 +9,15 @@ interface RegisterData {
   mobile:string;
 }
 
+interface SearchResponse {
+  status: string;
+  data: {
+    users: IUser[];
+    totalUsers: number;
+    totalPages: number;
+  }
+}
+
 export const api = {
   register: async (userData: RegisterData) => {
     const response = await API.post(authRoutes.Register, userData);
@@ -96,6 +105,13 @@ export const api = {
       token, 
       newPassword 
     });
+    return response.data;
+  },
+  searchUsers: async (searchTerm: string, page: number = 1, limit: number = 5): Promise<SearchResponse> => {
+    const response = await API.get<SearchResponse>(
+      `${authRoutes.userSearch}?searchTerm=${searchTerm}&page=${page}&limit=${limit}`,
+      { withCredentials: true }
+    );
     return response.data;
   },
   

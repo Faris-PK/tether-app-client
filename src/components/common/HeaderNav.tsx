@@ -32,7 +32,7 @@ interface HeaderNavProps {
 
 const HeaderNav: React.FC<HeaderNavProps> = ({ onPostCreated }) => {
   const { isDarkMode, toggleDarkMode } = useTheme();
-  const user = useSelector((state: RootState) => state.user?.user);
+  const user = useSelector((state: RootState) => state?.user?.user);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -55,7 +55,7 @@ const HeaderNav: React.FC<HeaderNavProps> = ({ onPostCreated }) => {
     try {
       await api.logout();
       dispatch(clearUser());
-      navigate('/signin');
+     // navigate('/signin');
     } catch (error) {
       console.error('Logout failed', error);
     } finally {

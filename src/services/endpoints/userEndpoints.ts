@@ -9,7 +9,7 @@ export const authRoutes = {
     userProfile: '/user/profile',
     uploadImage: '/user/upload-image',
     updateProfile:'/user/remove-profile-picture',
-    userFind:'/user/find',
+    userSearch:'/user/search',
     ForgotPassword: '/auth/forgot-password',
     ResetPassword: '/auth/reset-password',
 

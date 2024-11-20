@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Card } from "@/components/ui/card";
-import { Car, DeleteIcon, EditIcon, Home, MapPin, MoreVertical, ShoppingBag, Smartphone, Sofa, Tag, Trophy,Gamepad } from 'lucide-react';
+import { Car, DeleteIcon, EditIcon, Home, MapPin, MoreVertical, ShoppingBag, Smartphone, Sofa, Tag, Trophy,Gamepad, Calendar } from 'lucide-react';
 import { MarketplaceProduct } from '../../types/IMarketplace';
 import ProductDetailModal from '../modals/ProductDetailModal';
 import ProductPromotionModal from '../modals/ProductPromotionModal';
@@ -62,6 +62,8 @@ const ProductGrid: React.FC<ProductGridProps> = ({
   const [productToDelete, setProductToDelete] = useState<MarketplaceProduct | null>(null);
   const currentUserId = useSelector((state: RootState) => state.user?.user?._id);
   const { isDarkMode } = useTheme();
+  console.log('products: ', products);
+  
 
   const handleProductClick = (product: MarketplaceProduct) => {
     setSelectedProduct(product);
@@ -113,6 +115,25 @@ const ProductGrid: React.FC<ProductGridProps> = ({
 };
 
 
+const formatCreationDate = (createdAt: string) => {
+  const today = new Date();
+  const creationDate = new Date(createdAt);
+
+  today.setHours(0, 0, 0, 0);
+  const creationDay = new Date(creationDate);
+  creationDay.setHours(0, 0, 0, 0);
+
+  if (creationDate.getDate() === today.getDate()) {
+    return 'Today'
+  }
+
+  return creationDate.toLocaleDateString('en-GB', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric'
+  });
+}
+
 
   if (loading) {
     return (
@@ -130,7 +151,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
 
   return (
     <>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
         {products.map((product) => (
           <Card 
             key={product._id}
@@ -211,6 +232,10 @@ const ProductGrid: React.FC<ProductGridProps> = ({
                 <MapPin className="w-4 h-4 mr-1" />
                 {product.location.name}
               </div>
+              <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
+                  <Calendar className="w-4 h-4 mr-1" />
+                  {formatCreationDate(product.createdAt)}
+                </div>
             </div>
           </Card>
         ))}
