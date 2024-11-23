@@ -13,11 +13,7 @@ interface User {
   profile_picture?: string;
 }
 
-interface SearchResponse {
-  users: User[];
-  totalUsers: number;
-  totalPages: number;
-}
+
 
 const SearchBar = () => {
   const { isDarkMode } = useTheme();
@@ -180,7 +176,7 @@ const SearchBar = () => {
                 </button>
               )}
             </>
-          ) : (
+            ) : (
             <div className={`p-3 text-center ${
               isDarkMode ? 'text-gray-400' : 'text-gray-500'
             }`}>

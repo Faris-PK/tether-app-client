@@ -14,6 +14,7 @@ import SharedPostPage from '@/pages/user/SharedPostPage';
 import PromotionSuccessPage from '@/pages/user/PromotionSuccessPage';
 import ForgotPasswordPage from '@/pages/user/ForgotPasswordPage';
 import ResetPasswordPage from '@/pages/user/ResetPasswordPage';
+import MusicSearch from '@/pages/user/MusicSearch';
 
 
 const UserRoutes: React.FC = () => {
@@ -36,6 +37,8 @@ const UserRoutes: React.FC = () => {
         <Route path="paymentsuccess" element={<PaymentSuccessPage />} />
         <Route path="payment/cancel" element={<Navigate to="/user/home" />} />
         <Route path="promotesuccess" element={<PromotionSuccessPage />} />
+        {/* <Route path="music" element={<MusicSearch/>} /> */}
+
 
 
 

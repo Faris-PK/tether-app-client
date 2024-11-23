@@ -52,7 +52,7 @@ const HomePage: React.FC = () => {
       if (page === 1) setLoading(true);
       
       const response = await PostApi.getAllPosts(page, postsPerPage);
-      console.log(' response: ', response);
+     // console.log(' response: ', response);
       
       if (page === 1) {
         setPosts(response.posts);

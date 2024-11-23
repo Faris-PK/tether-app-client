@@ -1,25 +1,28 @@
-import React, { useState, useRef, ChangeEvent } from 'react';
-import { X, Upload, Image, Music, Type, Filter, Move } from 'lucide-react';
+import React, { useState, useRef, ChangeEvent, useEffect } from 'react';
+import { X, Search, Music, Upload, Play, Pause } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useTheme } from '../../contexts/ThemeContext';
 import { cn } from "@/lib/utils";
-
-interface StoryText {
+import { storyApi } from '@/api/storyApi';
+storyApi
+// TypeScript Interfaces
+interface SpotifyTrack {
   id: string;
-  text: string;
-  x: number;
-  y: number;
-  fontSize: number;
-  color: string;
+  name: string;
+  artists: { name: string }[];
+  album: { 
+    images: { url: string }[];
+    name: string;
+  };
+  preview_url: string | null;
+  duration_ms: number;
 }
 
 interface CreateStoryModalProps {
@@ -31,17 +34,70 @@ const CreateStoryModal: React.FC<CreateStoryModalProps> = ({ isOpen, onClose }) 
   const { isDarkMode } = useTheme();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>("");
-  const [activeTab, setActiveTab] = useState("upload");
-  const [texts, setTexts] = useState<StoryText[]>([]);
-  const [selectedTextId, setSelectedTextId] = useState<string | null>(null);
-  const [filter, setFilter] = useState("none");
-  const [bgColor, setBgColor] = useState(isDarkMode ? "#1f2937" : "#ffffff");
-  const [selectedMusic, setSelectedMusic] = useState<File | null>(null);
   
-  const canvasRef = useRef<HTMLDivElement>(null);
+  // Music Search States
+  const [searchQuery, setSearchQuery] = useState('');
+  const [tracks, setTracks] = useState<SpotifyTrack[]>([]);
+  const [selectedMusic, setSelectedMusic] = useState<SpotifyTrack | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  
+  // Audio Playback States
+  const [isPlaying, setIsPlaying] = useState(false);
+  const audioRef = useRef<HTMLAudioElement>(null);
+  
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const musicInputRef = useRef<HTMLInputElement>(null);
 
+  // Debounced search effect
+  useEffect(() => {
+    // Only search if query is at least 3 characters
+    if (searchQuery.length < 3) {
+      setTracks([]);
+      return;
+    }
+
+    // Debounce search
+    const delayDebounceFn = setTimeout(() => {
+      searchSpotifyTracks();
+    }, 500);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchQuery]);
+
+  // Search Spotify Tracks
+  const searchSpotifyTracks = async () => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await storyApi.searchTracks({
+        query: searchQuery,
+        type: 'track',
+        limit: 20
+      });
+      console.log(response.tracks);
+      
+
+      // Extract tracks from response
+      const searchedTracks = response.tracks.items.map((track: SpotifyTrack) => ({
+        id: track.id,
+        name: track.name,
+        artists: track.artists,
+        album: track.album,
+        preview_url: track.preview_url,
+        duration_ms: track.duration_ms
+      }));
+
+      setTracks(searchedTracks);
+    } catch (err) {
+      setError('Failed to fetch tracks. Please try again.');
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // File Change Handler
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -51,45 +107,77 @@ const CreateStoryModal: React.FC<CreateStoryModalProps> = ({ isOpen, onClose }) 
     }
   };
 
-  const handleMusicChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setSelectedMusic(file);
+  // Remove Image
+  const handleRemoveImage = () => {
+    setSelectedFile(null);
+    setPreviewUrl("");
+  };
+
+  // Select Music Track
+  const handleSelectMusic = (track: SpotifyTrack) => {
+    // Stop any currently playing preview
+    if (audioRef.current) {
+      audioRef.current.pause();
+      setIsPlaying(false);
+    }
+    console.log('Track : ', track.name);
+    
+
+    setSelectedMusic(track);
+    setSearchQuery('');
+    setTracks([]);
+  };
+
+  // Remove Selected Music
+  const handleRemoveMusic = () => {
+    // Stop preview if playing
+    if (audioRef.current) {
+      audioRef.current.pause();
+      setIsPlaying(false);
+    }
+
+    setSelectedMusic(null);
+  };
+
+  // Toggle Music Preview
+  const toggleMusicPreview = () => {
+    if (!selectedMusic?.preview_url) return;
+
+    if (audioRef.current) {
+      if (isPlaying) {
+        audioRef.current.pause();
+      } else {
+        audioRef.current.play();
+      }
+      setIsPlaying(!isPlaying);
     }
   };
 
-  const addNewText = () => {
-    const newText: StoryText = {
-      id: Date.now().toString(),
-      text: "Double click to edit",
-      x: 50,
-      y: 50,
-      fontSize: 20,
-      color: "#000000"
-    };
-    setTexts([...texts, newText]);
-    setSelectedTextId(newText.id);
+  // Format Duration
+  const formatDuration = (ms: number): string => {
+    const minutes = Math.floor(ms / 60000);
+    const seconds = ((ms % 60000) / 1000).toFixed(0);
+    return `${minutes}:${parseInt(seconds) < 10 ? '0' : ''}${seconds}`;
   };
-
-  const updateTextPosition = (id: string, x: number, y: number) => {
-    setTexts(texts.map(text => 
-      text.id === id ? { ...text, x, y } : text
-    ));
-  };
-
-  const handleTextChange = (id: string, newText: string) => {
-    setTexts(texts.map(text =>
-      text.id === id ? { ...text, text: newText } : text
-    ));
-  };
-
-  const filters = {
-    none: "",
-    grayscale: "grayscale(100%)",
-    sepia: "sepia(100%)",
-    blur: "blur(2px)",
-    brightness: "brightness(150%)",
-    contrast: "contrast(150%)"
+  const handleCreateStory = async () => {
+    if (!selectedFile) return;
+  
+    const formData = new FormData();
+    formData.append('file', selectedFile);
+  
+    // Only append music-related data if a track is selected
+    if (selectedMusic) {
+      formData.append('musicTrackId', selectedMusic.id);
+      formData.append('musicPreviewUrl', selectedMusic.preview_url || '');
+      formData.append('musicName', selectedMusic.name || '');
+    }
+  
+    try {
+      const newStory = await storyApi.createStory(formData);
+      onClose(); // Close modal
+    } catch (error) {
+      // Handle error
+    }
   };
 
   return (
@@ -105,198 +193,163 @@ const CreateStoryModal: React.FC<CreateStoryModalProps> = ({ isOpen, onClose }) 
         </DialogHeader>
 
         <div className="flex flex-1 gap-4">
-          {/* Preview Area */}
+          {/* Image Upload Area */}
           <div className={cn(
-            "flex-1 relative border rounded-lg overflow-hidden",
+            "flex-1 relative border rounded-lg overflow-hidden flex items-center justify-center",
             isDarkMode ? "border-gray-700" : "border-gray-200"
           )}>
-            <div
-              ref={canvasRef}
-              className="w-full h-full relative"
-              style={{
-                backgroundColor: !previewUrl ? bgColor : undefined,
-                filter: filters[filter as keyof typeof filters]
-              }}
-            >
-              {previewUrl && (
+            {previewUrl ? (
+              <div className="relative">
                 <img
-                  src={previewUrl}
-                  alt="Preview"
-                  className="w-full h-full object-contain"
-                />
-              )}
-              
-              {texts.map((text) => (
-                <div
-                  key={text.id}
-                  className="absolute cursor-move"
-                  style={{
-                    left: `${text.x}px`,
-                    top: `${text.y}px`,
-                    fontSize: `${text.fontSize}px`,
-                    color: text.color,
-                  }}
-                  onClick={() => setSelectedTextId(text.id)}
+                src={previewUrl}
+                alt="Preview"
+                className="w-full h-[400px] object-cover rounded-md"
+              />
+                <Button 
+                  onClick={handleRemoveImage} 
+                  variant="destructive" 
+                  className="absolute top-2 right-2 w-8 h-8 p-0 rounded-full"
                 >
-                  {text.text}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Tools Panel */}
-          <div className={cn(
-            "w-72",
-            isDarkMode ? "text-gray-200" : "text-gray-900"
-          )}>
-            <Tabs defaultValue="upload" onValueChange={setActiveTab}>
-              <TabsList className={cn(
-                "grid w-full grid-cols-5",
-                isDarkMode ? "bg-gray-700" : "bg-gray-100"
-              )}>
-                <TabsTrigger value="upload" className={isDarkMode ? "data-[state=active]:bg-gray-600" : ""}>
-                  <Upload className="w-4 h-4" />
-                </TabsTrigger>
-                <TabsTrigger value="background" className={isDarkMode ? "data-[state=active]:bg-gray-600" : ""}>
-                  <Image className="w-4 h-4" />
-                </TabsTrigger>
-                <TabsTrigger value="text" className={isDarkMode ? "data-[state=active]:bg-gray-600" : ""}>
-                  <Type className="w-4 h-4" />
-                </TabsTrigger>
-                <TabsTrigger value="filter" className={isDarkMode ? "data-[state=active]:bg-gray-600" : ""}>
-                  <Filter className="w-4 h-4" />
-                </TabsTrigger>
-                <TabsTrigger value="music" className={isDarkMode ? "data-[state=active]:bg-gray-600" : ""}>
-                  <Music className="w-4 h-4" />
-                </TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="upload" className="space-y-4">
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center space-y-4">
                 <Input
                   ref={fileInputRef}
                   type="file"
-                  accept="image/*,video/*"
+                  accept="image/*"
                   onChange={handleFileChange}
                   className="hidden"
                 />
                 <Button
                   onClick={() => fileInputRef.current?.click()}
                   className={cn(
-                    "w-full",
+                    "w-64",
                     isDarkMode ? "bg-gray-700 hover:bg-gray-600" : ""
                   )}
                 >
-                  Upload Media
+                  <Upload className="mr-2 h-4 w-4" /> Upload Image
                 </Button>
-              </TabsContent>
+                <p className={isDarkMode ? "text-gray-400" : "text-gray-600"}>
+                  Select an image for your story
+                </p>
+              </div>
+            )}
+          </div>
 
-              <TabsContent value="background" className="space-y-4">
-                <Input
-                  type="color"
-                  value={bgColor}
-                  onChange={(e) => setBgColor(e.target.value)}
-                  className={cn(
-                    "w-full h-10",
-                    isDarkMode ? "bg-gray-700" : ""
-                  )}
-                />
-              </TabsContent>
+          {/* Music Search and Selection Area */}
+          <div className={cn(
+            "w-72 border rounded-lg p-4",
+            isDarkMode ? "border-gray-700 text-gray-200" : "border-gray-200 text-gray-900"
+          )}>
+            <h3 className="text-lg font-semibold mb-4">Background Music</h3>
+            
+            {/* Search Input */}
+            <div className="relative mb-4">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Search className="h-4 w-4 text-gray-400" />
+              </div>
+              <Input
+                type="text"
+                placeholder="Search music on Spotify"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+              />
+            </div>
 
-              <TabsContent value="text" className="space-y-4">
-                <Button 
-                  onClick={addNewText} 
-                  className={cn(
-                    "w-full",
-                    isDarkMode ? "bg-gray-700 hover:bg-gray-600" : ""
-                  )}
-                >
-                  Add Text
-                </Button>
-                {selectedTextId && (
-                  <div className="space-y-4">
-                    <Input
-                      value={texts.find(t => t.id === selectedTextId)?.text || ""}
-                      onChange={(e) => handleTextChange(selectedTextId, e.target.value)}
-                      placeholder="Enter text"
-                      className={isDarkMode ? "bg-gray-700 text-white" : ""}
-                    />
-                    <Input
-                      type="color"
-                      value={texts.find(t => t.id === selectedTextId)?.color || "#000000"}
-                      onChange={(e) => {
-                        setTexts(texts.map(text =>
-                          text.id === selectedTextId ? { ...text, color: e.target.value } : text
-                        ));
-                      }}
-                      className={isDarkMode ? "bg-gray-700" : ""}
-                    />
-                    <div>
-                      <label className={cn(
-                        "text-sm",
-                        isDarkMode ? "text-gray-300" : ""
-                      )}>Font Size</label>
-                      <Slider
-                        value={[texts.find(t => t.id === selectedTextId)?.fontSize || 20]}
-                        min={10}
-                        max={100}
-                        step={1}
-                        onValueChange={([value]) => {
-                          setTexts(texts.map(text =>
-                            text.id === selectedTextId ? { ...text, fontSize: value } : text
-                          ));
-                        }}
-                        className={isDarkMode ? "[&_[role=slider]]:bg-gray-200" : ""}
+            {/* Music Selection or Search Results */}
+            <div className="max-h-48 overflow-y-auto">
+              {selectedMusic ? (
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center space-x-2">
+                    {selectedMusic.album.images.length > 0 && (
+                      <img 
+                        src={selectedMusic.album.images[0].url} 
+                        alt="Album Cover" 
+                        className="w-10 h-10 rounded-md object-cover"
                       />
+                    )}
+                    <div>
+                      <p className="text-sm font-medium">{selectedMusic.name}</p>
+                      <p className="text-xs text-gray-500">
+                        {selectedMusic.artists.map(artist => artist.name).join(', ')}
+                      </p>
                     </div>
                   </div>
-                )}
-              </TabsContent>
-
-              <TabsContent value="filter" className="space-y-4">
-                {Object.keys(filters).map((filterName) => (
-                  <Button
-                    key={filterName}
-                    onClick={() => setFilter(filterName)}
-                    variant={filter === filterName ? "default" : "outline"}
+                  <div className="flex items-center space-x-2">
+                    {selectedMusic.preview_url && (
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={toggleMusicPreview}
+                      >
+                        {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+                      </Button>
+                    )}
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={handleRemoveMusic}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              ) : isLoading ? (
+                <div className="text-center text-gray-500">Searching...</div>
+              ) : error ? (
+                <div className="text-center text-red-500">{error}</div>
+              ) : tracks.length > 0 ? (
+                tracks.map((track) => (
+                  <div 
+                    key={track.id}
+                    onClick={() => handleSelectMusic(track)}
                     className={cn(
-                      "w-full capitalize",
-                      isDarkMode ? "bg-gray-700 hover:bg-gray-600 border-gray-600" : ""
+                      "flex items-center justify-between p-2 hover:bg-gray-100 cursor-pointer rounded-md transition-colors",
+                      isDarkMode ? "hover:bg-gray-700" : ""
                     )}
                   >
-                    {filterName}
-                  </Button>
-                ))}
-              </TabsContent>
-
-              <TabsContent value="music" className="space-y-4">
-                <Input
-                  ref={musicInputRef}
-                  type="file"
-                  accept="audio/*"
-                  onChange={handleMusicChange}
-                  className="hidden"
-                />
-                <Button
-                  onClick={() => musicInputRef.current?.click()}
-                  className={cn(
-                    "w-full",
-                    isDarkMode ? "bg-gray-700 hover:bg-gray-600" : ""
-                  )}
-                >
-                  Upload Background Music
-                </Button>
-                {selectedMusic && (
-                  <p className={cn(
-                    "text-sm truncate",
-                    isDarkMode ? "text-gray-300" : ""
-                  )}>
-                    Selected: {selectedMusic.name}
-                  </p>
-                )}
-              </TabsContent>
-            </Tabs>
+                    <div className="flex items-center space-x-3">
+                      {track.album.images.length > 0 && (
+                        <img 
+                          src={track.album.images[0].url} 
+                          alt="Album Cover" 
+                          className="w-10 h-10 rounded-md object-cover"
+                        />
+                      )}
+                      <div>
+                        <p className="text-sm font-medium">{track.name}</p>
+                        <p className="text-xs text-gray-500">
+                          {track.artists.map(artist => artist.name).join(', ')}
+                        </p>
+                      </div>
+                    </div>
+                    <span className="text-xs text-gray-500">
+                      {formatDuration(track.duration_ms)}
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <p className="text-sm text-center text-gray-500">
+                  {searchQuery ? 'No tracks found' : 'Start typing to search music'}
+                </p>
+              )}
+            </div>
           </div>
         </div>
+
+        {/* Audio Preview Element (hidden) */}
+        {selectedMusic?.preview_url && (
+          <audio 
+            ref={audioRef} 
+            src={selectedMusic.preview_url}
+            onEnded={() => {
+              setIsPlaying(false);
+            }}
+          />
+        )}
 
         <div className="flex justify-end gap-2">
           <Button 
@@ -307,7 +360,12 @@ const CreateStoryModal: React.FC<CreateStoryModalProps> = ({ isOpen, onClose }) 
             Cancel
           </Button>
           <Button
-            className={isDarkMode ? "bg-[#1D9BF0] hover:bg-[#1aa3d4]" : ""}
+            onClick={handleCreateStory}
+            disabled={!selectedFile}
+            className={cn(
+              isDarkMode ? "bg-[#1D9BF0] hover:bg-[#1aa3d4]" : "",
+              "disabled:opacity-50 disabled:cursor-not-allowed"
+            )}
           >
             Create Story
           </Button>

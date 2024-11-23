@@ -48,13 +48,6 @@ export const postRoutes = {
   };
 
 
-  export const storyRoutes = {
-    createStory: 'stories/create',
-    getAllStories: 'stories',
-    getUserStories: 'stories/user',
-    deleteStory: 'stories/delete',
-    viewStory: 'stories/view'
-  };
 
 
   export const marketplaceRoutes = {
@@ -70,3 +63,15 @@ export const postRoutes = {
     createSubscription: '/user/create-subscription',
     verifyPayment: '/user/success'
   }; 
+
+  export const storyRoutes = {
+    search: '/story/spotify/search',
+    createStory:'/story/create',
+    getStories:'/story/',
+    viewStory:'/story/view',
+    toggleLike: '/story/like',
+    deleteStory: '/story/delete',
+
+  
+    
+  };

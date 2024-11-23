@@ -112,7 +112,7 @@ const Register: React.FC = () => {
               />
               {errors.email && <FormHelperText error>{errors.email.message}</FormHelperText>}
             </div>
-
+              <input type="password" />
             {/* Mobile Field */}
             <div className="mb-2">
               <TextField
