@@ -72,13 +72,15 @@ const OptionsModal: React.FC<OptionsModalProps> = ({
   return (
     <>
       <Dialog open onOpenChange={() => onClose()}>
-        <DialogContent className={cn(
-          "sm:max-w-[380px]",
-          isDarkMode ? "bg-gray-800 text-white" : "bg-white"
-        )}>
+        <DialogContent
+          className={cn(
+            "sm:max-w-md max-w-sm w-full px-4 py-6 rounded-lg",
+            isDarkMode ? "bg-gray-800 text-white" : "bg-white"
+          )}
+        >
           <DialogHeader>
-            <DialogTitle>Post Options</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-lg font-semibold">Post Options</DialogTitle>
+            <DialogDescription className="text-sm">
               Select an action to perform on this post.
             </DialogDescription>
           </DialogHeader>
@@ -87,9 +89,9 @@ const OptionsModal: React.FC<OptionsModalProps> = ({
               {getOptions().map((item) => (
                 <Button
                   key={item.action}
-                  variant={item.variant === 'destructive' ? 'ghost' : 'ghost'}
+                  variant="ghost"
                   className={cn(
-                    "w-full justify-start",
+                    "w-full justify-start text-sm",
                     item.variant === 'destructive' && (isDarkMode ? "text-red-500" : "text-red-600"),
                     item.variant !== 'destructive' && (isDarkMode ? "text-white" : "text-gray-900")
                   )}
@@ -105,17 +107,23 @@ const OptionsModal: React.FC<OptionsModalProps> = ({
       </Dialog>
 
       <AlertDialog open={showDeleteAlert} onOpenChange={setShowDeleteAlert}>
-        <AlertDialogContent className={cn(
-          isDarkMode ? "bg-gray-800 text-white" : "bg-white"
-        )}>
+        <AlertDialogContent
+          className={cn(
+            "max-w-sm w-full px-4 py-6 rounded-lg",
+            isDarkMode ? "bg-gray-800 text-white" : "bg-white"
+          )}
+        >
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Post</AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogTitle className="text-lg font-semibold">Delete Post</AlertDialogTitle>
+            <AlertDialogDescription className="text-sm">
               Are you sure you want to delete this post? This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setShowDeleteAlert(false)}>
+          <AlertDialogFooter className="flex justify-end gap-4">
+            <AlertDialogCancel
+              onClick={() => setShowDeleteAlert(false)}
+              className="px-4 py-2 text-sm"
+            >
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
@@ -125,6 +133,7 @@ const OptionsModal: React.FC<OptionsModalProps> = ({
                 onClose();
               }}
               className={cn(
+                "px-4 py-2 text-sm",
                 isDarkMode ? "text-red-500" : "text-red-600",
                 "bg-transparent hover:bg-red-100 dark:hover:bg-red-700"
               )}

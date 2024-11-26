@@ -28,9 +28,10 @@ interface SpotifyTrack {
 interface CreateStoryModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onStoryCreated: () => Promise<void>;
 }
 
-const CreateStoryModal: React.FC<CreateStoryModalProps> = ({ isOpen, onClose }) => {
+const CreateStoryModal: React.FC<CreateStoryModalProps> = ({ isOpen, onClose, onStoryCreated  }) => {
   const { isDarkMode } = useTheme();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>("");
@@ -174,6 +175,7 @@ const CreateStoryModal: React.FC<CreateStoryModalProps> = ({ isOpen, onClose }) 
   
     try {
       const newStory = await storyApi.createStory(formData);
+      await onStoryCreated();
       onClose(); // Close modal
     } catch (error) {
       // Handle error

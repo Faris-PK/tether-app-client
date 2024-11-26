@@ -15,6 +15,7 @@ import PromotionSuccessPage from '@/pages/user/PromotionSuccessPage';
 import ForgotPasswordPage from '@/pages/user/ForgotPasswordPage';
 import ResetPasswordPage from '@/pages/user/ResetPasswordPage';
 import MusicSearch from '@/pages/user/MusicSearch';
+import PremiumSubscriptionPage from '@/pages/user/PremiumSubscriptionPage';
 
 
 const UserRoutes: React.FC = () => {
@@ -37,6 +38,8 @@ const UserRoutes: React.FC = () => {
         <Route path="paymentsuccess" element={<PaymentSuccessPage />} />
         <Route path="payment/cancel" element={<Navigate to="/user/home" />} />
         <Route path="promotesuccess" element={<PromotionSuccessPage />} />
+        <Route path="premium" element={<PremiumSubscriptionPage />} />
+
         {/* <Route path="music" element={<MusicSearch/>} /> */}
 
 

@@ -52,8 +52,8 @@ const UserProfilePage: React.FC = () => {
   return (
     <div className={`mx-auto p-4 ${isDarkMode ? 'bg-gray-900' : 'bg-[#d8d4cd]'} h-screen flex flex-col transition-colors duration-200`}>
     <header className="flex justify-between items-center mb-4">
-      <Title/>
-      <SearchBar/>
+      {/* <Title/>
+      <SearchBar/> */}
       <HeaderNav onPostCreated={fetchPosts} />
     </header>
 

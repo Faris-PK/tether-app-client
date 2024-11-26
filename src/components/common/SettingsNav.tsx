@@ -39,7 +39,7 @@ const SideNav = () => {
 
   return (
     <div className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl overflow-hidden shadow-black drop-shadow-md`}>
-      <div className="p-4">
+      <div className="p-5">
         <nav className="space-y-2">
           {navItems.map((item, index) => (
             <button

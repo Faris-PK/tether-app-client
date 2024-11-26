@@ -116,6 +116,8 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
   };
 
   const handleLocationSelect = (place: any) => {
+   // console.log('place ', place);
+    
     const [longitude, latitude] = place.center;
     
     setFormData(prev => ({

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Dialog } from '@/components/ui/dialog';
-import { X, ChevronLeft, ChevronRight, Volume2, VolumeX, Music, MoreVertical } from 'lucide-react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { X, ChevronLeft, ChevronRight, Volume2, VolumeX, Music, MoreVertical, Trash2 } from 'lucide-react';
 import { Story } from '@/types/IStory';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store/store';
@@ -26,6 +27,8 @@ const StoryViewer = ({ stories, initialStoryIndex, onClose, onView, onDelete }: 
   const [showUserList, setShowUserList] = useState(false);
   const [userListType, setUserListType] = useState<'views' | 'likes'>('views');
   const [isMounted, setIsMounted] = useState(false);
+  const [showDeleteAlert, setShowDeleteAlert] = useState(false);
+
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const user = useSelector((state: RootState) => state.user.user);
@@ -131,12 +134,16 @@ const StoryViewer = ({ stories, initialStoryIndex, onClose, onView, onDelete }: 
     setUserListType(type);
     setShowUserList(true);
   };
-  const handleDelete = async () => {
-    if (window.confirm('Are you sure you want to delete this story?')) {
-      await onDelete(currentStory._id);
-      onClose();
-    }
+  const handleDeleteClick = () => {
+    setShowDeleteAlert(true);
   };
+
+  const handleDeleteConfirm = async () => {
+    await onDelete(currentStory._id);
+    setShowDeleteAlert(false);
+    onClose();
+  };
+
 
   if (!currentStory) return null;
 
@@ -181,19 +188,23 @@ const StoryViewer = ({ stories, initialStoryIndex, onClose, onView, onDelete }: 
                 </button>
               )}
               {user?._id === currentStory.userId._id && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button className="p-1 hover:bg-gray-800/50 rounded-full transition-colors">
-                    <MoreVertical className="w-6 h-6" />
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="bg-gray-900 text-white border-gray-700">
-                  <DropdownMenuItem onClick={handleDelete} className="text-red-500 hover:text-red-400 hover:bg-gray-800">
-                    Delete Story
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button className="p-1 hover:bg-gray-800/50 rounded-full transition-colors">
+                      <MoreVertical className="w-6 h-6" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="bg-gray-900 border border-gray-700 rounded-lg shadow-lg">
+                    <DropdownMenuItem 
+                      onClick={handleDeleteClick}
+                      className="flex items-center px-4 py-2 text-red-400 hover:text-red-300 hover:bg-gray-800 rounded-lg transition-colors cursor-pointer"
+                    >
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      Delete Story
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
               <button onClick={onClose} className="p-1 hover:bg-gray-800/50 rounded-full transition-colors">
                 <X className="w-6 h-6" />
               </button>
@@ -259,7 +270,35 @@ const StoryViewer = ({ stories, initialStoryIndex, onClose, onView, onDelete }: 
           )}
         </div>
       </div>
+      <AlertDialog open={showDeleteAlert} onOpenChange={setShowDeleteAlert}>
+        <AlertDialogContent className="bg-gray-900 text-white border border-gray-700">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-xl font-semibold">Delete Story</AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-300">
+              Are you sure you want to delete this story? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="mt-6">
+            <AlertDialogCancel 
+              className="bg-gray-800 text-white hover:bg-gray-700 border-gray-600"
+              onClick={() => setShowDeleteAlert(false)}
+            >
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              className="bg-red-600 hover:bg-red-700 text-white border-none"
+              onClick={handleDeleteConfirm}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Dialog>
+
+
+
+
   );
 };
 

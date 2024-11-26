@@ -265,12 +265,23 @@ const UserProfile: React.FC = () => {
         <p className={`${isDarkMode ? 'text-white' : 'text-gray-800'} mb-4`}>{post.caption}</p>
         
         {post.postType !== 'note' && (
-          <img 
-            src={post.mediaUrl} 
-            alt="Post content" 
-            className="w-full max-h-[400px] object-cover rounded-md mb-4"
-          />
+          post.postType === 'video' ? (
+            <video
+              src={post.mediaUrl}
+              controls
+              className="w-full max-h-[400px] object-cover rounded-md mb-4"
+            >
+              Your browser does not support the video tag.
+            </video>
+          ) : (
+            <img
+              src={post.mediaUrl}
+              alt="Post content"
+              className="w-full max-h-[400px] object-cover rounded-md mb-4"
+            />
+          )
         )}
+
         
         <div className="flex justify-between text-gray-400 mb-4">
           <div className="flex items-center">

@@ -121,6 +121,9 @@ const StoryArea:React.FC = () => {
     }
   };
   
+  const handleStoryCreated = async () => {
+    await fetchStories();
+  };
 
   if (loading) {
     return <div>Loading...</div>;
@@ -251,7 +254,7 @@ const StoryArea:React.FC = () => {
           </div>
         </div>
       </div>
-      <CreateStoryModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+      <CreateStoryModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onStoryCreated={handleStoryCreated}/>
       {selectedStoryIndex >= 0 && (
         <StoryViewer
           stories={stories}
@@ -259,6 +262,7 @@ const StoryArea:React.FC = () => {
           onClose={handleCloseStory}
           onView={handleStoryView}
           onDelete={handleDeleteStory}
+          
         />
       )}
     </div>
