@@ -14,6 +14,14 @@ import { RootState } from '@/redux/store/store';
 import { Story } from '@/types/IStory';
 import { storyApi } from '@/api/storyApi';
 import StoryViewer from '@/components/home/StoryViewer';
+import { liveStreamApi } from '@/api/liveStreamApi';
+import  ILiveStream  from '@/types/ILiveStream';
+import { ZegoUIKitPrebuilt } from '@zegocloud/zego-uikit-prebuilt';
+import { useNavigate } from 'react-router-dom';
+import PremiumSubscriptionModal from '@/components/modals/PremiumSubscriptionModal';
+
+
+type CombinedItem = (Story | ILiveStream) & { type: 'story' | 'livestream', createdAt?: string };
 
 const StoryArea:React.FC = () => {
   const { isDarkMode } = useTheme();
@@ -22,7 +30,21 @@ const StoryArea:React.FC = () => {
   const [stories, setStories] = useState<Story[]>([]);
   const [selectedStoryIndex, setSelectedStoryIndex] = useState<number>(-1);
   const [loading, setLoading] = useState(true);
-  const user = useSelector((state: RootState) => state.user.user);
+  const navigate = useNavigate();
+  const [liveStreams, setLiveStreams] = useState<ILiveStream[]>([]);
+  const [isPremiumModalOpen, setIsPremiumModalOpen] = useState(false);
+
+  const user = useSelector((state: RootState) => state.user?.user);
+
+  // Combine and sort stories and live streams
+  const combinedItems: CombinedItem[] = [
+    ...stories.map(story => ({ ...story, type: 'story' as const })),
+    ...liveStreams.map(stream => ({ ...stream, type: 'livestream' as const }))
+  ].sort((a, b) => {
+    const dateA = new Date(a.createdAt || 0).getTime();
+    const dateB = new Date(b.createdAt || 0).getTime();
+    return dateB - dateA;
+  });
 
   // Group stories by user, keeping only the first story for each user
   const userStoriesMap = stories.reduce((acc, story) => {
@@ -44,11 +66,6 @@ const StoryArea:React.FC = () => {
     setIsDropdownOpen(false);
   };
 
-  const handleStartLive = () => {
-    console.log('Start Live');
-    setIsDropdownOpen(false);
-  };
-
   const handleShowOwnStories = () => {
     if (userOwnStories.length > 0) {
       const ownStoriesIndex = stories.findIndex(story => story._id === userOwnStories[0]._id);
@@ -58,7 +75,12 @@ const StoryArea:React.FC = () => {
   };
 
   useEffect(() => {
-    fetchStories();
+    Promise.all([fetchStories(), fetchLiveStreams()])
+      .then(() => setLoading(false))
+      .catch(error => {
+        console.error('Error fetching data:', error);
+        setLoading(false);
+      });
   }, []);
 
   const fetchStories = async () => {
@@ -67,15 +89,25 @@ const StoryArea:React.FC = () => {
       setStories(storiesData);
     } catch (error) {
       console.error('Error fetching stories:', error);
-    } finally {
-      setLoading(false);
+    }
+  };
+
+  const fetchLiveStreams = async () => {
+    try {
+      const streams = await liveStreamApi.getLiveStreams();
+      setLiveStreams(streams);
+    } catch (error) {
+      console.error('Error fetching live streams:', error);
     }
   };
 
   const handleStoryClick = (index: number) => {
-    const actualStory = filteredUserStories[index];
-    const originalIndex = stories.findIndex(story => story._id === actualStory._id);
-    setSelectedStoryIndex(originalIndex);
+    // Find the actual story in the original stories array
+    const selectedItem = combinedItems[index];
+    if (selectedItem.type === 'story') {
+      const originalIndex = stories.findIndex(story => story._id === selectedItem._id);
+      setSelectedStoryIndex(originalIndex);
+    }
   };
 
   const handleCloseStory = () => {
@@ -123,6 +155,54 @@ const StoryArea:React.FC = () => {
   
   const handleStoryCreated = async () => {
     await fetchStories();
+  };
+
+  const generateUniqueRoomId = () => {
+    return `live_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+  };
+
+  const handleStartLive = async () => {
+
+    if (!user?.premium_status) {
+      // If not premium, open the premium subscription modal
+      setIsPremiumModalOpen(true);
+      return;
+    }
+    try {
+      const roomId = generateUniqueRoomId();
+
+
+      
+      // Create live stream in backend
+      const liveStream = await liveStreamApi.createLiveStream(
+        user?._id, 
+        roomId
+      );
+
+      // Navigate to room with host privileges
+      navigate(`/user/live/room/${roomId}`, { 
+        state: { 
+          isHost: true, 
+          liveStreamId: liveStream._id 
+        } 
+      });
+    } catch (error) {
+      console.error('Error starting live stream:', error);
+    }
+  };
+
+  const handleJoinLiveStream = async (liveStream: ILiveStream) => {
+    try {
+      await liveStreamApi.joinLiveStream(liveStream._id);
+      navigate(`/user/live/room/${liveStream.roomId}`, { 
+        state: { 
+          isHost: false, 
+          liveStreamId: liveStream._id 
+        } 
+      });
+    } catch (error) {
+      console.error('Error joining live stream:', error);
+    }
   };
 
   if (loading) {
@@ -227,30 +307,58 @@ const StoryArea:React.FC = () => {
               </DropdownMenuContent>
             </DropdownMenu>
 
-            {/* Other Stories */}
-            {filteredUserStories.map((story, index) => (
-              <div
-                key={story._id}
-                className="flex flex-col items-center flex-shrink-0 cursor-pointer"
-                onClick={() => handleStoryClick(index)}
-              >
-                <div className={cn(
-                  "p-[2px] rounded-full",
-                  hasViewedAllStories([story])
-                    ? "bg-gray-400" 
-                    : "bg-gradient-to-r from-[#1D9BF0] to-[#1D9BF0]"
-                )}>
-                  <img
-                    src={story.userId.profile_picture}
-                    alt={`${story.userId.username}'s Story`}
-                    className="w-14 h-14 rounded-full object-cover border-2 border-white dark:border-gray-800"
-                  />
-                </div>
-                <span className="text-xs mt-1 truncate w-16 text-center font-medium text-gray-400 dark:text-gray-400">
-                  {story.userId.username}
-                </span>
-              </div>
-            ))}
+            {/* Combined Stories and Live Streams */}
+            {combinedItems.map((item, index) => {
+              if (item.type === 'livestream') {
+                const liveStream = item as ILiveStream;
+                return (
+                  <div
+                    key={`livestream-${liveStream._id}`}
+                    className="flex flex-col items-center flex-shrink-0 cursor-pointer"
+                    onClick={() => handleJoinLiveStream(liveStream)}
+                  >
+                    <div className="p-[2px] rounded-full bg-red-500">
+                      <img
+                        src={liveStream.host.profile_picture}
+                        alt={`${liveStream.host.username}'s Live`}
+                        className="w-14 h-14 rounded-full object-cover border-2 border-white dark:border-gray-800"
+                      />
+                    </div>
+                    <span className="text-xs mt-1 truncate w-16 text-center font-medium text-red-500">
+                      LIVE
+                    </span>
+                  </div>
+                );
+              } else {
+                const story = item as Story;
+                // Skip the current user's stories
+                if (story.userId._id === user?._id) return null;
+
+                return (
+                  <div
+                    key={story._id}
+                    className="flex flex-col items-center flex-shrink-0 cursor-pointer"
+                    onClick={() => handleStoryClick(index)}
+                  >
+                    <div className={cn(
+                      "p-[2px] rounded-full",
+                      hasViewedAllStories([story])
+                        ? "bg-gray-400" 
+                        : "bg-gradient-to-r from-[#1D9BF0] to-[#1D9BF0]"
+                    )}>
+                      <img
+                        src={story.userId.profile_picture}
+                        alt={`${story.userId.username}'s Story`}
+                        className="w-14 h-14 rounded-full object-cover border-2 border-white dark:border-gray-800"
+                      />
+                    </div>
+                    <span className="text-xs mt-1 truncate w-16 text-center font-medium text-gray-400 dark:text-gray-400">
+                      {story.userId.username}
+                    </span>
+                  </div>
+                );
+              }
+            })}
           </div>
         </div>
       </div>
@@ -262,9 +370,15 @@ const StoryArea:React.FC = () => {
           onClose={handleCloseStory}
           onView={handleStoryView}
           onDelete={handleDeleteStory}
-          
         />
       )}
+
+    {!user?.premium_status && (
+      <PremiumSubscriptionModal 
+        isOpen={isPremiumModalOpen} 
+        onClose={() => setIsPremiumModalOpen(false)} 
+      />
+    )}
     </div>
   );
 };

@@ -111,80 +111,64 @@ const SearchBar = () => {
       </div>
 
       {/* Dropdown for search results */}
-      {isDropdownVisible && (
-        <div 
-          id="search-dropdown"
-          className={`absolute w-full mt-1 rounded-md shadow-lg ${
-            isDarkMode ? 'bg-gray-700' : 'bg-white'
-          } max-h-96 overflow-y-auto z-50`}
-        >
-          {isLoading && currentPage === 1 ? (
-            <div className={`p-3 text-center ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-              Searching...
-            </div>
-          ) : users.length > 0 ? (
-            <>
-              {users.map(user => (
-                <div
-                  key={user._id}
-                  className={`p-3 flex items-center gap-2 cursor-pointer ${
-                    isDarkMode 
-                      ? 'hover:bg-gray-600 text-gray-200' 
-                      : 'hover:bg-gray-100 text-gray-700'
-                  }`}
-                  onClick={() => {
-                    handleNavigateToProfile(user._id)
-                    setIsDropdownVisible(false);
-                  }}
-                >
-                  {user.profile_picture ? (
-                    <img
-                      src={user.profile_picture}
-                      alt={user.username}
-                      className="w-8 h-8 rounded-full object-cover"
-                    />
-                  ) : (
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                      isDarkMode ? 'bg-gray-600' : 'bg-gray-200'
-                    }`}>
-                      {user.username[0].toUpperCase()}
-                    </div>
-                  )}
-                  <div>
-                    <div className="font-medium">{user.username}</div>
-                    <div className={`text-sm ${
-                      isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                    }`}>
-                      {user.email}
-                    </div>
-                  </div>
-                </div>
-              ))}
-              
-              {/* Show More button */}
-              {hasMore && (
-                <button
-                  onClick={handleShowMore}
-                  className={`w-full p-3 text-center ${
-                    isDarkMode 
-                      ? 'text-blue-400 hover:bg-gray-600' 
-                      : 'text-blue-500 hover:bg-gray-100'
-                  } ${isLoading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
-                  disabled={isLoading}
-                >
-                  {isLoading ? 'Loading...' : `Show More `}
-                </button>
-              )}
-            </>
+{/* Dropdown for search results */}
+{isDropdownVisible && (
+  <div
+    id="search-dropdown"
+    className={`absolute w-full mt-1 rounded-md shadow-lg bg-gray-900 max-h-96 overflow-y-auto z-50`}
+  >
+    {isLoading && currentPage === 1 ? (
+      <div className="p-3 text-center text-gray-400">
+        Searching...
+      </div>
+    ) : users.length > 0 ? (
+      <>
+        {users.map(user => (
+          <div
+            key={user._id}
+            className="p-3 flex items-center gap-2 cursor-pointer hover:bg-gray-800 text-gray-200"
+            onClick={() => {
+              handleNavigateToProfile(user._id);
+              setIsDropdownVisible(false);
+            }}
+          >
+            {user.profile_picture ? (
+              <img
+                src={user.profile_picture}
+                alt={user.username}
+                className="w-8 h-8 rounded-full object-cover"
+              />
             ) : (
-            <div className={`p-3 text-center ${
-              isDarkMode ? 'text-gray-400' : 'text-gray-500'
-            }`}>
-              No users found
+              <div className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-700">
+                {user.username[0].toUpperCase()}
+              </div>
+            )}
+            <div>
+              <div className="font-medium">{user.username}</div>
+              <div className="text-sm text-gray-400">{user.email}</div>
             </div>
-          )}
-        </div>
-      )}
+          </div>
+        ))}
+
+        {/* Show More button */}
+        {hasMore && (
+          <button
+            onClick={handleShowMore}
+            className="w-full p-3 text-center text-blue-400 hover:bg-gray-800"
+            disabled={isLoading}
+          >
+            {isLoading ? 'Loading...' : `Show More `}
+          </button>
+        )}
+      </>
+    ) : (
+      <div className="p-3 text-center text-gray-400">
+        No users found
+      </div>
+    )}
+  </div>
+)}
+
     </div>
   );
 };

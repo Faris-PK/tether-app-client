@@ -14,7 +14,7 @@ const adminSlice = createSlice({
   name: 'admin',
   initialState: initialAdminState,
   reducers: {
-    setAdmin: (state, action: PayloadAction<any>) => {
+    setAdmin: (state, action: PayloadAction<any>) => {   
       state.admin = action.payload;
       state.isAdmin = true;
     },

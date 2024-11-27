@@ -20,6 +20,11 @@ export const MarketplaceApi = {
       maxPrice?: number;
       category?: string;
       dateSort?: string;
+      locationFilter?: {
+        latitude: number;
+        longitude: number;
+        radius: number; 
+      }
     } = {}
   ) => {
     const queryParams = new URLSearchParams({
@@ -42,6 +47,12 @@ export const MarketplaceApi = {
     }
     if (filters.dateSort) {
       queryParams.append('dateSort', filters.dateSort);
+    }
+
+    if (filters.locationFilter) {
+      queryParams.append('latitude', filters.locationFilter.latitude.toString());
+      queryParams.append('longitude', filters.locationFilter.longitude.toString());
+      queryParams.append('radius', filters.locationFilter.radius.toString());
     }
 
     const response = await API.get(

@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { MapPin, Plus, Minus } from 'lucide-react';
+import { MapPin } from 'lucide-react';
 import { RootState } from '@/redux/store/store';
 import { useSelector, useDispatch } from 'react-redux';
 import { AppDispatch } from '@/redux/store/store';
@@ -25,31 +25,47 @@ interface LocationModalProps {
   isOpen: boolean;
   onClose: () => void;
   isDarkMode: boolean;
+  onLocationUpdate: (location: {
+    name: string,
+    coordinates: {
+      latitude: number,
+      longitude: number
+    }
+  }, radius: string) => void;
 }
 
-const LocationModal: React.FC<LocationModalProps> = ({ isOpen, onClose, isDarkMode }) => {
+const LocationModal: React.FC<LocationModalProps> = ({ 
+  isOpen, 
+  onClose, 
+  isDarkMode,
+  onLocationUpdate 
+}) => {
   const dispatch = useDispatch<AppDispatch>();
   const user = useSelector((state: RootState) => state.user.user);
+  
   const [locationQuery, setLocationQuery] = useState(user?.userLocation?.name || '');
   const [locationSuggestions, setLocationSuggestions] = useState<any[]>([]);
+  const [selectedLocation, setSelectedLocation] = useState<any | null>(null);
   const [radius, setRadius] = useState<string>('80');
   const [error, setError] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
-  const mapContainer = useRef<any>()
-  const map = useRef<mapboxgl.Map | null>(null);
-  const marker = useRef<mapboxgl.Marker | null>(null);
 
   const radiusOptions: string[] = ['20', '40', '60', '80', '100'];
 
+  // Reset suggestions and selected location when modal opens
   useEffect(() => {
-    if (user?.userLocation?.name) {
-      setLocationQuery(user.userLocation.name);
+    if (isOpen) {
+      setLocationQuery(user?.userLocation?.name || '');
+      setLocationSuggestions([]);
+      setSelectedLocation(null);
+      setError('');
     }
-  }, [user?.userLocation?.name]);
+  }, [isOpen, user?.userLocation?.name]);
 
   const handleInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setLocationQuery(value);
+    setSelectedLocation(null);
     setError('');
 
     if (value.length > 2) {
@@ -72,63 +88,53 @@ const LocationModal: React.FC<LocationModalProps> = ({ isOpen, onClose, isDarkMo
     }
   };
 
-  useEffect(() => {
-    if (user && mapContainer.current) {
-      map.current = new mapboxgl.Map({
-        container: mapContainer.current,
-        style: 'mapbox://styles/mapbox/streets-v12',
-        center: [user?.userLocation?.coordinates?.longitude, user?.userLocation.coordinates.latitude],
-        zoom: 17,
-        scrollZoom: false,
-      });
-
-      marker.current = new mapboxgl.Marker({
-        anchor: 'bottom'
-      })
-        .setLngLat([user?.userLocation?.coordinates?.longitude, user?.userLocation.coordinates.latitude])
-        .addTo(map.current);
-
-      map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
-      map.current.addControl(new mapboxgl.FullscreenControl(), 'top-right');
-
-      return () => {
-        marker.current?.remove();
-        map.current?.remove();
-      };
-    }
-  }, [user]);
-
-  const handleLocationSelect = async (place: any) => {
-    setIsLoading(true);
-    try {
-      const updatedLocation = {
-        userLocation: {
-          name: place.place_name,
-          coordinates: {
-            latitude: place.geometry.coordinates[1],
-            longitude: place.geometry.coordinates[0]
-          }
-        }
-      };
-
-      const updatedUser = await api.updateUserProfile(updatedLocation);
-      dispatch(updateUserLocation(updatedUser.userLocation));
-      setLocationQuery(place.place_name);
-      setLocationSuggestions([]);
-      setError('');
-    } catch (error: any) {
-      console.error('Error updating location:', error);
-      setError(error.response?.data?.message || 'Failed to update location');
-    } finally {
-      setIsLoading(false);
-    }
+  const handleLocationSelect = (place: any) => {
+    setSelectedLocation(place);
+    setLocationQuery(place.place_name);
+    setLocationSuggestions([]);
   };
 
   const handleApply = async () => {
-    if (locationSuggestions.length > 0) {
-      await handleLocationSelect(locationSuggestions[0]);
+    // If no location is selected, try to use the first suggestion
+    const locationToUse = selectedLocation || 
+      (locationSuggestions.length > 0 ? locationSuggestions[0] : null);
+
+    if (locationToUse) {
+      setIsLoading(true);
+      try {
+        const updatedLocation = {
+          userLocation: {
+            name: locationToUse.place_name,
+            coordinates: {
+              latitude: locationToUse.geometry.coordinates[1],
+              longitude: locationToUse.geometry.coordinates[0]
+            }
+          }
+        };
+
+        const updatedUser = await api.updateUserProfile(updatedLocation);
+        dispatch(updateUserLocation(updatedUser.userLocation));
+        
+        // Call the location update callback with selected location and radius
+        onLocationUpdate({
+          name: locationToUse.place_name,
+          coordinates: {
+            latitude: locationToUse.geometry.coordinates[1],
+            longitude: locationToUse.geometry.coordinates[0]
+          }
+        }, radius);
+
+        // Close the modal
+        onClose();
+      } catch (error: any) {
+        console.error('Error updating location:', error);
+        setError(error.response?.data?.message || 'Failed to update location');
+      } finally {
+        setIsLoading(false);
+      }
+    } else {
+      setError('Please enter and select a valid location');
     }
-    onClose();
   };
 
   return (
@@ -169,9 +175,8 @@ const LocationModal: React.FC<LocationModalProps> = ({ isOpen, onClose, isDarkMo
                       <li
                         key={place.id}
                         className={`px-4 py-2 cursor-pointer flex items-center ${
-                          isDarkMode
-                            ? 'hover:bg-gray-700'
-                            : 'hover:bg-gray-100'
+                          selectedLocation?.id === place.id ? 'bg-blue-100' : 
+                          (isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100')
                         }`}
                         onClick={() => handleLocationSelect(place)}
                       >
@@ -211,16 +216,11 @@ const LocationModal: React.FC<LocationModalProps> = ({ isOpen, onClose, isDarkMo
             </Select>
           </div>
 
-          {/* Map Preview */}
-          <div ref={mapContainer} className={`rounded-lg overflow-hidden border ${
-            isDarkMode ? 'border-gray-700' : 'border-gray-200'
-          } h-64 relative`}></div>
-
           {/* Apply Button */}
           <Button
             className="w-full bg-blue-500 hover:bg-blue-600 text-white"
             onClick={handleApply}
-            disabled={isLoading}
+            disabled={isLoading || (!selectedLocation && locationSuggestions.length === 0)}
           >
             {isLoading ? 'Updating...' : 'Apply'}
           </Button>

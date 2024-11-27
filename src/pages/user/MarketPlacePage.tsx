@@ -43,6 +43,7 @@ const MarketPlacePage: React.FC<MarketPlacePageProps> = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [searchRadius, setSearchRadius] = useState(80);
   const productsPerPage = 8;
 
   const [filters, setFilters] = useState({
@@ -51,6 +52,13 @@ const MarketPlacePage: React.FC<MarketPlacePageProps> = () => {
     maxPrice: '',
     category: '',
     dateSort: '',
+    locationFilter: user?.userLocation?.coordinates 
+      ? {
+          latitude: user.userLocation.coordinates.latitude,
+          longitude: user.userLocation.coordinates.longitude,
+          radius: searchRadius 
+        } 
+      : undefined
   });
 
 
@@ -62,7 +70,8 @@ const MarketPlacePage: React.FC<MarketPlacePageProps> = () => {
         minPrice: filters.minPrice ? parseFloat(filters.minPrice) : undefined,
         maxPrice: filters.maxPrice ? parseFloat(filters.maxPrice) : undefined,
         category: filters.category,
-        dateSort: filters.dateSort
+        dateSort: filters.dateSort,
+        locationFilter: filters.locationFilter
       });
 
      // console.log('response from market: ', products);
@@ -80,6 +89,55 @@ const MarketPlacePage: React.FC<MarketPlacePageProps> = () => {
       setLoading(false);
     }
   };
+
+    // Update location filter when user location or radius changes
+    const updateLocationFilter = (location?: {
+      latitude: number, 
+      longitude: number
+    }, radiusKm?: number) => {
+      const newRadius = radiusKm || searchRadius;
+      
+      const newLocationFilter = location 
+        ? {
+            latitude: location.latitude,
+            longitude: location.longitude,
+            radius: newRadius
+          }
+        : undefined;
+  
+      setFilters(prev => ({
+        ...prev,
+        locationFilter: newLocationFilter
+      }));
+      
+      // Update search radius state
+      if (radiusKm) {
+        setSearchRadius(radiusKm);
+      }
+  
+      // Reset to first page and fetch products
+      setCurrentPage(1);
+      fetchProducts(1);
+    };
+  
+    // Update the LocationModal to pass both location and radius
+    const handleLocationUpdate = (locationData: {
+      name: string,
+      coordinates: {
+        latitude: number,
+        longitude: number
+      }
+    }, radius: string) => {
+      updateLocationFilter(
+        locationData.coordinates, 
+        parseInt(radius)
+      );
+      setIsLocationModalOpen(false);
+    };
+  
+    useEffect(() => {
+      fetchProducts();
+    }, [filters]);
 
   
   const loadMore = () => {
@@ -139,17 +197,27 @@ const MarketPlacePage: React.FC<MarketPlacePageProps> = () => {
     }
   };
 
+  
+
   const resetFilters = () => {
     setFilters({
       searchQuery: '',
       minPrice: '',
       maxPrice: '',
       category: '',
-      dateSort: ''
+      dateSort: '',
+      locationFilter: user?.userLocation?.coordinates 
+      ? {
+          latitude: user.userLocation.coordinates.latitude,
+          longitude: user.userLocation.coordinates.longitude,
+          radius: searchRadius 
+        } 
+      : undefined
     });
     setCurrentPage(1);
     fetchProducts(1);
   };
+  
   
 
   return (
@@ -319,6 +387,7 @@ const MarketPlacePage: React.FC<MarketPlacePageProps> = () => {
         isOpen={isLocationModalOpen}
         onClose={() => setIsLocationModalOpen(false)}
         isDarkMode={isDarkMode}
+        onLocationUpdate={handleLocationUpdate} // Add this prop
       />
     </div>
   );

@@ -16,11 +16,14 @@ import ForgotPasswordPage from '@/pages/user/ForgotPasswordPage';
 import ResetPasswordPage from '@/pages/user/ResetPasswordPage';
 import MusicSearch from '@/pages/user/MusicSearch';
 import PremiumSubscriptionPage from '@/pages/user/PremiumSubscriptionPage';
-
+import Room from '@/components/live/Room';
+import { ToastContainer } from 'react-toastify';
 
 const UserRoutes: React.FC = () => {
   return (
     <ThemeProvider>
+      {/* ToastContainer should be outside of Routes */}
+      <ToastContainer />
       <Routes>
         {/* Public Routes */}
         <Route path="register" element={<PublicRoute element={<RegisterPage />} />} />
@@ -32,18 +35,14 @@ const UserRoutes: React.FC = () => {
         {/* Private Routes */}
         <Route path="home" element={<PrivateRoute element={<HomePage />} />} />
         <Route path="profile" element={<PrivateRoute element={<ProfilePage />} />} />
-        <Route path="UserProfile/:userId" element={<PrivateRoute element={<UserProfile/>} />} />
-        <Route path="post/:postId" element={<PrivateRoute element={<SharedPostPage/>} />} />
-        <Route path="MarketPlace" element={<PrivateRoute element={<Marketplace/>} />} />
+        <Route path="UserProfile/:userId" element={<PrivateRoute element={<UserProfile />} />} />
+        <Route path="post/:postId" element={<PrivateRoute element={<SharedPostPage />} />} />
+        <Route path="MarketPlace" element={<PrivateRoute element={<Marketplace />} />} />
         <Route path="paymentsuccess" element={<PaymentSuccessPage />} />
         <Route path="payment/cancel" element={<Navigate to="/user/home" />} />
         <Route path="promotesuccess" element={<PromotionSuccessPage />} />
         <Route path="premium" element={<PremiumSubscriptionPage />} />
-
-        {/* <Route path="music" element={<MusicSearch/>} /> */}
-
-
-
+        <Route path="live/room/:roomId" element={<PrivateRoute element={<Room />} />} />
 
         {/* Fallback to Sign-in if no route matches */}
         <Route path="*" element={<Navigate to="signin" />} />
