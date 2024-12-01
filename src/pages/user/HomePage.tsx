@@ -10,10 +10,15 @@ import SideNav from '../../components/common/SettingsNav';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useNavigate } from "react-router-dom";
 import { PostApi } from "@/api/postApi";
+import { storyApi } from "@/api/storyApi";
+import { liveStreamApi } from "@/api/liveStreamApi";
 import { clearUser } from '../../redux/slices/userSlice';
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/redux/store/store";
 import { Button } from "@/components/ui/button";
+import AppLoader from '@/components/common/AppLoader';
+import { Story } from '@/types/IStory';
+import ILiveStream from '@/types/ILiveStream';
 
 interface Post {
   _id: string;
@@ -32,35 +37,50 @@ interface Post {
   isBlocked: boolean;
 }
 
+type CombinedItem = (Story | ILiveStream) & { type: 'story' | 'livestream', createdAt?: string };
+
 const HomePage: React.FC = () => {
   const { isDarkMode } = useTheme();
   const [posts, setPosts] = useState<Post[]>([]);
+  const [stories, setStories] = useState<Story[]>([]);
+  const [liveStreams, setLiveStreams] = useState<ILiveStream[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const postsPerPage = 2;
+  const loader = true
   
   const currentUserId = useSelector((state: RootState) => state.user.user?._id);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const fetchPosts = useCallback(async (page: number = 1) => {
+  const fetchAllData = useCallback(async (page: number = 1) => {
     try {
       setIsLoadingMore(page > 1);
       if (page === 1) setLoading(true);
       
-      const response = await PostApi.getAllPosts(page, postsPerPage);
-     // console.log(' response: ', response);
+      // Fetch posts
+      const postResponse = await PostApi.getAllPosts(page, postsPerPage);
       
       if (page === 1) {
-        setPosts(response.posts);
+        setPosts(postResponse.posts);
       } else {
-        setPosts(prevPosts => [...prevPosts, ...response.posts]);
+        setPosts(prevPosts => [...prevPosts, ...postResponse.posts]);
       }
       
-      setTotalPages(response.totalPages);
+      setTotalPages(postResponse.totalPages);
+
+      // Fetch stories and live streams
+      const [storiesData, liveStreamsData] = await Promise.all([
+        storyApi.getStories(),
+        liveStreamApi.getLiveStreams()
+      ]);
+
+      setStories(storiesData);
+      setLiveStreams(liveStreamsData);
+      
       setLoading(false);
       setIsLoadingMore(false);
     } catch (err: any) {
@@ -68,7 +88,7 @@ const HomePage: React.FC = () => {
         dispatch(clearUser());
         navigate('/signin');
       } else {
-        setError('Error fetching posts....');
+        setError('Error fetching data....');
       }
       setLoading(false);
       setIsLoadingMore(false);
@@ -76,18 +96,18 @@ const HomePage: React.FC = () => {
   }, [navigate, dispatch]);
 
   useEffect(() => {
-    fetchPosts(1);
-  }, [fetchPosts]);
+    fetchAllData(1);
+  }, [fetchAllData]);
 
   const loadMore = () => {
     if (currentPage < totalPages && !isLoadingMore) {
       const nextPage = currentPage+1;
       setCurrentPage(nextPage);
-      fetchPosts(nextPage);
+      fetchAllData(nextPage);
     }
   };
 
-  if (loading && currentPage === 1) return <p>Loading...</p>;
+  if (loading && currentPage === 1) return <AppLoader fromHome={true}/>;
   if (error) return <p>{error}</p>;
 
   return (
@@ -95,7 +115,7 @@ const HomePage: React.FC = () => {
       <header className="flex justify-between items-center mb-5 ">
         <HeaderNav onPostCreated={() => {
           setCurrentPage(1);
-          fetchPosts(1);
+          fetchAllData(1);
         }} />
       </header>
 
@@ -105,13 +125,17 @@ const HomePage: React.FC = () => {
           <SideNav/>
         </div>
         <div className="flex-1 flex-col items-center overflow-y-auto pr-4 scrollbar-hide pt-2">
-          <StoryArea />
+          <StoryArea 
+            stories={stories} 
+            liveStreams={liveStreams} 
+            onStoryFetched={() => fetchAllData(currentPage)}
+          />
           <PostList 
             posts={posts} 
             currentUserId={currentUserId} 
             fetchPosts={() => {
               setCurrentPage(1);
-              fetchPosts(1);
+              fetchAllData(1);
             }}
           />
           {currentPage < totalPages && (
@@ -126,7 +150,6 @@ const HomePage: React.FC = () => {
             </div>
           )}
         </div>
-
 
         <div className="w-1/6">
           <SuggestedProfiles/>

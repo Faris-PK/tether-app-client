@@ -8,7 +8,7 @@ import adminReducer from '../slices/adminSlice';
 const persistConfig = {
   key: 'root',
   storage,
-  whitelist: ['user', 'admin', 'post'], // Include both user and admin slices
+  whitelist: ['user', 'admin', 'post'], 
 };
 
 const rootReducer = combineReducers({
@@ -24,7 +24,7 @@ export const store = configureStore({
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: {
-        ignoredActions: ['persist/PERSIST'], // Ignore persist actions in middleware
+        ignoredActions: ['persist/PERSIST'], 
       },
     }),
 });

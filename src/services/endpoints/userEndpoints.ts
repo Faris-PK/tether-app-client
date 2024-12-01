@@ -45,6 +45,8 @@ export const postRoutes = {
     unfollowUser: 'user/unfollow',
     removeFollowRequest: 'user/remove-request',
     removeSuggestion: 'user/remove-suggestion',
+    getUserNotifications: 'user/notifications',
+
   };
 
 

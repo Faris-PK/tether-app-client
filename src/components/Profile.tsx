@@ -28,6 +28,7 @@ import PremiumBadge from './PremiumBadge';
 import { MarketplaceApi } from '@/api/marketplaceApi';
 import { MarketplaceProduct } from '@/types/IMarketplace';
 import ProductGrid from './marketPlace/ProductGrid';
+import AppLoader from './common/AppLoader';
 
 
 interface Post {
@@ -432,7 +433,7 @@ const Profile: React.FC = () => {
     );
   };
 
-  if (loading) return <p>Loading...</p>;
+  if (loading) return <AppLoader/>;
   if (error) return <p>{error}</p>;
 
 

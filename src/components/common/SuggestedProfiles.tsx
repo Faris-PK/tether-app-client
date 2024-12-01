@@ -118,7 +118,7 @@ const SuggestedProfiles = () => {
           variant="outline"
           size="sm"
           onClick={() => handleFollowAction(profile._id, profile.isFollowing)}
-          className={`h-7 px-3 text-xs font-medium rounded-md transition-all duration-300
+          className={`h-7 px-4 text-xs font-sm rounded-full transition-all duration-300
             ${profile.isFollowing 
               ? `${isDarkMode 
                   ? 'bg-gray-700 hover:bg-gray-600' 

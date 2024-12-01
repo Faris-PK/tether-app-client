@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { PlusCircle, Camera, Video, Eye } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { cn } from "@/lib/utils";
@@ -15,23 +15,31 @@ import { Story } from '@/types/IStory';
 import { storyApi } from '@/api/storyApi';
 import StoryViewer from '@/components/home/StoryViewer';
 import { liveStreamApi } from '@/api/liveStreamApi';
-import  ILiveStream  from '@/types/ILiveStream';
-import { ZegoUIKitPrebuilt } from '@zegocloud/zego-uikit-prebuilt';
+import ILiveStream from '@/types/ILiveStream';
 import { useNavigate } from 'react-router-dom';
 import PremiumSubscriptionModal from '@/components/modals/PremiumSubscriptionModal';
 
+interface StoryAreaProps {
+  stories: Story[];
+  liveStreams: ILiveStream[];
+  onStoryFetched?: () => void;
+}
 
 type CombinedItem = (Story | ILiveStream) & { type: 'story' | 'livestream', createdAt?: string };
 
-const StoryArea:React.FC = () => {
+const StoryArea: React.FC<StoryAreaProps> = ({ 
+  stories: initialStories, 
+  liveStreams: initialLiveStreams, 
+  onStoryFetched 
+}) => {
   const { isDarkMode } = useTheme();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [stories, setStories] = useState<Story[]>([]);
+  const [stories, setStories] = useState<Story[]>(initialStories);
   const [selectedStoryIndex, setSelectedStoryIndex] = useState<number>(-1);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const [liveStreams, setLiveStreams] = useState<ILiveStream[]>([]);
+  const [liveStreams, setLiveStreams] = useState<ILiveStream[]>(initialLiveStreams);
   const [isPremiumModalOpen, setIsPremiumModalOpen] = useState(false);
 
   const user = useSelector((state: RootState) => state.user?.user);
@@ -75,31 +83,10 @@ const StoryArea:React.FC = () => {
   };
 
   useEffect(() => {
-    Promise.all([fetchStories(), fetchLiveStreams()])
-      .then(() => setLoading(false))
-      .catch(error => {
-        console.error('Error fetching data:', error);
-        setLoading(false);
-      });
-  }, []);
-
-  const fetchStories = async () => {
-    try {
-      const storiesData = await storyApi.getStories();
-      setStories(storiesData);
-    } catch (error) {
-      console.error('Error fetching stories:', error);
-    }
-  };
-
-  const fetchLiveStreams = async () => {
-    try {
-      const streams = await liveStreamApi.getLiveStreams();
-      setLiveStreams(streams);
-    } catch (error) {
-      console.error('Error fetching live streams:', error);
-    }
-  };
+    // Update stories and live streams when props change
+    setStories(initialStories);
+    setLiveStreams(initialLiveStreams);
+  }, [initialStories, initialLiveStreams]);
 
   const handleStoryClick = (index: number) => {
     // Find the actual story in the original stories array
@@ -154,7 +141,18 @@ const StoryArea:React.FC = () => {
   };
   
   const handleStoryCreated = async () => {
-    await fetchStories();
+    // Call the prop function to refetch stories if provided
+    if (onStoryFetched) {
+      onStoryFetched();
+    } else {
+      // Fallback to fetching stories directly if no prop is provided
+      try {
+        const storiesData = await storyApi.getStories();
+        setStories(storiesData);
+      } catch (error) {
+        console.error('Error fetching stories:', error);
+      }
+    }
   };
 
   const generateUniqueRoomId = () => {
@@ -162,7 +160,6 @@ const StoryArea:React.FC = () => {
   };
 
   const handleStartLive = async () => {
-
     if (!user?.premium_status) {
       // If not premium, open the premium subscription modal
       setIsPremiumModalOpen(true);
@@ -170,8 +167,6 @@ const StoryArea:React.FC = () => {
     }
     try {
       const roomId = generateUniqueRoomId();
-
-
       
       // Create live stream in backend
       const liveStream = await liveStreamApi.createLiveStream(
@@ -206,7 +201,7 @@ const StoryArea:React.FC = () => {
   };
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <div></div>;
   }
 
   return (

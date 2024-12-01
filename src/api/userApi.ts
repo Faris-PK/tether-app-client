@@ -114,6 +114,12 @@ export const api = {
     );
     return response.data;
   },
+  getUserNotifications: async (page: number = 1, limit: number = 10) => {
+    const response = await API.get(`/user/notifications?page=${page}&limit=${limit}`, { 
+      withCredentials: true 
+    });
+    return response.data;
+  },
   
 
 };

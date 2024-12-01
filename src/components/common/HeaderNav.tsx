@@ -24,7 +24,7 @@ import { useNavigate } from 'react-router-dom';
 import CreatePostModal from '../modals/PostCreationModal';
 import AudienceSelectionModal from '../modals/AudienceSelectionModal';
 import LogoutConfirmation from '../modals/LogoutConfirmation';
-import { Input } from "@/components/ui/input";
+import NotificationsSheet from './NotificationsSheet';
 
 
 // Title Component
@@ -323,27 +323,8 @@ const HeaderNav: React.FC<HeaderNavProps> = ({ onPostCreated }) => {
           </Tooltip>
         </TooltipProvider>
 
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className={`relative rounded-full w-10 h-10 shadow-lg transition-all duration-300 ease-in-out hover:shadow-xl hover:scale-105 cursor-pointer ${
-                  isDarkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white'
-                }`}
-              >
-                <Bell className={`h-5 w-5 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`} />
-                <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center bg-[#1D9BF0] hover:bg-[#1D9BF0] text-white">
-                  3
-                </Badge>
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Notifications</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        <NotificationsSheet />
+
 
         <TooltipProvider>
           <Tooltip>
