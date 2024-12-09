@@ -14,10 +14,10 @@ import SharedPostPage from '@/pages/user/SharedPostPage';
 import PromotionSuccessPage from '@/pages/user/PromotionSuccessPage';
 import ForgotPasswordPage from '@/pages/user/ForgotPasswordPage';
 import ResetPasswordPage from '@/pages/user/ResetPasswordPage';
-import MusicSearch from '@/pages/user/MusicSearch';
 import PremiumSubscriptionPage from '@/pages/user/PremiumSubscriptionPage';
 import Room from '@/components/live/Room';
 import { ToastContainer } from 'react-toastify';
+import ChatPage from '@/pages/user/ChatPage';
 
 const UserRoutes: React.FC = () => {
   return (
@@ -42,6 +42,7 @@ const UserRoutes: React.FC = () => {
         <Route path="payment/cancel" element={<Navigate to="/user/home" />} />
         <Route path="promotesuccess" element={<PromotionSuccessPage />} />
         <Route path="premium" element={<PremiumSubscriptionPage />} />
+        <Route path="messages" element={<ChatPage />} />
         <Route path="live/room/:roomId" element={<PrivateRoute element={<Room />} />} />
 
         {/* Fallback to Sign-in if no route matches */}

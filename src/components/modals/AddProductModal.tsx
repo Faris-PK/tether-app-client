@@ -1,5 +1,5 @@
 import React, { useState, ChangeEvent, FormEvent } from 'react';
-import { X, MapPin } from 'lucide-react';
+import { X, MapPin, Trash2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -60,7 +60,9 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
     },
     description: ''
   });
+
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
   const [locationQuery, setLocationQuery] = useState('');
@@ -70,19 +72,16 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ): void => {
     const { name, value } = e.target;
-    if (name !== 'location') {
-      setFormData(prev => ({
-        ...prev,
-        [name]: value
-      }));
-    }
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
   const handleLocationChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { value } = e.target;
     setLocationQuery(value);
-    
-    // Update the location name in formData
+
     setFormData(prev => ({
       ...prev,
       location: {
@@ -94,7 +93,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
         }
       }
     }));
-    
+
     if (value.length > 2) {
       geocodingClient
         .forwardGeocode({
@@ -116,10 +115,8 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
   };
 
   const handleLocationSelect = (place: any) => {
-   // console.log('place ', place);
-    
     const [longitude, latitude] = place.center;
-    
+
     setFormData(prev => ({
       ...prev,
       location: {
@@ -144,28 +141,81 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>): void => {
     if (e.target.files) {
       const files = Array.from(e.target.files);
-      setSelectedFiles(files);
+      
+      // Check total number of files
+      const totalFiles = files.length + selectedFiles.length;
+      if (totalFiles > 10) {
+        setError('You can upload up to 10 images.');
+        return;
+      }
+
+      // Create preview URLs
+      const newPreviewUrls = files.map(file => URL.createObjectURL(file));
+      
+      // Combine existing and new files/previews
+      setSelectedFiles(prev => [...prev, ...files]);
+      setImagePreviewUrls(prev => [...prev, ...newPreviewUrls]);
+      setError('');
     }
+  };
+
+  const removeImage = (indexToRemove: number) => {
+    // Revoke the object URL to free up memory
+    URL.revokeObjectURL(imagePreviewUrls[indexToRemove]);
+
+    // Remove the file and its preview
+    setSelectedFiles(prev => 
+      prev.filter((_, index) => index !== indexToRemove)
+    );
+    setImagePreviewUrls(prev => 
+      prev.filter((_, index) => index !== indexToRemove)
+    );
+  };
+
+  const validateForm = (): boolean => {
+    if (formData.title.length < 3) {
+      setError('Title must be at least 3 characters.');
+      return false;
+    }
+    if (parseFloat(formData.price) <= 0 || isNaN(parseFloat(formData.price))) {
+      setError('Price must be a positive number.');
+      return false;
+    }
+    if (!formData.category) {
+      setError('Please select a category.');
+      return false;
+    }
+    if (!formData.location.name) {
+      setError('Please select a valid location.');
+      return false;
+    }
+    if (formData.description.length < 10) {
+      setError('Description must be at least 10 characters.');
+      return false;
+    }
+    if (selectedFiles.length === 0) {
+      setError('Please upload at least one image.');
+      return false;
+    }
+    return true;
   };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
-    setIsLoading(true);
     setError('');
+
+    if (!validateForm()) return;
+
+    setIsLoading(true);
 
     try {
       const formDataToSend = new FormData();
-      
-      // Append location as a stringified object
       formDataToSend.append('location', JSON.stringify(formData.location));
-      
-      // Append other fields
       formDataToSend.append('title', formData.title);
       formDataToSend.append('price', formData.price);
       formDataToSend.append('category', formData.category);
       formDataToSend.append('description', formData.description);
 
-      // Append images
       selectedFiles.forEach(file => {
         formDataToSend.append('images', file);
       });
@@ -173,38 +223,48 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
       await MarketplaceApi.createProduct(formDataToSend);
       onClose();
     } catch (err) {
-      if (err instanceof Error) {
-        setError(err.message);
-      } else if (typeof err === 'object' && err !== null && 'response' in err) {
-        const apiError = err as { response?: { data?: { message?: string } } };
-        setError(apiError.response?.data?.message || 'Error creating product');
-      } else {
-        setError('An unexpected error occurred');
-      }
+      setError('Error creating product.');
     } finally {
       setIsLoading(false);
     }
   };
 
+  // Clean up object URLs when component unmounts
+  React.useEffect(() => {
+    return () => {
+      imagePreviewUrls.forEach(url => URL.revokeObjectURL(url));
+    };
+  }, [imagePreviewUrls]);
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className={`sm:max-w-[425px] ${isDarkMode ? 'bg-gray-800 text-white' : 'bg-white'} `}>
-        <DialogHeader>
-          <DialogTitle className="text-xl font-semibold">Create New Listing</DialogTitle>
-        </DialogHeader>
+<Dialog open={isOpen} onOpenChange={onClose}>
+  <DialogContent 
+    className={`
+      sm:max-w-[425px] 
+      ${isDarkMode ? 'bg-gray-800 text-white' : 'bg-white'}
+      max-h-[90vh] 
+      overflow-y-auto 
+      scrollbar-thin 
+      ${isDarkMode ? 'scrollbar-thumb-gray-700 scrollbar-track-gray-800' : 'scrollbar-thumb-gray-300 scrollbar-track-gray-100'}
+    `}
+  >
+    <DialogHeader>
+      <DialogTitle className="text-xl font-semibold sticky top-0 bg-inherit z-10 pb-2">
+        Create New Listing
+      </DialogTitle>
+    </DialogHeader>
 
         <form onSubmit={handleSubmit} className="mt-4 space-y-4">
-          <div>
-            <Label htmlFor="title">Title</Label>
-            <Input
-              id="title"
-              name="title"
-              value={formData.title}
-              onChange={handleInputChange}
-              className={isDarkMode ? 'bg-gray-700 text-white' : ''}
-              required
-            />
-          </div>
+        <div>
+        <Label htmlFor="title">Title</Label>
+        <Input
+          id="title"
+          name="title"
+          value={formData.title}
+          onChange={handleInputChange}
+          className={isDarkMode ? 'bg-gray-700 text-white' : ''}
+        />
+      </div>
 
           <div>
             <Label htmlFor="price">Price</Label>
@@ -215,7 +275,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
               value={formData.price}
               onChange={handleInputChange}
               className={isDarkMode ? 'bg-gray-700 text-white' : ''}
-              required
+              
               min="0"
               step="0.01"
             />
@@ -252,7 +312,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
                 value={locationQuery}
                 onChange={handleLocationChange}
                 className={`${isDarkMode ? 'bg-gray-700 text-white' : ''} pr-8`}
-                required
+                
               />
               <MapPin className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
             </div>
@@ -288,7 +348,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
               onChange={handleInputChange}
               className={isDarkMode ? 'bg-gray-700 text-white' : ''}
               rows={4}
-              required
+              
             />
           </div>
 
@@ -306,7 +366,6 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
                 multiple
                 onChange={handleFileChange}
                 className="hidden"
-                required
               />
               <label 
                 htmlFor="images" 
@@ -322,6 +381,28 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
                 </div>
               </label>
             </div>
+            
+            {/* Image Preview Section */}
+            {imagePreviewUrls.length > 0 && (
+              <div className="mt-4 grid grid-cols-3 gap-2">
+                {imagePreviewUrls.map((previewUrl, index) => (
+                  <div key={index} className="relative group">
+                    <img 
+                      src={previewUrl} 
+                      alt={`Preview ${index + 1}`} 
+                      className="w-full h-24 object-cover rounded-md"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeImage(index)}
+                      className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {error && (
@@ -330,23 +411,23 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
             </div>
           )}
 
-          <div className="flex justify-end gap-3">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onClose}
-              className={isDarkMode ? 'bg-gray-700 text-white' : ''}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              disabled={isLoading}
-              className="bg-[#30bef1] hover:bg-[#38a0e6] text-white"
-            >
-              {isLoading ? 'Creating...' : 'Create Listing'}
-            </Button>
-          </div>
+      <div className="flex justify-end gap-3 sticky bottom-0 bg-inherit pt-2">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onClose}
+          className={isDarkMode ? 'bg-gray-700 text-white' : ''}
+        >
+          Cancel
+        </Button>
+        <Button
+          type="submit"
+          disabled={isLoading}
+          className="bg-[#30bef1] hover:bg-[#38a0e6] text-white"
+        >
+          {isLoading ? 'Creating...' : 'Create Listing'}
+        </Button>
+      </div>
         </form>
       </DialogContent>
     </Dialog>

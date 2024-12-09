@@ -181,8 +181,13 @@ const NotificationItem: React.FC<{
   );
 };
 
-// Main NotificationsSheet component
-const NotificationsSheet: React.FC = () => {
+interface NotificationsSheetProps {
+  onNotificationCountUpdate?: (count: number) => void;
+}
+
+const NotificationsSheet: React.FC<NotificationsSheetProps> = ({ 
+  onNotificationCountUpdate 
+}) => {
   const { isDarkMode } = useTheme();
   const { toast } = useToast();
 
@@ -206,6 +211,11 @@ const NotificationsSheet: React.FC = () => {
           totalPages: response.pagination.totalPages,
           totalNotifications: response.pagination.totalNotifications,
         });
+
+        // Update notification count when prop is provided
+        if (onNotificationCountUpdate) {
+          onNotificationCountUpdate(response.pagination.totalNotifications);
+        }
       }
     } catch (error) {
       console.error('Failed to fetch notifications', error);
@@ -219,12 +229,8 @@ const NotificationsSheet: React.FC = () => {
     }
   };
 
-  useEffect(() => {
-    fetchNotifications();
-  }, []);
-
   return (
-    <Sheet>
+    <Sheet onOpenChange={(open) => open && fetchNotifications()}>
       <SheetTrigger asChild>
         <Button
           variant="ghost"

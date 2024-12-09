@@ -201,13 +201,6 @@ const ProductGrid: React.FC<ProductGridProps> = ({
   const currentUserId = useSelector((state: RootState) => state.user?.user?._id);
   const { isDarkMode } = useTheme();
 
-  // Sort products to show promoted items first
-  const sortedProducts = [...products].sort((a, b) => {
-    if (a.isPromoted && !b.isPromoted) return -1;
-    if (!a.isPromoted && b.isPromoted) return 1;
-    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-  });
-
   const handleProductClick = (product: MarketplaceProduct) => {
     setSelectedProduct(product);
     setIsModalOpen(true);
@@ -259,8 +252,8 @@ const ProductGrid: React.FC<ProductGridProps> = ({
 
   if (loading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {[1, 2, 3, 4, 5, 6].map((i) => (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+        {[1, 2, 3, 4, 5, 6,7,8].map((i) => (
           <Card key={i} className="h-48 animate-pulse bg-gray-200 dark:bg-gray-700" />
         ))}
       </div>
@@ -274,7 +267,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
   return (
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-        {sortedProducts.map((product) => (
+        {products.map((product) => (
           <ProductCard
             key={product._id}
             product={product}

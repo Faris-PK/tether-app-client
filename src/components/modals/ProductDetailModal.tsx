@@ -40,13 +40,7 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
   const marker = useRef<mapboxgl.Marker | null>(null);
   const [mapInitialized, setMapInitialized] = useState(false);
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-  };
+
 
   const nextImage = () => {
     if (product?.images) {

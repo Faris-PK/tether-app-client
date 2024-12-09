@@ -107,7 +107,7 @@ export const api = {
     });
     return response.data;
   },
-  searchUsers: async (searchTerm: string, page: number = 1, limit: number = 5): Promise<SearchResponse> => {
+  searchUsers: async (searchTerm?: string, page?: number , limit?: number ): Promise<SearchResponse> => {
     const response = await API.get<SearchResponse>(
       `${authRoutes.userSearch}?searchTerm=${searchTerm}&page=${page}&limit=${limit}`,
       { withCredentials: true }
@@ -120,6 +120,7 @@ export const api = {
     });
     return response.data;
   },
+
   
 
 };

@@ -13,8 +13,6 @@ interface User {
   profile_picture?: string;
 }
 
-
-
 const SearchBar = () => {
   const { isDarkMode } = useTheme();
   const [searchTerm, setSearchTerm] = useState('');
@@ -26,7 +24,6 @@ const SearchBar = () => {
   const [totalUsers, setTotalUsers] = useState(0);
   const navigate = useNavigate();
   const currentUserId = useSelector((state: RootState) => state.user.user?._id);
-
 
   useEffect(() => {
     setCurrentPage(1);
@@ -43,7 +40,6 @@ const SearchBar = () => {
     setIsLoading(true);
     try {
       const response = await api.searchUsers(searchTerm, page, 4); 
-      console.log('response: ', response.data.users[0]._id);
       
       if (page === 1) {
         setUsers(response.data.users);
@@ -86,7 +82,6 @@ const SearchBar = () => {
     return () => document.removeEventListener('click', handleClickOutside);
   }, []);
 
-  
   const handleNavigateToProfile = (userId: string) => {
     if (currentUserId === userId) {
       navigate('/user/profile');
@@ -97,78 +92,190 @@ const SearchBar = () => {
 
   return (
     <div className="relative w-1/4">
-      <div className={`h-10 ${isDarkMode ? 'bg-gray-600' : 'bg-white'} flex items-center px-3 rounded-md shadow-lg transition-colors duration-200`}>
-        <Search className={`${isDarkMode ? 'text-gray-400' : 'text-gray-500'} w-5 h-5`} />
+      {/* Search Input */}
+      <div 
+        className={`
+          h-10 
+          flex items-center 
+          px-3 
+          rounded-3xl 
+          shadow-lg 
+          transition-colors 
+          duration-200 
+          ${isDarkMode 
+            ? 'bg-gray-800 border border-gray-700' 
+            : 'bg-white border border-gray-200'
+          }
+        `}
+      >
+        <Search 
+          className={`
+            ${isDarkMode 
+              ? 'text-gray-400' 
+              : 'text-gray-500'
+            } 
+            w-5 h-5
+          `} 
+        />
         <input
           type="text"
           value={searchTerm}
           onChange={handleSearchChange}
           placeholder="Search users"
-          className={`ml-2 w-full bg-transparent outline-none ${
-            isDarkMode ? 'text-gray-200 placeholder-gray-400' : 'text-gray-700 placeholder-gray-500'
-          }`}
+          className={`
+            ml-2 
+            w-full 
+            bg-transparent 
+            outline-none 
+            ${isDarkMode 
+              ? 'text-gray-200 placeholder-gray-500' 
+              : 'text-gray-700 placeholder-gray-500'
+            }
+          `}
         />
       </div>
 
       {/* Dropdown for search results */}
-{/* Dropdown for search results */}
-{isDropdownVisible && (
-  <div
-    id="search-dropdown"
-    className={`absolute w-full mt-1 rounded-md shadow-lg bg-gray-900 max-h-96 overflow-y-auto z-50`}
-  >
-    {isLoading && currentPage === 1 ? (
-      <div className="p-3 text-center text-gray-400">
-        Searching...
-      </div>
-    ) : users.length > 0 ? (
-      <>
-        {users.map(user => (
-          <div
-            key={user._id}
-            className="p-3 flex items-center gap-2 cursor-pointer hover:bg-gray-800 text-gray-200"
-            onClick={() => {
-              handleNavigateToProfile(user._id);
-              setIsDropdownVisible(false);
-            }}
-          >
-            {user.profile_picture ? (
-              <img
-                src={user.profile_picture}
-                alt={user.username}
-                className="w-8 h-8 rounded-full object-cover"
-              />
-            ) : (
-              <div className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-700">
-                {user.username[0].toUpperCase()}
-              </div>
-            )}
-            <div>
-              <div className="font-medium">{user.username}</div>
-              <div className="text-sm text-gray-400">{user.email}</div>
+      {isDropdownVisible && (
+        <div
+          id="search-dropdown"
+          className={`
+            absolute 
+            w-full 
+            mt-1 
+            rounded-2xl 
+            shadow-lg 
+            max-h-96 
+            overflow-y-auto 
+            z-50 
+            ${isDarkMode 
+              ? 'bg-gray-900 border border-gray-700' 
+              : 'bg-white border border-gray-200'
+            }
+          `}
+        >
+          {isLoading && currentPage === 1 ? (
+            <div 
+              className={`
+                p-3 
+                text-center 
+                ${isDarkMode 
+                  ? 'text-gray-400' 
+                  : 'text-gray-600'
+                }
+              `}
+            >
+              Searching...
             </div>
-          </div>
-        ))}
+          ) : users.length > 0 ? (
+            <>
+              {users.map(user => (
+                <div
+                  key={user._id}
+                  className={`
+                    p-3 
+                    flex 
+                    items-center 
+                    gap-2 
+                    cursor-pointer 
+                    ${isDarkMode 
+                      ? 'hover:bg-gray-700 text-gray-200' 
+                      : 'hover:bg-gray-100 text-gray-800'
+                    }
+                  `}
+                  onClick={() => {
+                    handleNavigateToProfile(user._id);
+                    setIsDropdownVisible(false);
+                  }}
+                >
+                  {user.profile_picture ? (
+                    <img
+                      src={user.profile_picture}
+                      alt={user.username}
+                      className="w-8 h-8 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div 
+                      className={`
+                        w-8 
+                        h-8 
+                        rounded-full 
+                        flex 
+                        items-center 
+                        justify-center 
+                        ${isDarkMode 
+                          ? 'bg-gray-700 text-gray-300' 
+                          : 'bg-gray-200 text-gray-700'
+                        }
+                      `}
+                    >
+                      {user.username[0].toUpperCase()}
+                    </div>
+                  )}
+                  <div>
+                    <div 
+                      className={`
+                        font-medium 
+                        ${isDarkMode 
+                          ? 'text-gray-200' 
+                          : 'text-gray-800'
+                        }
+                      `}
+                    >
+                      {user.username}
+                    </div>
+                    <div 
+                      className={`
+                        text-sm 
+                        ${isDarkMode 
+                          ? 'text-gray-400' 
+                          : 'text-gray-500'
+                        }
+                      `}
+                    >
+                      {user.email}
+                    </div>
+                  </div>
+                </div>
+              ))}
 
-        {/* Show More button */}
-        {hasMore && (
-          <button
-            onClick={handleShowMore}
-            className="w-full p-3 text-center text-blue-400 hover:bg-gray-800"
-            disabled={isLoading}
-          >
-            {isLoading ? 'Loading...' : `Show More `}
-          </button>
-        )}
-      </>
-    ) : (
-      <div className="p-3 text-center text-gray-400">
-        No users found
-      </div>
-    )}
-  </div>
-)}
-
+              {/* Show More button */}
+              {hasMore && (
+                <button
+                  onClick={handleShowMore}
+                  className={`
+                    w-full 
+                    p-3 
+                    text-center 
+                    transition-colors 
+                    duration-200 
+                    ${isDarkMode 
+                      ? 'text-blue-400 hover:bg-gray-700' 
+                      : 'text-blue-600 hover:bg-gray-100'
+                    }
+                  `}
+                  disabled={isLoading}
+                >
+                  {isLoading ? 'Loading...' : `Show More`}
+                </button>
+              )}
+            </>
+          ) : (
+            <div 
+              className={`
+                p-3 
+                text-center 
+                ${isDarkMode 
+                  ? 'text-gray-400' 
+                  : 'text-gray-600'
+                }
+              `}
+            >
+              No users found
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };
