@@ -81,6 +81,7 @@
   "devDependencies": {
     "@eslint/js": "^9.9.0",
     "@types/howler": "^2.2.12",
+    "@types/lodash": "^4.17.13",
     "@types/mapbox__mapbox-sdk": "^0.15.1",
     "@types/mapbox-gl": "^3.4.1",
     "@types/node": "^22.7.5",

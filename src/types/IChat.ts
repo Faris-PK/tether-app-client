@@ -1,27 +1,24 @@
-
-export interface IUser {
+export interface Sender {
   _id: string;
   username: string;
-  profile_picture?: string;
+  profile_picture: string;
 }
 
-export interface IMessage {
-  _id: string;
-  sender: IUser;
-  receiver: IUser;
-  content: string;
-  chatId: string;
-  isRead: boolean;
-  messageType: 'text' | 'image' | 'video';
-  createdAt: Date;
+export interface Message {
+  id: string;
+  sender: Sender;
+  text: string;
+  createdAt: string;
+  read:boolean;
+  receiver:string
 }
 
-export interface IChat {
-  _id: string;
-  participants: IUser[];
-  lastMessage?: IMessage;
-  isGroupChat: boolean;
-  groupName?: string;
-  createdAt: Date;
-  updatedAt: Date;
+export interface Contact {
+  id: string;
+  name: string;
+  username: string;
+  profile_picture: string;
+  lastMessage: string;
+  unreadCount: number;
+  messages: Message[];
 }

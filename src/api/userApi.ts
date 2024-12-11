@@ -36,6 +36,7 @@ export const api = {
 
 
   login: async (email: string, password: string) => {
+    
     const response = await API.post(authRoutes.SignIn, { email, password }, { withCredentials: true });
     return response.data;
   },
@@ -49,6 +50,7 @@ export const api = {
   },
 
   googleLogin: async (token: string) => {
+    
     const response = await API.post(authRoutes.googleLogin, { token }, {
       withCredentials: true,
       headers: { 'Content-Type': 'application/json' }

@@ -77,3 +77,12 @@ export const postRoutes = {
   
     
   };
+
+  export const chatRoutes = {
+    getContacts: '/chat/contacts',
+    getMessages: '/chat/messages',
+    sendMessage: '/chat/send',
+    markMessagesAsRead: '/chat/read',
+    searchUsers:'/chat/search',
+    startNewChat:'/chat/start-chat'
+  };

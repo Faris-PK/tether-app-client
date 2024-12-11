@@ -1,52 +1,47 @@
 import API from '../services/axios';
-import { IChat, IMessage } from '@/types/IChat';
+import { chatRoutes } from '../services/endpoints/userEndpoints';
+import { Contact, Message } from '../types/IChat';
 
-export const ChatAPI = {
-  getUserChats: async (): Promise<IChat[]> => {
-    const response = await API.get('/chat/chats', { withCredentials: true });
-    return response.data.data;
+export const ChatApi = {
+  getContacts: async (): Promise<Contact[]> => {
+    const response = await API.get(chatRoutes.getContacts, { withCredentials: true });
+    return response.data;
   },
 
-  getChatMessages: async (chatId: string, page: number = 1, limit: number = 50): Promise<{
-    messages: IMessage[];
-    pagination: {
-      totalMessages: number;
-      totalPages: number;
-      currentPage: number;
-    }
-  }> => {
-    const response = await API.get(`/chat/messages/${chatId}?page=${page}&limit=${limit}`, { 
-      withCredentials: true 
-    });
-    return response.data.data;
+  getMessages: async (contactId: string): Promise<Message[]> => {
+    const response = await API.get(`${chatRoutes.getMessages}/${contactId}`, { withCredentials: true });
+    return response.data;
   },
 
-  sendMessage: async (
-    receiverId: string, 
-    content: string, 
-    messageType: 'text' | 'image' | 'video' = 'text'
-  ): Promise<IMessage> => {
-    const response = await API.post('/chat/send-message', { 
-      receiverId, 
-      content, 
-      messageType 
-    }, { withCredentials: true });
-    return response.data.data;
+  sendMessage: async (contactId: string, message: string): Promise<Message> => {
+    const response = await API.post(
+      chatRoutes.sendMessage,
+      { contactId, message },
+      { withCredentials: true }
+    );
+    return response.data;
   },
 
-  // Add file upload method
-  uploadChatFile: async (file: File, messageType: 'image' | 'video'): Promise<string> => {
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('messageType', messageType);
+  markMessagesAsRead: async (contactId: string): Promise<void> => {
+    await API.post(
+      chatRoutes.markMessagesAsRead,
+      { contactId },
+      { withCredentials: true }
+    );
+  },
+   // Search for users to start a new chat
+   searchUsers: async (query: string): Promise<Contact[]> => {
+    const response = await API.get(`${chatRoutes.searchUsers}?query=${query}`, { withCredentials: true });
+    return response.data;
+  },
 
-    const response = await API.post('/chat/upload-file', formData, {
-      withCredentials: true,
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      }
-    });
-
-    return response.data.fileUrl;
-  }
+  // Start a new chat with a user
+  startNewChat: async (userId: string): Promise<Contact> => {
+    const response = await API.post(
+      chatRoutes.startNewChat,
+      { userId },
+      { withCredentials: true }
+    );
+    return response.data;
+  },
 };

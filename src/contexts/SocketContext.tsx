@@ -1,16 +1,12 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store/store';
 import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { Message } from '@/types/IChat';
 
-interface SocketContextType {
-  socket: Socket | null;
-  notifications: Notification[];
-  markNotificationAsRead: (notificationId: string) => void;
-}
-
-interface Notification {
+export interface Notification {
   _id: string;
   recipient: string;
   sender: {
@@ -24,77 +20,109 @@ interface Notification {
   createdAt: Date;
 }
 
+interface OnlineStatus {
+  [userId: string]: boolean;
+}
+
+interface SocketContextType {
+  socket: Socket | null;
+  notifications: Notification[];
+  messages: Message[];
+  onlineUsers: OnlineStatus;
+  markNotificationAsRead: (notificationId: string) => void;
+  addMessage: (message: Message) => void;
+}
+
 const SocketContext = createContext<SocketContextType>({
   socket: null,
   notifications: [],
+  messages: [],
+  onlineUsers: {},
   markNotificationAsRead: () => {},
+  addMessage: () => {},
 });
 
 export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [onlineUsers, setOnlineUsers] = useState<OnlineStatus>({});
   const user = useSelector((state: RootState) => state?.user?.user);
+
+  const sendHeartbeat = useCallback(() => {
+    if (socket && user?._id) {
+      socket.emit('user_activity', user._id);
+    }
+  }, [socket, user?._id]);
+
+  useEffect(() => {
+    const heartbeatInterval = setInterval(sendHeartbeat, 2 * 60 * 1000);
+    return () => clearInterval(heartbeatInterval);
+  }, [sendHeartbeat]);
 
   useEffect(() => {
     if (user?._id) {
-      // Create socket connection
       const newSocket = io(import.meta.env.VITE_BASE_URL, {
         withCredentials: true,
+        query: { userId: user._id }
       });
 
-      // Authenticate the socket connection
       newSocket.emit('authenticate', user._id);
 
-      // Listen for new notifications
+      newSocket.on('user_status_change', ({ userId, isOnline }: { userId: string; isOnline: boolean }) => {
+        setOnlineUsers(prev => ({ ...prev, [userId]: isOnline }));
+      });
+
       newSocket.on('new_notification', (notification: Notification) => {
         setNotifications(prev => [notification, ...prev]);
-        
-        // Show toast notification
         toast.info(notification.content, {
-          position: "top-right",
+          position: 'top-right',
           autoClose: 5000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
+        });
+      });
+
+      newSocket.on('new_message', (message: Message) => {
+        setMessages(prev => [...prev, message]);
+        toast.info(`New message from ${message.sender.username}`, {
+          position: 'top-right',
+          autoClose: 5000,
         });
       });
 
       setSocket(newSocket);
 
-      // Clean up socket connection
       return () => {
         newSocket.disconnect();
       };
     }
   }, [user?._id]);
 
-  const markNotificationAsRead = async (notificationId: string) => {
-    try {
-      // Here you would typically call an API to mark the notification as read
-      // For now, we'll update the local state
-      setNotifications(prev => 
-        prev.map(notification => 
-          notification._id === notificationId 
-            ? { ...notification, read: true } 
-            : notification
-        )
-      );
-    } catch (error) {
-      console.error('Error marking notification as read:', error);
-    }
-  };
+  const markNotificationAsRead = useCallback((notificationId: string) => {
+    setNotifications(prev =>
+      prev.map(notification =>
+        notification._id === notificationId ? { ...notification, read: true } : notification
+      )
+    );
+  }, []);
+
+  const addMessage = useCallback((message: Message) => {
+    setMessages(prev => [...prev, message]);
+  }, []);
 
   return (
-    <SocketContext.Provider value={{ 
-      socket, 
-      notifications,
-      markNotificationAsRead 
-    }}>
+    <SocketContext.Provider
+      value={{
+        socket,
+        notifications,
+        messages,
+        onlineUsers,
+        markNotificationAsRead,
+        addMessage,
+      }}
+    >
       {children}
     </SocketContext.Provider>
   );
 };
 
-// Custom hook to use socket context
 export const useSocket = () => useContext(SocketContext);
