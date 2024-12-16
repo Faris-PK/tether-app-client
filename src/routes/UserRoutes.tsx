@@ -18,6 +18,7 @@ import PremiumSubscriptionPage from '@/pages/user/PremiumSubscriptionPage';
 import Room from '@/components/live/Room';
 import { ToastContainer } from 'react-toastify';
 import ChatPage from '@/pages/user/ChatPage';
+import VideoCallPage from '@/pages/user/VideoCallPage';
 
 const UserRoutes: React.FC = () => {
   return (
@@ -44,7 +45,7 @@ const UserRoutes: React.FC = () => {
         <Route path="premium" element={<PremiumSubscriptionPage />} />
         <Route path="messages" element={<ChatPage />} />
         <Route path="live/room/:roomId" element={<PrivateRoute element={<Room />} />} />
-
+        <Route path="video-call/:roomId" element={<PrivateRoute element={<VideoCallPage />} />} />
         {/* Fallback to Sign-in if no route matches */}
         <Route path="*" element={<Navigate to="signin" />} />
       </Routes>

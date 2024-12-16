@@ -5,6 +5,7 @@ import { Phone, VideoIcon, MoreVertical, ChevronLeft } from 'lucide-react';
 import { Contact } from '../../types/IChat';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useSocket } from '../../contexts/SocketContext';
+import { useNavigate } from 'react-router-dom';
 
 interface ChatHeaderProps {
   selectedChat: Contact;
@@ -13,12 +14,21 @@ interface ChatHeaderProps {
 
 const ChatHeader: React.FC<ChatHeaderProps> = ({ selectedChat, onBackClick }) => {
   const { isDarkMode } = useTheme();
-  const { onlineUsers } = useSocket();
+  const { onlineUsers, initiateVideoCall } = useSocket();
+  const navigate = useNavigate();
+
+  
+
+  const startVideoCall = () => {
+    // Assuming you have the target user's ID
+    initiateVideoCall(selectedChat.id, navigate);
+  };
 
   const sidebarBgClass = isDarkMode 
     ? 'bg-gray-800 border-gray-700' 
     : 'bg-white border-gray-200';
 
+  // Check if the user is online based on the onlineUsers object
   const isOnline = onlineUsers[selectedChat.id] || false;
 
   return (
@@ -32,7 +42,7 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({ selectedChat, onBackClick }) =>
         <Button 
           variant="ghost" 
           size="icon" 
-          className="mr-4" 
+          className="mr-4 md:hidden" 
           onClick={onBackClick}
         >
           <ChevronLeft className="h-6 w-6" />
@@ -70,6 +80,7 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({ selectedChat, onBackClick }) =>
           variant="ghost" 
           size="icon" 
           className={`rounded-full ${isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`}
+          onClick={startVideoCall}
         >
           <VideoIcon className="h-4 w-4 md:h-5 md:w-5" />
         </Button>

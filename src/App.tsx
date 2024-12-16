@@ -7,6 +7,7 @@ import UserRoutes from './routes/UserRoutes';
 import AdminRoutes from './routes/AdminRoutes'; 
 import { SocketProvider } from './contexts/SocketContext';
 import 'react-toastify/dist/ReactToastify.css';
+import VideoCallNotification from './components/common/VideoCallNotification';
 
 const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
@@ -16,6 +17,7 @@ const App: React.FC = () => {
       <Provider store={store}>
         <SocketProvider>
           <Router>
+          <VideoCallNotification />
             <Routes>
               {/* Admin Routes */}
               <Route path="/admin/*" element={<AdminRoutes />} />

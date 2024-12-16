@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { adminApi } from '@/api/adminApi';
+import { adminApi, ProductFilterParams } from '@/api/adminApi';
 import { MarketplaceProduct } from '@/types/IMarketplace';
-import { Search, ArrowUpDown, Eye, Settings, Ban, CheckCircle, MapPin, DollarSign, Tag, Package, Star } from 'lucide-react';
+import { Search, ArrowUpDown, Eye, Settings, Ban, CheckCircle, MapPin, DollarSign, Tag, Package, Star, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -24,17 +24,25 @@ const Marketplace: React.FC = () => {
   const [showDetails, setShowDetails] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalProducts, setTotalProducts] = useState(0);
 
-  useEffect(() => {
-    fetchProducts();
-  }, []);
-
-  const fetchProducts = async () => {
+  // Fetch products with optional filtering and pagination
+  const fetchProducts = async (params: ProductFilterParams = {}) => {
     setLoading(true);
     setError(null);
     try {
-      const fetchedProducts = await adminApi.getProducts();
-      setProducts(fetchedProducts);
+      const { products, totalPages, totalProducts } = await adminApi.getProducts({
+        page: currentPage,
+        limit: 6,
+        search: searchTerm,
+        sortOrder,
+        ...params
+      });
+      setProducts(products);
+      setTotalProducts(totalProducts)
+      setTotalPages(totalPages);
     } catch (error) {
       setError('Failed to fetch products');
       console.error('Failed to fetch products:', error);
@@ -43,8 +51,14 @@ const Marketplace: React.FC = () => {
     }
   };
 
+  // Trigger fetch when search, sort, or page changes
+  useEffect(() => {
+    fetchProducts();
+  }, [searchTerm, sortOrder, currentPage]);
+
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
+    setCurrentPage(1); // Reset to first page on new search
   };
 
   const handleSort = () => {
@@ -58,8 +72,6 @@ const Marketplace: React.FC = () => {
 
   const handleBlockProduct = async (productId: string, currentStatus: boolean) => {
     try {
-     // console.log(productId, currentStatus);
-      
       const status = currentStatus ? 'unblock' : 'block';
       await adminApi.updateProductStatus(productId, status);
       await fetchProducts(); // Refresh the product list
@@ -260,6 +272,37 @@ const Marketplace: React.FC = () => {
             </tbody>
           </table>
         )}
+
+        {/* Pagination */}
+        <div className="flex justify-between items-center p-4">
+          <div className="text-sm text-gray-600">
+            Showing {(currentPage - 1) * 10 + 1} to{' '}
+            {Math.min(currentPage * 10, totalProducts)} of {totalProducts} products
+          </div>
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+              disabled={currentPage === 1}
+            >
+              <ChevronLeft className="h-4 w-4" />
+              Prev
+            </Button>
+            <div className="text-sm">
+              Page {currentPage} of {totalPages}
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+              disabled={currentPage === totalPages}
+            >
+              Next
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
       </ScrollArea>
 
       {/* Product Details Modal */}
@@ -379,7 +422,7 @@ const Marketplace: React.FC = () => {
         </DialogContent>
       </Dialog>
     </div>
-  );
+   );
 };
 
 export default Marketplace;

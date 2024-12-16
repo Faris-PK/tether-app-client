@@ -19,7 +19,15 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { formatDistanceToNow } from 'date-fns';
-import { AlertCircle, CheckCircle2, Clock, Search, MoreHorizontal } from 'lucide-react';
+import { 
+  AlertCircle, 
+  CheckCircle2, 
+  Clock, 
+  Search, 
+  MoreHorizontal,
+  ChevronLeft,
+  ChevronRight 
+} from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
@@ -28,6 +36,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { debounce } from 'lodash';
 
 const Reports: React.FC = () => {
   const [reports, setReports] = useState<IReport[]>([]);
@@ -35,17 +44,59 @@ const Reports: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [error, setError] = useState<string | null>(null);
+  
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalReports, setTotalReports] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
+
+  // Debounced search function
+  const debouncedSearch = debounce(async (term: string) => {
+    await fetchReports(currentPage, term);
+  }, 500);
 
   useEffect(() => {
-    fetchReports();
+    // Reset to first page when filter changes
+    setCurrentPage(1);
+    fetchReports(1);
   }, [filter]);
 
-  const fetchReports = async () => {
+  useEffect(() => {
+    // Trigger search when search term changes
+    if (searchTerm !== '') {
+      debouncedSearch(searchTerm);
+    } else {
+      fetchReports(currentPage);
+    }
+
+    // Cleanup debounce
+    return () => {
+      debouncedSearch.cancel();
+    };
+  }, [searchTerm]);
+
+  useEffect(() => {
+    // Fetch reports when page changes
+    fetchReports(currentPage);
+  }, [currentPage]);
+
+  const fetchReports = async (page: number, searchQuery?: string) => {
     try {
       setLoading(true);
       setError(null);
-      const data = await adminApi.getAllReports(filter);
-      setReports(data);
+      
+      const response = await adminApi.getAllReports({
+        page,
+        limit: pageSize,
+        filter,
+        search: searchQuery || searchTerm
+      });
+
+      // Update states
+      setReports(response.reports);
+      setTotalPages(response.totalPages);
+      setTotalReports(response.totalReports);
     } catch (error) {
       console.error('Error fetching reports:', error);
       setError('Failed to load reports. Please try again later.');
@@ -68,20 +119,6 @@ const Reports: React.FC = () => {
     }
   };
 
-  const handleBlockPost = async (postId: string, isBlocked: boolean) => {
-    try {
-      if (isBlocked) {
-        await adminApi.unblockPost(postId);
-      } else {
-        await adminApi.blockPost(postId);
-      }
-      await fetchReports(); // Refresh reports list
-    } catch (error) {
-      console.error('Error updating post status:', error);
-      setError('Failed to update post status. Please try again.');
-    }
-  };
-
   const getStatusBadge = (status: string) => {
     const statusConfig = {
       pending: { color: 'bg-yellow-500', icon: Clock },
@@ -99,19 +136,6 @@ const Reports: React.FC = () => {
       </Badge>
     );
   };
-
-  const filteredReports = reports.filter(report => {
-    if (!report?.postId?.userId?.username || !report?.reportedBy?.username) {
-      return false; // Skip invalid reports
-    }
-
-    const searchLower = searchTerm.toLowerCase();
-    return (
-      report.postId.userId.username.toLowerCase().includes(searchLower) ||
-      report.reportedBy.username.toLowerCase().includes(searchLower) ||
-      report.reason.toLowerCase().includes(searchLower)
-    );
-  });
 
   return (
     <div className="w-full space-y-4 p-4 md:p-6">
@@ -150,7 +174,7 @@ const Reports: React.FC = () => {
         <div className="text-center py-8 text-red-600">
           <p>{error}</p>
           <Button 
-            onClick={fetchReports}
+            onClick={() => fetchReports(currentPage)}
             className="mt-4"
             variant="outline"
           >
@@ -158,47 +182,46 @@ const Reports: React.FC = () => {
           </Button>
         </div>
       ) : (
-        <ScrollArea className="h-[calc(100vh-12rem)] rounded-lg border">
-          <Table>
-            <TableHeader className="bg-[#F7F6FE] sticky top-0">
-              <TableRow>
-                <TableHead className="hidden md:table-cell">Date</TableHead>
-                <TableHead>Reported Post</TableHead>
-                <TableHead className="hidden sm:table-cell">Reported By</TableHead>
-                <TableHead className="hidden lg:table-cell">Reason</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredReports.map((report) => (
-                <TableRow key={report._id}>
-                  <TableCell className="hidden md:table-cell"> 
-                    {formatDistanceToNow(new Date(report.createdAt), { addSuffix: true })}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center space-x-2">
-                      {report.postId?.mediaUrl && (
-                        <img
-                          src={report.postId.mediaUrl}
-                          alt="Post thumbnail"
-                          className="w-10 h-10 rounded object-cover"
-                        />
-                      )}
-                      <div>
-              
-                        <p className="font-medium">{report.postId?.userId?.username}</p>
-                        <p className="text-sm text-gray-500 truncate w-48">
-                          {report.postId?.caption}
-                        </p>
+        <>
+          <ScrollArea className="h-[calc(100vh-16rem)] rounded-lg border">
+            <Table>
+              <TableHeader className="bg-[#F7F6FE] sticky top-0">
+                <TableRow>
+                  <TableHead className="hidden md:table-cell">Date</TableHead>
+                  <TableHead>Reported Post</TableHead>
+                  <TableHead className="hidden sm:table-cell">Reported By</TableHead>
+                  <TableHead className="hidden lg:table-cell">Reason</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {reports.map((report) => (
+                  <TableRow key={report._id}>
+                    <TableCell className="hidden md:table-cell"> 
+                      {formatDistanceToNow(new Date(report.createdAt), { addSuffix: true })}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center space-x-2">
+                        {report.postId?.mediaUrl && (
+                          <img
+                            src={report.postId.mediaUrl}
+                            alt="Post thumbnail"
+                            className="w-10 h-10 rounded object-cover"
+                          />
+                        )}
+                        <div>
+                          <p className="font-medium">{report.postId?.userId?.username}</p>
+                          <p className="text-sm text-gray-500 truncate w-48">
+                            {report.postId?.caption}
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                  </TableCell>
-                  <TableCell className="hidden sm:table-cell">{report.reportedBy?.username}</TableCell>
-                  <TableCell className="hidden lg:table-cell">{report.reason}</TableCell>
-                  <TableCell>{getStatusBadge(report.status)}</TableCell>
-                  <TableCell>
-                    <div className="flex justify-end space-x-2">
+                    </TableCell>
+                    <TableCell className="hidden sm:table-cell">{report.reportedBy?.username}</TableCell>
+                    <TableCell className="hidden lg:table-cell">{report.reason}</TableCell>
+                    <TableCell>{getStatusBadge(report.status)}</TableCell>
+                    <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" className="h-8 w-8 p-0">
@@ -223,21 +246,46 @@ const Reports: React.FC = () => {
                               </SelectContent>
                             </Select>
                           </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => report.postId && handleBlockPost(report.postId._id, report.postId.isBlocked)}
-                            className={report.postId?.isBlocked ? 'text-green-600' : 'text-red-600'}
-                          >
-                            {report.postId?.isBlocked ? 'Unblock Post' : 'Block Post'}
-                          </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </ScrollArea>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </ScrollArea>
+
+          {/* Pagination */}
+          <div className="flex justify-between items-center p-4">
+            <div className="text-sm text-gray-600">
+              Showing {(currentPage - 1) * pageSize + 1} to{' '}
+              {Math.min(currentPage * pageSize, totalReports)} of {totalReports} reports
+            </div>
+            <div className="flex items-center space-x-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                disabled={currentPage === 1}
+              >
+                <ChevronLeft className="h-4 w-4" />
+                Prev
+              </Button>
+              <div className="text-sm">
+                Page {currentPage} of {totalPages}
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                disabled={currentPage === totalPages}
+              >
+                Next
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </>
       )}
     </div>
   );
