@@ -1,5 +1,5 @@
-// tailwind.config.js (CommonJS version)
-module.exports = {
+// tailwind.config.js (ESM version)
+export default {
 	darkMode: ["class"],
 	content: ["./index.html", "./src/**/*.{js,jsx,ts,tsx}"],
 	theme: {
