@@ -1,5 +1,5 @@
 import React from 'react';
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Phone, VideoIcon, MoreVertical, ChevronLeft } from 'lucide-react';
 import { Contact } from '../../types/IChat';

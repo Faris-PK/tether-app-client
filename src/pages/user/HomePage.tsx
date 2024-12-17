@@ -2,10 +2,8 @@ import React, { useCallback, useEffect, useState } from 'react';
 import HeaderNav from '../../components/common/HeaderNav';
 import PostList from '../../components/home/PostList';
 import ProfileCard from '../../components/common/ProfileCard';
-import SearchBar from '../../components/common/SearchBar';
 import StoryArea from '../../components/home/StoryArea';
 import SuggestedProfiles from '../../components/common/SuggestedProfiles';
-import Title from '../../components/common/Title';
 import SideNav from '../../components/common/SettingsNav';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useNavigate } from "react-router-dom";
@@ -37,7 +35,6 @@ interface Post {
   isBlocked: boolean;
 }
 
-type CombinedItem = (Story | ILiveStream) & { type: 'story' | 'livestream', createdAt?: string };
 
 const HomePage: React.FC = () => {
   const { isDarkMode } = useTheme();
@@ -50,7 +47,6 @@ const HomePage: React.FC = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const postsPerPage = 2;
-  const loader = true
   
   const currentUserId = useSelector((state: RootState) => state.user.user?._id);
   const dispatch = useDispatch();

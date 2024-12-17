@@ -1,9 +1,7 @@
-import React from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store/store';
 import { useNavigate } from 'react-router-dom';
-import PremiumBadge from '../PremiumBadge';
 import { Crown } from 'lucide-react';
 
 const ProfileCard = () => {

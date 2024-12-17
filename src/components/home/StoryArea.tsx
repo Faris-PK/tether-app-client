@@ -37,7 +37,7 @@ const StoryArea: React.FC<StoryAreaProps> = ({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [stories, setStories] = useState<Story[]>(initialStories);
   const [selectedStoryIndex, setSelectedStoryIndex] = useState<number>(-1);
-  const [loading, setLoading] = useState(false);
+ // const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const [liveStreams, setLiveStreams] = useState<ILiveStream[]>(initialLiveStreams);
   const [isPremiumModalOpen, setIsPremiumModalOpen] = useState(false);
@@ -55,17 +55,17 @@ const StoryArea: React.FC<StoryAreaProps> = ({
   });
 
   // Group stories by user, keeping only the first story for each user
-  const userStoriesMap = stories.reduce((acc, story) => {
-    const userId = story.userId._id;
-    if (!acc[userId]) {
-      acc[userId] = story;
-    }
-    return acc;
-  }, {} as Record<string, Story>);
+  // const userStoriesMap = stories.reduce((acc, story) => {
+  //   const userId = story.userId._id;
+  //   if (!acc[userId]) {
+  //     acc[userId] = story;
+  //   }
+  //   return acc;
+  // }, {} as Record<string, Story>);
 
   // Convert the map to an array of unique user stories
-  const filteredUserStories = Object.values(userStoriesMap)
-    .filter(story => story.userId._id !== user?._id);
+  // const filteredUserStories = Object.values(userStoriesMap)
+  //   .filter(story => story.userId._id !== user?._id);
 
   const userOwnStories = stories.filter(story => story.userId._id === user?._id);
 
@@ -200,9 +200,9 @@ const StoryArea: React.FC<StoryAreaProps> = ({
     }
   };
 
-  if (loading) {
-    return <div></div>;
-  }
+  // if (loading) {
+  //   return <div></div>;
+  // }
 
   return (
     <div className="flex justify-center px-4 sm:px-6">

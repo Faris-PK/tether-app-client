@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Link, Twitter, Facebook } from 'lucide-react';
+import {  Link, Twitter, Facebook } from 'lucide-react';
 import { WhatsApp } from '@mui/icons-material';
 import {
   Dialog,

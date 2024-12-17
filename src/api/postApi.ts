@@ -1,7 +1,6 @@
-import PostData from '@/types/IPost';
 import API from '../services/axios';
 import { postRoutes } from '../services/endpoints/userEndpoints';
-import { Comment, CommentResponse, CommentsResponse } from '@/types/IComment';
+import { Comment } from '@/types/IComment';
 
 
 export const PostApi = {

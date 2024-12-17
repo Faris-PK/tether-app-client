@@ -1,13 +1,8 @@
-import HeaderNav from '@/components/common/HeaderNav'
-import ProfileCard from '@/components/common/ProfileCard'
-import SearchBar from '@/components/common/SearchBar'
+
 import SideNav from '@/components/common/SettingsNav'
-import SuggestedProfiles from '@/components/common/SuggestedProfiles'
 import Title from '@/components/common/Title'
-import StoryArea from '@/components/home/StoryArea'
 import SharedPost from '@/components/post/SharedPost'
 import { useTheme } from '../../contexts/ThemeContext';
-import React, { useCallback, useEffect, useState } from 'react'
 
 
 const SharedPostPage: React.FC = () => {

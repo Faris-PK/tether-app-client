@@ -1,5 +1,5 @@
 import React, { useState, useRef, ChangeEvent, useEffect } from 'react';
-import { X, Search, Music, Upload, Play, Pause } from 'lucide-react';
+import { X, Search, Upload, Play, Pause } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -174,7 +174,7 @@ const CreateStoryModal: React.FC<CreateStoryModalProps> = ({ isOpen, onClose, on
     }
   
     try {
-      const newStory = await storyApi.createStory(formData);
+       await storyApi.createStory(formData);
       await onStoryCreated();
       onClose(); // Close modal
     } catch (error) {

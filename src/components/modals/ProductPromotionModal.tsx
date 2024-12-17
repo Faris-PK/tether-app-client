@@ -29,7 +29,7 @@ const ProductPromotionModal: React.FC<PromotionModalProps> = ({
   isOpen, 
   onClose, 
   product,
-  onPromotionSuccess 
+   
 }) => {
   const { isDarkMode } = useTheme();
   const [loading, setLoading] = useState(false);

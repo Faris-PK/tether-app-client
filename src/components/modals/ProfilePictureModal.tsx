@@ -138,7 +138,7 @@ const ImageCropModal: React.FC<CropModalProps> = ({ image, onClose, onComplete }
     setZoom(zoom);
   };
 
-  const onCropComplete = React.useCallback((croppedArea: any, croppedAreaPixels: any) => {
+  const onCropComplete = React.useCallback(( croppedAreaPixels: any) => {
     setCroppedAreaPixels(croppedAreaPixels);
   }, []);
 
@@ -330,7 +330,7 @@ const ProfilePictureModal: React.FC<ProfilePictureModalProps> = ({
     closeModal();
   };
 
-  const handleCropComplete = async (croppedImageBlob: Blob, filterName: string) => {
+  const handleCropComplete = async (croppedImageBlob: Blob) => {
     const croppedFile = new File([croppedImageBlob], 'cropped-profile-picture.jpg', {
       type: 'image/jpeg',
     });

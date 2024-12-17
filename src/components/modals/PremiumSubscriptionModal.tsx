@@ -12,7 +12,7 @@ import { Card } from "@/components/ui/card";
 import { Check, Loader2 } from "lucide-react";
 import { useTheme } from '../../contexts/ThemeContext';
 import { loadStripe } from '@stripe/stripe-js';
-import { toast, useToast } from "@/hooks/use-toast"
+import { toast } from "@/hooks/use-toast"
 import { paymentApi } from '../../api/paymentApi';
 
 const STRIPE_PUBLISHABLE_KEY = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;

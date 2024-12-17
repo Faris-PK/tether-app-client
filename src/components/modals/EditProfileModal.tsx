@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { AppDispatch } from '../../redux/store/store';
-import { X } from 'lucide-react';
 import moment from 'moment';
 import { api } from '../../api/userApi';
 import { setUser } from '../../redux/slices/userSlice';
@@ -32,7 +31,6 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose, us
   const dispatch = useDispatch<AppDispatch>();
   const [formData, setFormData] = useState<Partial<IUser>>({});
   const [errors, setErrors] = useState<string[]>([]);
-  const [success, setSuccess] = useState<string>('');
   const { isDarkMode } = useTheme();
   const [locationQuery, setLocationQuery] = useState(user?.userLocation?.name || '');
   const [locationSuggestions, setLocationSuggestions] = useState<any[]>([]);
@@ -92,7 +90,6 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose, us
     try {
       const updatedUser = await api.updateUserProfile(formData);
       dispatch(setUser(updatedUser));
-      setSuccess('Profile updated successfully!');
       setErrors([]);
       onClose();
     } catch (error: any) {

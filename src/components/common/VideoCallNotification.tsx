@@ -1,13 +1,10 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSocket } from '@/contexts/SocketContext';
-import { useSelector } from 'react-redux';
-import { RootState } from '@/redux/store/store';
 
 const VideoCallNotification: React.FC = () => {
   const navigate = useNavigate();
   const { incomingVideoCall, answerVideoCall, declineVideoCall } = useSocket();
-  const user = useSelector((state: RootState) => state.user.user);
 
   if (!incomingVideoCall) return null;
 

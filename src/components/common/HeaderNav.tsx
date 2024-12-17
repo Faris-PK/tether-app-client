@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { Bell, MessageCircle, Sun, Moon, ChevronDown, LogOut, PenSquare, Search } from 'lucide-react';
+import React, {  useState } from 'react';
+import {MessageCircle, Sun, Moon, ChevronDown, LogOut, PenSquare } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 import {
   DropdownMenu,
@@ -41,12 +41,10 @@ const HeaderNav: React.FC<HeaderNavProps> = ({ onPostCreated }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPostModalOpen, setPostModalOpen] = useState(false);
   const [isAudienceModalOpen, setAudienceModalOpen] = useState(false);
   const [selectedAudience, setSelectedAudience] = useState('public');
   const [isLogoutConfirmationOpen, setIsLogoutConfirmationOpen] = useState(false);
-  const [notificationCount, setNotificationCount] = useState(0);
 
 
   const handleAudienceSelect = (audience: string) => {
@@ -77,8 +75,7 @@ const HeaderNav: React.FC<HeaderNavProps> = ({ onPostCreated }) => {
     }
   };
 
-  const updateNotificationCount = (count: number) => {
-    setNotificationCount(count);
+  const updateNotificationCount = () => {
   };
 
   return (

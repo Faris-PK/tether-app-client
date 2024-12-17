@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { AppDispatch, RootState } from '../redux/store/store';
-import { UserPen, Mail, Cake, MapPin, Calendar, Link as LinkIcon, FileText, ShoppingBag, Image as ImageIcon, Paperclip, UserPlus, MoreVertical, Heart, MessageCircle, Share2, Camera, Edit, Trash2, Plus } from 'lucide-react';
+import { UserPen, Mail, Cake, MapPin, Calendar, Link as LinkIcon, FileText, ShoppingBag, Image as  MoreVertical,  Camera, Edit, Trash2 } from 'lucide-react';
 import moment from 'moment';
 import { useTheme } from '../contexts/ThemeContext';
 import { formatDistanceToNow } from 'date-fns';
@@ -56,25 +56,22 @@ const Profile: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [errors, setErrors] = useState<string[]>([]);
-  const [success, setSuccess] = useState<string>('');
-  const [isProfileModalOpen, setIsProfileModalOpen] = useState<boolean>(false);
-  const [isCoverModalOpen, setIsCoverModalOpen] = useState<boolean>(false);
-  const [isPostModalOpen, setIsPostModalOpen] = useState(false);
-  const [isAudienceModalOpen, setIsAudienceModalOpen] = useState(false);
-  const [selectedAudience, setSelectedAudience] = useState('public');
+   const [isProfileModalOpen, setIsProfileModalOpen] = useState<boolean>(false);
+   const [isCoverModalOpen, setIsCoverModalOpen] = useState<boolean>(false);
   const [editingPost, setEditingPost] = useState<Post | null>(null);
   const [activeTab, setActiveTab] = useState<'posts' | 'marketplace'>('posts');
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [postType, setPostType] = useState<string>('all');
-  const [openModalId, setOpenModalId] = useState<string | null>(null);
   const [showFollowersModal, setShowFollowersModal] = useState(false);
   const [showFollowingModal, setShowFollowingModal] = useState(false);
   const [commentModalPost, setCommentModalPost] = useState<Post | null>(null);
   const modalRef = useRef<HTMLDivElement>(null);
   const currentUserId  = useSelector((state: RootState) => state.user.user?._id);
   const [marketplaceProducts, setMarketplaceProducts] = useState<MarketplaceProduct[]>([]);
+  console.log(isCoverModalOpen, isProfileModalOpen);
+  
  
 
   const navigate = useNavigate();
@@ -85,38 +82,12 @@ const Profile: React.FC = () => {
   const openModal = () => {
     setIsModalOpen(true);
     setErrors([]);
-    setSuccess('');
   };
 
   const closeModal = () => {
     setIsModalOpen(false);
   };
 
-  const handleOpenPostModal = () => {
-    setIsPostModalOpen(true);
-  };
-
-  const handleClosePostModal = () => {
-    setIsPostModalOpen(false);
-  };
-
-  const handleOpenAudienceModal = () => {
-    setIsAudienceModalOpen(true);
-  };
-
-  const handleCloseAudienceModal = () => {
-    setIsAudienceModalOpen(false);
-  };
-
-  const handleAudienceSelect = (audience: string) => {
-    setSelectedAudience(audience);
-    setIsAudienceModalOpen(false);
-  };
-
-  const handlePostCreated = () => {
-    fetchPosts();
-    setSuccess('Post created successfully!');
-  };
 
 
   const handleUpload = async (type: 'profile' | 'cover', file: File) => {
@@ -127,11 +98,8 @@ const Profile: React.FC = () => {
     try {
       const response = await api.uploadImage(formData);
       dispatch(setUser(response));
-      setSuccess(`${type.charAt(0).toUpperCase() + type.slice(1)} picture uploaded successfully!`);
       if (type === 'profile') {
-        setIsProfileModalOpen(false);
       } else {
-        setIsCoverModalOpen(false);
       }
     } catch (error) {
       console.error(`Error uploading ${type} picture:`, error);
@@ -143,8 +111,7 @@ const Profile: React.FC = () => {
     try {
       const response = await api.removeProfilePicture(type);
       dispatch(setUser(response));
-      setSuccess(`${type.charAt(0).toUpperCase() + type.slice(1)} picture removed successfully!`);
-      setIsCoverModalOpen(false);
+
     } catch (error) {
       console.error(`Error removing ${type} picture:`, error);
       setErrors([...errors, `Failed to remove ${type} picture.`]);
@@ -153,23 +120,18 @@ const Profile: React.FC = () => {
 
 
   const handleDeletePost = async (postId: string) => {
-   // const dispatch = useDispatch();
   
     try {
-      //console.log('Post Id: ', postId);
       
       await PostApi.deletePost(postId);
       setPosts(posts.filter(post => post._id !== postId));
       
-      // Dispatch action to remove the post from the user's posts in the Redux store
       dispatch(removePostFromUser(postId));
       
-      setSuccess('Post deleted successfully!');
     } catch (error) {
       console.error('Error deleting post:', error);
       setErrors([...errors, 'Failed to delete post.']);
     }
-    setOpenModalId(null);
   };
 
 
@@ -182,7 +144,6 @@ const Profile: React.FC = () => {
     try {
       const updatedPost = await PostApi.updatePost(postId, { caption, location });
       setPosts(posts.map(post => post._id === postId ? updatedPost : post));
-      setSuccess('Post updated successfully!');
     } catch (error) {
       console.error('Error updating post:', error);
       setErrors([...errors, 'Failed to update post.']);
@@ -203,9 +164,7 @@ const Profile: React.FC = () => {
   const fetchPosts = useCallback(async () => {
     try {
       setLoading(true);
-     /// console.log('UserID from Profile: ', user?._id);
       const response = await PostApi.getProfilePosts(user?._id);
-      //console.log('Response From Backend: ', response);
       setPosts(response);
       setLoading(false);
     } catch (err: any) {
@@ -228,7 +187,6 @@ const Profile: React.FC = () => {
   const fetchMarketplaceProducts = useCallback(async () => {
     try {
       const response = await MarketplaceApi.getUserProducts(user?._id);
-      //console.log( ' fetchMarketplaceProducts : ', response)
       setMarketplaceProducts(response);
     } catch (err) {
       console.error('Error fetching marketplace products:', err);
@@ -242,7 +200,6 @@ const Profile: React.FC = () => {
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
-        setOpenModalId(null);
       }
     };
 
@@ -252,10 +209,7 @@ const Profile: React.FC = () => {
     };
   }, []);
 
-  const handleOptionClick = (action: string, postId: string) => {
-    console.log(`Action: ${action}, Post ID: ${postId}`);
-    setOpenModalId(null);
-  };
+
 
   interface OptionsModalProps {
     postId: string;

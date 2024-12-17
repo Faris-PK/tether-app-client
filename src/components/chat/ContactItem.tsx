@@ -1,5 +1,5 @@
 import React from 'react';
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { Contact } from '../../types/IChat';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useSocket } from '@/contexts/SocketContext';

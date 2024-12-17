@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { adminApi, ProductFilterParams } from '@/api/adminApi';
 import { MarketplaceProduct } from '@/types/IMarketplace';
-import { Search, ArrowUpDown, Eye, Settings, Ban, CheckCircle, MapPin, DollarSign, Tag, Package, Star, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, ArrowUpDown, Eye, Settings, Ban, CheckCircle, MapPin, Tag,  Star, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -23,7 +23,6 @@ const Marketplace: React.FC = () => {
   const [selectedProduct, setSelectedProduct] = useState<MarketplaceProduct | null>(null);
   const [showDetails, setShowDetails] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [totalProducts, setTotalProducts] = useState(0);
@@ -31,7 +30,6 @@ const Marketplace: React.FC = () => {
   // Fetch products with optional filtering and pagination
   const fetchProducts = async (params: ProductFilterParams = {}) => {
     setLoading(true);
-    setError(null);
     try {
       const { products, totalPages, totalProducts } = await adminApi.getProducts({
         page: currentPage,
@@ -44,7 +42,6 @@ const Marketplace: React.FC = () => {
       setTotalProducts(totalProducts)
       setTotalPages(totalPages);
     } catch (error) {
-      setError('Failed to fetch products');
       console.error('Failed to fetch products:', error);
     } finally {
       setLoading(false);
@@ -82,7 +79,6 @@ const Marketplace: React.FC = () => {
       }
     } catch (error) {
       console.error('Failed to update product status:', error);
-      setError('Failed to update product status. Please try again.');
     }
   };
 

@@ -74,7 +74,6 @@ const ProductCard: React.FC<{
   onPromoteProduct,
   onEditProduct,
   onDeleteProduct,
-  isDarkMode,
 }) => {
   const formatCreationDate = (createdAt: string) => {
     const today = new Date();

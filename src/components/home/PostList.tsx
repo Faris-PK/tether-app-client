@@ -34,7 +34,7 @@ interface Post {
   isBlocked: boolean;
 }
 
-const PostList: React.FC<PostListProps> = ({ posts, currentUserId, fetchPosts }) => {
+const PostList: React.FC<PostListProps> = ({ posts, currentUserId }) => {
   const { isDarkMode } = useTheme();
   const [localPosts, setLocalPosts] = useState<Post[]>(posts);
   const [openModalId, setOpenModalId] = useState<string | null>(null);
@@ -44,7 +44,7 @@ const PostList: React.FC<PostListProps> = ({ posts, currentUserId, fetchPosts })
   const [commentModalPost, setCommentModalPost] = useState<Post | null>(null);
   const [showShareModal, setShowShareModal] = useState(false);
   const [selectedSharePost, setSelectedSharePost] = useState<Post | null>(null);
-  const [reportedPosts, setReportedPosts] = useState<Set<string>>(new Set());
+ // const [reportedPosts, setReportedPosts] = useState<Set<string>>(new Set());
   const [alertMessage, setAlertMessage] = useState<string>('');
   const [showAlertModal, setShowAlertModal] = useState(false);
  
@@ -94,7 +94,7 @@ const PostList: React.FC<PostListProps> = ({ posts, currentUserId, fetchPosts })
       setShowReportModal(false);
       setShowSuccessModal(true);
       
-      setReportedPosts(prev => new Set([...prev, selectedPostId]));
+    //  setReportedPosts(prev => new Set([...prev, selectedPostId]));
 
       setTimeout(() => {
         setShowSuccessModal(false);

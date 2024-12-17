@@ -21,7 +21,7 @@ const SearchBar = () => {
   const [isDropdownVisible, setIsDropdownVisible] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
-  const [totalUsers, setTotalUsers] = useState(0);
+ /// const [totalUsers, setTotalUsers] = useState(0);
   const navigate = useNavigate();
   const currentUserId = useSelector((state: RootState) => state.user.user?._id);
 
@@ -47,7 +47,7 @@ const SearchBar = () => {
         setUsers(prevUsers => [...prevUsers, ...response.data.users]);
       }
       
-      setTotalUsers(response.data.totalUsers);
+     // setTotalUsers(response.data.totalUsers);
       setHasMore(response.data.totalUsers > page * 5);
       setIsDropdownVisible(true);
     } catch (error) {

@@ -1,12 +1,9 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
-import Title from '@/components/common/Title';
-import SearchBar from '@/components/common/SearchBar';
 import ProfileCard from '@/components/common/ProfileCard';
 import SideNav from '@/components/common/SettingsNav';
 import SuggestedProfiles from '@/components/common/SuggestedProfiles';
-import { useDispatch, useSelector } from 'react-redux';
-import { RootState } from '@/redux/store/store';
+import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { PostApi } from '@/api/postApi';
 import { clearUser } from '@/redux/slices/userSlice';
@@ -18,20 +15,16 @@ const UserProfilePage: React.FC = () => {
 
 
   const [posts, setPosts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const currentUserId = useSelector((state: RootState) => state.user?.user?._id);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const fetchPosts = useCallback(async () => {
     try {
-      setLoading(true);
       const response = await PostApi.getAllPosts();
      // console.log('Response: ',response);
       
       setPosts(response);
-      setLoading(false);
+      console.log('posts: ',posts);
     } catch (err: any) {
      // console.log('Error from backend: ', err.response?.data?.message);
       
@@ -39,9 +32,7 @@ const UserProfilePage: React.FC = () => {
         dispatch(clearUser());
       navigate('/signin');
       } else {
-        setError('Error fetching posts');
       }
-      setLoading(false);
     }
   }, [navigate]);
 
@@ -52,8 +43,7 @@ const UserProfilePage: React.FC = () => {
   return (
     <div className={`mx-auto p-4 ${isDarkMode ? 'bg-gray-900' : 'bg-[#d8d4cd]'} h-screen flex flex-col transition-colors duration-200`}>
     <header className="flex justify-between items-center mb-4">
-      {/* <Title/>
-      <SearchBar/> */}
+
       <HeaderNav onPostCreated={fetchPosts} />
     </header>
 
@@ -63,8 +53,7 @@ const UserProfilePage: React.FC = () => {
         <SideNav/>
       </div>
       <div className="w-2/3 space-y-4 overflow-y-auto pr-4 scrollbar-hide">
-        {/* <StoryArea /> */}
-        {/* <PostList posts={posts} currentUserId={currentUserId} /> */}
+
         <UserProfile/>
       </div>
 

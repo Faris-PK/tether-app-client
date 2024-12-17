@@ -3,7 +3,6 @@ import { X, Search } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { addFollowedUser, removeFollowedUser } from '../../redux/slices/userSlice';
 import { connectionApi } from '../../api/networkApi';
-import { Button } from '@/components/ui/button';
 import { useTheme } from '../../contexts/ThemeContext';
 import { api } from '@/api/userApi';
 import { useNavigate } from 'react-router-dom';

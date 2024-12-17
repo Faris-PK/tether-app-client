@@ -28,14 +28,13 @@ interface SidebarProps {
     onCategorySelect,
     onLocationClick,
     onDateSort,
-    onClearFilters
+  
   }) => {
   const { isDarkMode } = useTheme();
   const [priceMin, setPriceMin] = useState<string>('');
   const [priceMax, setPriceMax] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [dateSort, setDateSort] = useState<string>('');
-  const locationRef = React.useRef<HTMLDivElement>(null);
   const [isAddProductModalOpen, setIsAddProductModalOpen] = useState(false);
   const user = useSelector((state: RootState) => state.user.user);
 

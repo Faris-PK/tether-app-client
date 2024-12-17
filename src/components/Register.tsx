@@ -20,7 +20,6 @@ interface RegisterFormState {
 const Register: React.FC = () => {
   const [success, setSuccess] = useState<string>('');
   const [showPassword, setShowPassword] = useState<boolean>(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -67,7 +66,6 @@ const Register: React.FC = () => {
   };
 
   const handleClickShowPassword = () => setShowPassword((show) => !show);
-  const handleClickShowConfirmPassword = () => setShowConfirmPassword((show) => !show);
 
   const password = watch('password');
 
@@ -165,7 +163,7 @@ const Register: React.FC = () => {
                 <InputLabel htmlFor="outlined-adornment-confirmPassword">Confirm Password</InputLabel>
                 <OutlinedInput
                   id="outlined-adornment-confirmPassword"
-                  type={showConfirmPassword ? 'text' : 'password'}
+                //  type={showConfirmPassword ? 'text' : 'password'}
                   {...register('confirmPassword', {
                     required: 'Confirm Password is required',
                     validate: (value: string) => value === password || 'Passwords do not match',

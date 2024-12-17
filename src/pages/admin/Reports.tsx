@@ -49,7 +49,8 @@ const Reports: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [totalReports, setTotalReports] = useState(0);
-  const [pageSize, setPageSize] = useState(10);
+  const pageSize = 10
+  //const [pageSize, setPageSize] = useState(10);
 
   // Debounced search function
   const debouncedSearch = debounce(async (term: string) => {

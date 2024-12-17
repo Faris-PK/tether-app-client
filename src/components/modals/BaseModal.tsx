@@ -1,5 +1,4 @@
 import React, { useRef, useEffect, ReactNode } from 'react';
-import { cn } from "@/lib/utils";
 
 interface ModalProps {
     children: ReactNode;

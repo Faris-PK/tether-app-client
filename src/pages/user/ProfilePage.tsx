@@ -1,12 +1,9 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
 import Profile from '../../components/Profile';
-import Title from '@/components/common/Title';
-import SearchBar from '@/components/common/SearchBar';
 import SideNav from '@/components/common/SettingsNav';
 import SuggestedProfiles from '@/components/common/SuggestedProfiles';
-import { useDispatch, useSelector } from 'react-redux';
-import { RootState } from '@/redux/store/store';
+import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { PostApi } from '@/api/postApi';
 import { clearUser } from '@/redux/slices/userSlice';
@@ -14,23 +11,16 @@ import HeaderNav from '@/components/common/HeaderNav';
 
 const ProfilePage: React.FC = () => {
   const { isDarkMode } = useTheme();
-
-
   const [posts, setPosts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const currentUserId = useSelector((state: RootState) => state.user.user?._id);
+ 
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const fetchPosts = useCallback(async () => {
     try {
-      setLoading(true);
-      const response = await PostApi.getAllPosts();
-     // console.log('Response: ',response);
-      
+      const response = await PostApi.getAllPosts(); 
       setPosts(response);
-      setLoading(false);
+      console.log('Response: ',posts);
     } catch (err: any) {
      // console.log('Error from backend: ', err.response?.data?.message);
       
@@ -38,9 +28,7 @@ const ProfilePage: React.FC = () => {
         dispatch(clearUser());
       navigate('/signin');
       } else {
-        setError('Error fetching posts');
       }
-      setLoading(false);
     }
   }, [navigate]);
 

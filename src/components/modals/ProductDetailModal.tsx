@@ -2,25 +2,17 @@ import React, { useEffect, useRef, useState } from 'react';
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, User, Calendar, ChevronLeft, ChevronRight, MessageSquare } from 'lucide-react';
+import { User, ChevronLeft, ChevronRight, MessageSquare } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { MarketplaceProduct } from '@/types/IMarketplace';
-import mbxGeocoding from '@mapbox/mapbox-sdk/services/geocoding';
 import mapboxgl from "mapbox-gl";
 import 'mapbox-gl/dist/mapbox-gl.css';
-import { useSelector } from 'react-redux';
-import { RootState } from '@/redux/store/store';
 
 const googleClientId = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
 mapboxgl.accessToken = googleClientId;
 
-const geocodingClient = mbxGeocoding({
-  accessToken: googleClientId,
-});
 
 interface ProductDetailModalProps {
   product: MarketplaceProduct | null;
@@ -34,7 +26,6 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
   onClose 
 }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const user = useSelector((state: RootState) => state.user.user);
   const mapContainer = useRef<HTMLDivElement | null>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const marker = useRef<mapboxgl.Marker | null>(null);

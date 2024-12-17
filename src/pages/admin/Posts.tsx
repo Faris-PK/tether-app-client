@@ -43,7 +43,6 @@ const Posts = () => {
   const [selectedPost, setSelectedPost] = useState<PostData | null>(null);
   const [showDetails, setShowDetails] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -57,7 +56,6 @@ const Posts = () => {
   const fetchPosts = async () => {
     try {
       setLoading(true);
-      setError(null);
       const result = await adminApi.getPosts({
         page: currentPage,
         limit: 6,
@@ -91,7 +89,6 @@ const Posts = () => {
       setTotalPosts(result.totalPosts);
     } catch (error) {
       console.error('Failed to fetch posts:', error);
-      setError('Failed to load posts. Please try again later.');
     } finally {
       setLoading(false);
     }

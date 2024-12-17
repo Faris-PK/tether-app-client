@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { UserPlus, Mail, Cake, MapPin, Calendar, Link as LinkIcon, FileText, ShoppingBag, Camera } from 'lucide-react';
+import React, { useCallback, useEffect, useState } from 'react';
+import { UserPlus, Mail, MapPin, Calendar, Link as FileText, ShoppingBag, Camera } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import moment from 'moment';
 import Box from '@mui/material/Box';
@@ -21,7 +21,6 @@ import { AppDispatch, RootState } from '@/redux/store/store';
 import Modal from 'react-modal';
 import FollowersModal from './modals/FollowersModal';
 import CommentModal from './modals/CommentModal';
-import PremiumBadge from './PremiumBadge';
 import { MarketplaceApi } from '@/api/marketplaceApi';
 import ProductGrid from './marketPlace/ProductGrid';
 import { MarketplaceProduct } from '@/types/IMarketplace';
@@ -80,16 +79,13 @@ const UserProfile: React.FC = () => {
   const [showFollowersModal, setShowFollowersModal] = useState(false);
   const [showFollowingModal, setShowFollowingModal] = useState(false);
   const [commentModalPost, setCommentModalPost] = useState<Post | null>(null);
-  const modalRef = useRef<HTMLDivElement>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const { isDarkMode } = useTheme();
   const { userId } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
-  const currentUserId = profile?._id;
   const user = useSelector((state: RootState) => state.user?.user);
   const [marketplaceProducts, setMarketplaceProducts] = useState<MarketplaceProduct[]>([]);
   const [isFollowing, setIsFollowing] = useState(false);
@@ -188,15 +184,11 @@ const UserProfile: React.FC = () => {
         dispatch(clearUser());
         navigate('/signin');
       } else {
-        setError('Error fetching posts');
       }
       setLoading(false);
     }
   }, []);
 
-  const formattedJoinDate = profile?.createdAt ? moment(profile?.createdAt).format('MMMM D, YYYY') : 'Unknown';
-  const formattedDob = profile?.dob ? moment(profile?.dob).format('MMMM D, YYYY') : 'Unknown';
- 
 
 
   const handlePostTypeChange = (event: SelectChangeEvent) => {

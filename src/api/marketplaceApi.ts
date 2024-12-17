@@ -1,4 +1,3 @@
-import { CreateProductDTO, MarketplaceProduct } from '@/types/IMarketplace';
 import API from '../services/axios';
 import { marketplaceRoutes } from '../services/endpoints/userEndpoints';
 

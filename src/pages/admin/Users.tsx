@@ -26,7 +26,6 @@ const Users = () => {
   const [selectedUser, setSelectedUser] = useState<UserData | null>(null);
   const [showDetails, setShowDetails] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -39,7 +38,6 @@ const Users = () => {
 
   const fetchUsers = async () => {
     setLoading(true);
-    setError(null);
     try {
       const result = await adminApi.getUsers({
         page: currentPage,
@@ -53,7 +51,6 @@ const Users = () => {
       setTotalPages(result.totalPages);
       setTotalUsers(result.totalUsers);
     } catch (error) {
-      setError('Failed to fetch users');
       console.error('Failed to fetch users:', error);
     } finally {
       setLoading(false);

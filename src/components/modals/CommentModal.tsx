@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Send, MoreVertical, Check, Pencil, Trash2, ChevronUp, ChevronDown } from 'lucide-react';
+import { X, Send, MoreVertical, Pencil, Trash2, ChevronUp, ChevronDown } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from 'date-fns';

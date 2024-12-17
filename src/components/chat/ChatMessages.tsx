@@ -4,7 +4,6 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store/store';
 import { CheckCheck } from 'lucide-react';
-import { useSocket } from '@/contexts/SocketContext';
 
 interface ChatMessagesProps {
   selectedChat: Contact;

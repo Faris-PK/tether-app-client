@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Search, Music, X } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { useTheme } from '../../contexts/ThemeContext';
 import { cn } from "@/lib/utils";
 
@@ -24,7 +23,7 @@ interface MusicSearchProps {
   onCancelMusic: () => void;
 }
 
-const MusicSearch: React.FC<MusicSearchProps> = ({ onSelectMusic, onCancelMusic }) => {
+const MusicSearch: React.FC<MusicSearchProps> = ({ onSelectMusic }) => {
   const { isDarkMode } = useTheme();
   const [searchQuery, setSearchQuery] = useState('');
   const [tracks, setTracks] = useState<SpotifyTrack[]>([]);
