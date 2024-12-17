@@ -4,6 +4,8 @@ export default interface ILiveStream {
     _id: string;
     username: string;
     profile_picture: string;
+
+    
   };
   roomId: string;
   viewers: string[];
@@ -12,4 +14,4 @@ export default interface ILiveStream {
   endedAt?: string;
   createdAt?: string;
   updatedAt?: string;
-}
+}   
