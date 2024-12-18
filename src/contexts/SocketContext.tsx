@@ -20,15 +20,11 @@ export interface Notification {
   createdAt: Date;
 }
 
-interface OnlineStatus {
-  [userId: string]: boolean;
-}
-
 interface SocketContextType {
   socket: Socket | null;
   notifications: Notification[];
   messages: Message[];
-  onlineUsers: OnlineStatus;
+  onlineUsers: string[];
   markNotificationAsRead: (notificationId: string) => void;
   addMessage: (message: Message) => void;
   initiateVideoCall: (targetUserId: string, navigate: (path: string) => void) => void;
@@ -41,7 +37,7 @@ const SocketContext = createContext<SocketContextType>({
   socket: null,
   notifications: [],
   messages: [],
-  onlineUsers: {},
+  onlineUsers: [],
   markNotificationAsRead: () => {},
   addMessage: () => {},
   initiateVideoCall: () => {},
@@ -54,7 +50,7 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [socket, setSocket] = useState<Socket | null>(null);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
-  const [onlineUsers, setOnlineUsers] = useState<OnlineStatus>({});
+  const [onlineUsers, setOnlineUsers] = useState<string[]>([]);
   const [incomingVideoCall, setIncomingVideoCall] = useState<{
     roomId: string;
     caller: string;
@@ -64,7 +60,7 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   const sendHeartbeat = useCallback(() => {
     if (socket && user?._id) {
-      socket.emit('user_activity', user._id);
+      socket.emit('user_activity');
     }
   }, [socket, user?._id]);
 
@@ -80,10 +76,16 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         query: { userId: user._id },
       });
 
-      newSocket.emit('authenticate', user._id);
+      newSocket.on('getOnlineUsers', (userIds: string[]) => {
+        setOnlineUsers(userIds);
+      });
 
       newSocket.on('user_status_change', ({ userId, isOnline }: { userId: string; isOnline: boolean }) => {
-        setOnlineUsers((prev) => ({ ...prev, [userId]: isOnline }));
+        setOnlineUsers((prev) =>
+          isOnline
+            ? [...new Set([...prev, userId])]
+            : prev.filter((id) => id !== userId)
+        );
       });
 
       newSocket.on('new_notification', (notification: Notification) => {
@@ -98,13 +100,7 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
       newSocket.on('incoming_video_call', ({ roomId, caller }: { roomId: string; caller: string }) => {
         setIncomingVideoCall({ roomId, caller });
-        // toast.info(`Incoming video call from ${caller}`, {
-        //   position: 'top-right',
-        //   autoClose: false,
-          //onClick: () => navigate(`/user/video-call/${roomId}`),
-      //  });
       });
-      
 
       setSocket(newSocket);
 
@@ -144,7 +140,6 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       if (!socket) return;
       socket.emit('decline_video_call', { roomId });
       setIncomingVideoCall(null);
-    //  toast.info('Video call declined', { position: 'top-right', autoClose: 3000 });
     },
     [socket]
   );

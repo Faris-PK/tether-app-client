@@ -17,10 +17,7 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({ selectedChat, onBackClick }) =>
   const { onlineUsers, initiateVideoCall } = useSocket();
   const navigate = useNavigate();
 
-  
-
   const startVideoCall = () => {
-    // Assuming you have the target user's ID
     initiateVideoCall(selectedChat.id, navigate);
   };
 
@@ -28,15 +25,14 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({ selectedChat, onBackClick }) =>
     ? 'bg-gray-800 border-gray-700' 
     : 'bg-white border-gray-200';
 
-  // Check if the user is online based on the onlineUsers object
-  const isOnline = onlineUsers[selectedChat.id] || false;
+  // Adjusting online status logic based on new socket context
+  const isOnline = Array.isArray(onlineUsers)
+    ? onlineUsers.includes(selectedChat.id) // Array of user IDs
+    : Boolean(onlineUsers[selectedChat.id]); // Object of user details
 
   return (
     <div 
-      className={`
-        p-4 flex items-center justify-between border-b 
-        ${sidebarBgClass}
-      `}
+      className={`p-4 flex items-center justify-between border-b ${sidebarBgClass}`}
     >
       <div className="flex items-center space-x-4">
         <Button 

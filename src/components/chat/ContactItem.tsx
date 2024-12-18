@@ -14,7 +14,9 @@ const ContactItem: React.FC<ContactItemProps> = ({ contact, isSelected, onSelect
   const { isDarkMode } = useTheme();
   const { onlineUsers } = useSocket();
 
-  const isOnline = onlineUsers[contact.id] || false;
+  const isOnline = Array.isArray(onlineUsers)
+    ? onlineUsers.includes(contact.id) 
+    : Boolean(onlineUsers[contact.id]);
 
   return (
     <div 
@@ -27,19 +29,18 @@ const ContactItem: React.FC<ContactItemProps> = ({ contact, isSelected, onSelect
         }
       `}
     >
-    <div className="relative">
-      <Avatar className="h-10 w-10 md:h-12 md:w-12 mr-4">
-        <AvatarImage src={contact.profile_picture} alt={contact.name} />
-      </Avatar>
-      {/* Online/Offline Indicator */}
-      <span
-        className={`
-          absolute bottom-1 right-1 w-3 h-3 rounded-full border-2 
-          ${isDarkMode ? 'border-gray-800' : 'border-white'}
-          ${isOnline ? 'bg-green-500' : ''}
-        `}
-      ></span>
-    </div>
+      <div className="relative">
+        <Avatar className="h-10 w-10 md:h-12 md:w-12 mr-4">
+          <AvatarImage src={contact.profile_picture} alt={contact.name} />
+        </Avatar>
+        {/* Online/Offline Indicator */}
+        <span
+          className={`
+            absolute bottom-1 right-1 w-3 h-3 rounded-full border-2 
+            ${isOnline ? 'bg-green-500' : ''}
+          `}
+        ></span>
+      </div>
 
       <div className="flex-1 overflow-hidden">
         <div className="flex justify-between items-center">
