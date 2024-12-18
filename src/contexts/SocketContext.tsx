@@ -27,10 +27,6 @@ interface SocketContextType {
   onlineUsers: string[];
   markNotificationAsRead: (notificationId: string) => void;
   addMessage: (message: Message) => void;
-  initiateVideoCall: (targetUserId: string, navigate: (path: string) => void) => void;
-  answerVideoCall: (roomId: string, navigate: (path: string) => void) => void;
-  declineVideoCall: (roomId: string) => void;
-  incomingVideoCall: { roomId: string; caller: string } | null;
 }
 
 const SocketContext = createContext<SocketContextType>({
@@ -40,10 +36,6 @@ const SocketContext = createContext<SocketContextType>({
   onlineUsers: [],
   markNotificationAsRead: () => {},
   addMessage: () => {},
-  initiateVideoCall: () => {},
-  answerVideoCall: () => {},
-  declineVideoCall: () => {},
-  incomingVideoCall: null,
 });
 
 export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -51,10 +43,6 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
   const [onlineUsers, setOnlineUsers] = useState<string[]>([]);
-  const [incomingVideoCall, setIncomingVideoCall] = useState<{
-    roomId: string;
-    caller: string;
-  } | null>(null);
 
   const user = useSelector((state: RootState) => state?.user?.user);
 
@@ -98,10 +86,6 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         toast.info(`New message from ${message.sender.username}`, { position: 'top-right', autoClose: 5000 });
       });
 
-      newSocket.on('incoming_video_call', ({ roomId, caller }: { roomId: string; caller: string }) => {
-        setIncomingVideoCall({ roomId, caller });
-      });
-
       setSocket(newSocket);
 
       return () => {
@@ -120,30 +104,6 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setMessages((prev) => [...prev, message]);
   }, []);
 
-  const initiateVideoCall = useCallback(
-    (targetUserId: string, navigate: (path: string) => void) => {
-      if (!socket || !user?._id) return;
-      const roomId = `video_${user._id}_${targetUserId}_${Date.now()}`;
-      socket.emit('initiate_video_call', { target: targetUserId, roomId, caller: user._id });
-      navigate(`/user/video-call/${roomId}`);
-    },
-    [socket, user?._id]
-  );
-
-  const answerVideoCall = useCallback((roomId: string, navigate: (path: string) => void) => {
-    setIncomingVideoCall(null);
-    navigate(`/user/video-call/${roomId}`);
-  }, []);
-
-  const declineVideoCall = useCallback(
-    (roomId: string) => {
-      if (!socket) return;
-      socket.emit('decline_video_call', { roomId });
-      setIncomingVideoCall(null);
-    },
-    [socket]
-  );
-
   return (
     <SocketContext.Provider
       value={{
@@ -153,10 +113,6 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         onlineUsers,
         markNotificationAsRead,
         addMessage,
-        initiateVideoCall,
-        answerVideoCall,
-        declineVideoCall,
-        incomingVideoCall,
       }}
     >
       {children}

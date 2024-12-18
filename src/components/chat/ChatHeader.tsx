@@ -5,6 +5,7 @@ import { Phone, VideoIcon, MoreVertical, ChevronLeft } from 'lucide-react';
 import { Contact } from '../../types/IChat';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useSocket } from '../../contexts/SocketContext';
+import { useVideoCall } from '../../contexts/VideoCallContext';
 import { useNavigate } from 'react-router-dom';
 
 interface ChatHeaderProps {
@@ -14,7 +15,8 @@ interface ChatHeaderProps {
 
 const ChatHeader: React.FC<ChatHeaderProps> = ({ selectedChat, onBackClick }) => {
   const { isDarkMode } = useTheme();
-  const { onlineUsers, initiateVideoCall } = useSocket();
+  const { onlineUsers } = useSocket();
+  const { initiateVideoCall } = useVideoCall();
   const navigate = useNavigate();
 
   const startVideoCall = () => {

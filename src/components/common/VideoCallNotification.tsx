@@ -1,10 +1,10 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useSocket } from '@/contexts/SocketContext';
+import { useVideoCall } from '@/contexts/VideoCallContext';
 
 const VideoCallNotification: React.FC = () => {
   const navigate = useNavigate();
-  const { incomingVideoCall, answerVideoCall, declineVideoCall } = useSocket();
+  const { incomingVideoCall, answerVideoCall, declineVideoCall } = useVideoCall();
 
   if (!incomingVideoCall) return null;
 

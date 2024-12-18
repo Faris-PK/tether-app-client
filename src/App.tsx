@@ -6,6 +6,7 @@ import { store } from './redux/store/store';
 import UserRoutes from './routes/UserRoutes'; 
 import AdminRoutes from './routes/AdminRoutes'; 
 import { SocketProvider } from './contexts/SocketContext';
+import { VideoCallProvider } from './contexts/VideoCallContext';
 import 'react-toastify/dist/ReactToastify.css';
 import VideoCallNotification from './components/common/VideoCallNotification';
 
@@ -16,19 +17,21 @@ const App: React.FC = () => {
     <GoogleOAuthProvider clientId={googleClientId}>
       <Provider store={store}>
         <SocketProvider>
-          <Router>
-          <VideoCallNotification />
-            <Routes>
-              {/* Admin Routes */}
-              <Route path="/admin/*" element={<AdminRoutes />} />
+          <VideoCallProvider>
+            <Router>
+              <VideoCallNotification />
+              <Routes>
+                {/* Admin Routes */}
+                <Route path="/admin/*" element={<AdminRoutes />} />
 
-              {/* User Routes */}
-              <Route path="/user/*" element={<UserRoutes />} />
+                {/* User Routes */}
+                <Route path="/user/*" element={<UserRoutes />} />
 
-              {/* Fallback route */}
-              <Route path="*" element={<Navigate to="/user/signin" />} />
-            </Routes>
-          </Router>
+                {/* Fallback route */}
+                <Route path="*" element={<Navigate to="/user/signin" />} />
+              </Routes>
+            </Router>
+          </VideoCallProvider>
         </SocketProvider>
       </Provider>
     </GoogleOAuthProvider>
