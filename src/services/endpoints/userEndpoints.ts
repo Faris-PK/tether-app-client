@@ -84,5 +84,7 @@ export const postRoutes = {
     sendMessage: '/chat/send',
     markMessagesAsRead: '/chat/read',
     searchUsers:'/chat/search',
-    startNewChat:'/chat/start-chat'
+    startNewChat:'/chat/start-chat',
+    deleteMessage: '/chat/message/delete',
+
   };

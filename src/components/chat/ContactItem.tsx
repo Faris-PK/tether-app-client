@@ -50,12 +50,12 @@ const ContactItem: React.FC<ContactItemProps> = ({ contact, isSelected, onSelect
           </span>
         </div>
         <div className="flex justify-between items-center">
-          <p className={`
+          {/* <p className={`
             text-xs md:text-sm truncate 
             ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}
           `}>
             {contact.lastMessage}
-          </p>
+          </p> */}
           {contact.unreadCount > 0 && (
             <span className="bg-[#1D9BF0] text-white rounded-full h-5 w-5 flex items-center justify-center text-xs">
               {contact.unreadCount}

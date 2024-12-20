@@ -86,6 +86,10 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         toast.info(`New message from ${message.sender.username}`, { position: 'top-right', autoClose: 5000 });
       });
 
+      newSocket.on('message_deleted', (messageId: string) => {
+        setMessages((prev) => prev.filter(msg => msg._id !== messageId));
+      });
+
       setSocket(newSocket);
 
       return () => {

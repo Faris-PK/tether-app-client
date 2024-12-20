@@ -44,4 +44,9 @@ export const ChatApi = {
     );
     return response.data;
   },
+  deleteMessage: async (messageId: string): Promise<void> => {
+    await API.patch(`${chatRoutes.deleteMessage}/${messageId}`, {}, { 
+      withCredentials: true 
+    });
+  },
 };

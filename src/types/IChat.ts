@@ -5,12 +5,13 @@ export interface Sender {
 }
 
 export interface Message {
-  id: string;
+  _id: string;
   sender: Sender;
   text: string;
   createdAt: string;
   read:boolean;
   receiver:string
+  isDeleted:boolean;
 }
 
 export interface Contact {
