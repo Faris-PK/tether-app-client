@@ -1,15 +1,17 @@
-import  { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSocket } from '@/contexts/SocketContext';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store/store';
 import { Camera, CameraOff, Mic, MicOff, PhoneOff } from 'lucide-react';
+import { useVideoCall } from '@/contexts/VideoCallContext'; // Import for the context to manage call-ended state
 
 const VideoCallPage = () => {
   const { roomId } = useParams();
   const navigate = useNavigate();
   const { socket } = useSocket();
   const user = useSelector((state: RootState) => state.user.user);
+  const { isCallEnded, setIsCallEnded } = useVideoCall();
 
   const userVideo = useRef<HTMLVideoElement>(null);
   const partnerVideo = useRef<HTMLVideoElement>(null);
@@ -23,6 +25,11 @@ const VideoCallPage = () => {
 
   useEffect(() => {
     if (!user?._id || !roomId) {
+      navigate('/user/home');
+      return;
+    }
+
+    if (isCallEnded) {
       navigate('/user/home');
       return;
     }
@@ -47,6 +54,10 @@ const VideoCallPage = () => {
           }
         });
 
+        socket?.on('video_call_declined', () => {
+          handleCallEnded();
+        });
+
         socket?.on('call_ended', handleCallEnded);
         socket?.on('offer', handleReceiveCall);
         socket?.on('answer', handleAnswer);
@@ -58,19 +69,20 @@ const VideoCallPage = () => {
       });
 
     return () => {
-      userStream.current?.getTracks().forEach(track => track.stop());
+      userStream.current?.getTracks().forEach((track) => track.stop());
       peerRef.current?.close();
       socket?.off('other_users_in_room');
       socket?.off('new_user_joined');
+      socket?.off('video_call_declined');
       socket?.off('call_ended');
       socket?.off('offer');
       socket?.off('answer');
       socket?.off('ice-candidate');
-      
+
       // Notify other participants that we're leaving
       socket?.emit('end_call', { roomId });
     };
-  }, [roomId, socket, user?._id]);
+  }, [roomId, socket, user?._id, isCallEnded]);
 
   const toggleAudio = () => {
     if (userStream.current) {
@@ -98,9 +110,10 @@ const VideoCallPage = () => {
   };
 
   const handleCallEnded = () => {
-    userStream.current?.getTracks().forEach(track => track.stop());
+    userStream.current?.getTracks().forEach((track) => track.stop());
     peerRef.current?.close();
     setCallState('ended');
+    setIsCallEnded(true);
     navigate('/user/home');
   };
 
@@ -199,9 +212,7 @@ const VideoCallPage = () => {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 p-4">
       <div className="relative w-full max-w-6xl">
-        {/* Main call grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-          {/* Partner video (large) */}
           <div className="relative col-span-1 md:col-span-2 aspect-video">
             <video
               ref={partnerVideo}
@@ -215,8 +226,6 @@ const VideoCallPage = () => {
               </div>
             )}
           </div>
-          
-          {/* User video (small) */}
           <div className="absolute top-4 right-4 w-48 aspect-video">
             <video
               ref={userVideo}
@@ -227,8 +236,6 @@ const VideoCallPage = () => {
             />
           </div>
         </div>
-
-        {/* Controls */}
         <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2">
           <div className="flex items-center gap-4 bg-gray-800 px-6 py-3 rounded-full shadow-lg">
             <button
@@ -243,14 +250,12 @@ const VideoCallPage = () => {
                 <MicOff className="w-6 h-6 text-white" />
               )}
             </button>
-
             <button
               onClick={endCall}
               className="p-4 bg-red-500 hover:bg-red-600 rounded-full mx-2"
             >
               <PhoneOff className="w-6 h-6 text-white" />
             </button>
-
             <button
               onClick={toggleVideo}
               className={`p-4 rounded-full ${
@@ -264,10 +269,12 @@ const VideoCallPage = () => {
               )}
             </button>
           </div>
+          </div>
         </div>
       </div>
-    </div>
   );
 };
 
 export default VideoCallPage;
+
+       
