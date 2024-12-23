@@ -17,6 +17,7 @@ const ChatPage: React.FC = () => {
   const [selectedChat, setSelectedChat] = useState<Contact | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [replyToMessage, setReplyToMessage] = useState<Message | null>(null);
   const { socket, addMessage } = useSocket();
 
   useEffect(() => {
@@ -97,24 +98,38 @@ const ChatPage: React.FC = () => {
     };
   }, [socket, selectedChat]);
 
-  const handleSendMessage = async (messageText: string) => {
-    if (selectedChat) {
+  const handleSendMessage = async (messageText?: string, file?: File, replyTo?: Message) => {
+    if (selectedChat && (messageText || file)) {
       try {
-        const newMessage = await ChatApi.sendMessage(selectedChat.id, messageText);
-        addMessage(newMessage);
+        // Make sure to include the full sender object when sending the message
+        const newMessage = await ChatApi.sendMessage(selectedChat.id, messageText, file, replyTo?._id);
+        
+        // If there's a replyTo message, make sure to include it in the new message
+        const messageWithReply = {
+          ...newMessage,
+          replyTo: replyTo ? {
+            ...replyTo,
+            sender: replyTo.sender // Make sure sender object is included
+          } : undefined
+        };
+        
+        addMessage(messageWithReply);
         setSelectedChat((prev) => {
           if (!prev) return null;
           return {
             ...prev,
-            messages: [...prev?.messages, newMessage],
-            lastMessage: newMessage.text,
+            messages: [...prev.messages, messageWithReply],
+            lastMessage: messageWithReply.text || 'Sent a file',
           };
         });
-
+  
         setContacts((prevContacts) =>
           prevContacts.map((contact) =>
             contact.id === selectedChat.id
-              ? { ...contact, lastMessage: newMessage.text }
+              ? { 
+                  ...contact, 
+                  lastMessage: messageWithReply.text || 'Sent a file'
+                }
               : contact
           )
         );
@@ -172,10 +187,16 @@ const ChatPage: React.FC = () => {
           <>
             <ChatHeader selectedChat={selectedChat} onBackClick={handleBackButtonClick} />
             <ChatMessages
-              messages={selectedChat.messages}
-              onMessageDelete={handleMessageDelete}
-            />
-            <ChatMessageInput selectedChat={selectedChat} onSendMessage={handleSendMessage} />
+        messages={selectedChat.messages}
+        onMessageDelete={handleMessageDelete}
+        onReplyToMessage={setReplyToMessage}
+      />
+      <ChatMessageInput
+        selectedChat={selectedChat}
+        onSendMessage={handleSendMessage}
+        replyToMessage={replyToMessage}
+        onCancelReply={() => setReplyToMessage(null)}
+      />
           </>
         ) : (
           <EmptyChat />

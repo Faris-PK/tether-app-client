@@ -38,19 +38,19 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       setIncomingVideoCall({ roomId, caller });
     };
 
-    const handleVideoCallDeclined = () => {
+    const handleCallEnd = () => {
       setIncomingVideoCall(null);
       setIsCallEnded(true);
     };
 
     socket.on('incoming_video_call', handleIncomingVideoCall);
-    socket.on('video_call_declined', handleVideoCallDeclined);
-    socket.on('call_ended', handleVideoCallDeclined);
+    socket.on('video_call_declined', handleCallEnd);
+    socket.on('call_ended', handleCallEnd);
 
     return () => {
       socket.off('incoming_video_call', handleIncomingVideoCall);
-      socket.off('video_call_declined', handleVideoCallDeclined);
-      socket.off('call_ended', handleVideoCallDeclined);
+      socket.off('video_call_declined', handleCallEnd);
+      socket.off('call_ended', handleCallEnd);
     };
   }, [socket]);
 

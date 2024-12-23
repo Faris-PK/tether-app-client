@@ -13,11 +13,27 @@ export const ChatApi = {
     return response.data;
   },
 
-  sendMessage: async (contactId: string, message: string): Promise<Message> => {
+  sendMessage: async (
+    contactId: string,
+    message?: string,
+    file?: File,
+    replyToMessageId?: string
+  ): Promise<Message> => {
+    const formData = new FormData();
+    if (message) formData.append('message', message);
+    if (file) formData.append('file', file);
+    if (replyToMessageId) formData.append('replyToMessageId', replyToMessageId);
+    formData.append('contactId', contactId);
+
     const response = await API.post(
       chatRoutes.sendMessage,
-      { contactId, message },
-      { withCredentials: true }
+      formData,
+      {
+        withCredentials: true,
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        }
+      }
     );
     return response.data;
   },

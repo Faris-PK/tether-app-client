@@ -7,13 +7,15 @@ export interface Sender {
 export interface Message {
   _id: string;
   sender: Sender;
-  text: string;
+  text?: string;
+  fileUrl?: string;
+  fileType?: 'image' | 'video';
   createdAt: string;
-  read:boolean;
-  receiver:string
-  isDeleted:boolean;
+  read: boolean;
+  receiver: string;
+  isDeleted: boolean;
+  replyTo?: Message;
 }
-
 export interface Contact {
   id: string;
   name: string;

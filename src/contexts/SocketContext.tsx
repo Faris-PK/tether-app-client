@@ -3,7 +3,6 @@ import { io, Socket } from 'socket.io-client';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store/store';
 import { toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 import { Message } from '@/types/IChat';
 
 export interface Notification {
@@ -64,30 +63,39 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         query: { userId: user._id },
       });
 
+      // Handle online users
       newSocket.on('getOnlineUsers', (userIds: string[]) => {
         setOnlineUsers(userIds);
       });
 
-      newSocket.on('user_status_change', ({ userId, isOnline }: { userId: string; isOnline: boolean }) => {
-        setOnlineUsers((prev) =>
-          isOnline
+      newSocket.on('user_status_change', ({ userId, isOnline }) => {
+        setOnlineUsers(prev =>
+          isOnline 
             ? [...new Set([...prev, userId])]
-            : prev.filter((id) => id !== userId)
+            : prev.filter(id => id !== userId)
         );
       });
 
+      // Handle notifications
       newSocket.on('new_notification', (notification: Notification) => {
-        setNotifications((prev) => [notification, ...prev]);
-        toast.info(notification.content, { position: 'top-right', autoClose: 5000 });
+        setNotifications(prev => [notification, ...prev]);
+        toast.info(notification.content, {
+          position: 'top-right',
+          autoClose: 5000
+        });
       });
 
+      // Handle messages
       newSocket.on('new_message', (message: Message) => {
-        setMessages((prev) => [...prev, message]);
-        toast.info(`New message from ${message.sender.username}`, { position: 'top-right', autoClose: 5000 });
+        setMessages(prev => [...prev, message]);
+        toast.info(`New message from ${message.sender.username}`, {
+          position: 'top-right',
+          autoClose: 5000
+        });
       });
 
       newSocket.on('message_deleted', (messageId: string) => {
-        setMessages((prev) => prev.filter(msg => msg._id !== messageId));
+        setMessages(prev => prev.filter(msg => msg._id !== messageId));
       });
 
       setSocket(newSocket);
@@ -99,13 +107,17 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   }, [user?._id]);
 
   const markNotificationAsRead = useCallback((notificationId: string) => {
-    setNotifications((prev) =>
-      prev.map((notification) => (notification._id === notificationId ? { ...notification, read: true } : notification))
+    setNotifications(prev =>
+      prev.map(notification =>
+        notification._id === notificationId
+          ? { ...notification, read: true }
+          : notification
+      )
     );
   }, []);
 
   const addMessage = useCallback((message: Message) => {
-    setMessages((prev) => [...prev, message]);
+    setMessages(prev => [...prev, message]);
   }, []);
 
   return (
