@@ -115,12 +115,12 @@ const HomePage: React.FC = () => {
         }} />
       </header>
 
-      <div className="flex space-x-4 flex-1 overflow-hidden">
-        <div className="w-1/6 space-y-6">
+      <div className="flex  overflow-hidden">
+        <div className="hidden md:block md:w-1/6 space-y-6">
           <ProfileCard/>
           <SideNav/>
         </div>
-        <div className="flex-1 flex-col items-center overflow-y-auto pr-4 scrollbar-hide pt-2">
+        <div className="flex-1 flex-col items-center justify-center overflow-y-auto pr-4 scrollbar-hide ">
           <StoryArea 
             stories={stories} 
             liveStreams={liveStreams} 
@@ -147,7 +147,7 @@ const HomePage: React.FC = () => {
           )}
         </div>
 
-        <div className="w-1/6">
+        <div className="hidden md:block md:w-1/6">
           <SuggestedProfiles/>
         </div>
       </div>
