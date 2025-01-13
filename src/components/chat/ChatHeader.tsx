@@ -13,6 +13,7 @@ interface ChatHeaderProps {
   onBackClick: () => void;
 }
 
+
 const ChatHeader: React.FC<ChatHeaderProps> = ({ selectedChat, onBackClick }) => {
   const { isDarkMode } = useTheme();
   const { onlineUsers } = useSocket();
